@@ -1,7 +1,8 @@
 Netdev
 ======
 
-Async multi-vendor library for working with network devices
+Async multi-vendor library for working with network devices.
+
 Inspired by netmiko
 
 Requires:
