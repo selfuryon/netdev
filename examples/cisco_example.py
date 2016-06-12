@@ -5,21 +5,22 @@ import yaml
 
 import netdev
 
-creds = "cisco_ios_credits.yaml"
+creds = 'device_credits.yaml'
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 async def task(param):
-    br = netdev.connect(**param)
-    await br.connect()
-    out = await br.send_command("sh ver")
-    prompt = await br.find_prompt()
+    ios = netdev.connect(**param)
+    await ios.connect()
+    out = await ios.send_command("sh ver")
+    prompt = await ios.find_prompt()
     print("{0} Done".format(prompt, out))
 
 
 async def run():
-    params = yaml.load(open(creds, 'r'))
+    devices = yaml.load(open(creds, 'r'))
+    params = [p for p in devices if p['device_type'] == 'cisco_ios']
     tasks = []
     for param in params:
         tasks.append(task(param))

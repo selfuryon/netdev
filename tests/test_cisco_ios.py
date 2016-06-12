@@ -11,8 +11,9 @@ logging.basicConfig(filename="unittest.log", level=logging.DEBUG, format='%(asct
 
 class TestCisco(unittest.TestCase):
     def load_credits(self):
-        creds = "cisco_ios_credits.yaml"
-        params = yaml.load(open(creds, 'r'))
+        creds = 'device_credits.yaml'
+        devices = yaml.load(open(creds, 'r'))
+        params = [p for p in devices if p['device_type'] == 'cisco_ios']
         return params
 
     def setUp(self):
