@@ -9,11 +9,7 @@ class HPComwareSSH(NetDevSSH):
         """Prepare the session after the connection has been established."""
         await self.establish_connection()
         await self.set_base_prompt()
-        await self.disable_paging()
-
-    @property
-    def disable_paging_command(self):
-        return "screen-length disable"
+        await self.disable_paging(command='screen-length disable')
 
     @property
     def priv_prompt_term(self):
@@ -22,10 +18,6 @@ class HPComwareSSH(NetDevSSH):
     @property
     def unpriv_prompt_term(self):
         return '>'
-
-    @property
-    def prompt_pattern(self):
-        return r"[\[|<]{0}([\-\w]+)?[{1}|{2}]"
 
     async def set_base_prompt(self):
         """
@@ -39,8 +31,9 @@ class HPComwareSSH(NetDevSSH):
         prompt = await self.find_prompt()
         # Strip off trailing terminator
         self._base_prompt = prompt[1:-1]
-        self._base_pattern = self.prompt_pattern.format(re.escape(self._base_prompt), re.escape(self.priv_prompt_term),
-                                                        re.escape(self.unpriv_prompt_term))
+        self._base_pattern = r"[\[|<]{0}([\-\w]+)?[{1}|{2}]".format(re.escape(self._base_prompt),
+                                                                    re.escape(self.priv_prompt_term),
+                                                                    re.escape(self.unpriv_prompt_term))
         logging.debug("Base Prompt is {0}".format(self._base_prompt))
         logging.debug("Base Pattern is {0}".format(self._base_pattern))
         return self._base_prompt

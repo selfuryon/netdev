@@ -14,9 +14,19 @@ class CiscoAsaSSH(NetDevSSH):
         super().__init__(ip, host, username, password, secret, port, device_type, ssh_strict)
         self._context = ''
 
-    @property
-    def disable_paging_command(self):
-        return "terminal pager 0"
+    async def connect(self):
+        """
+        Async Connection method
+
+        Usual using 3 functions:
+            establish_connection for connecting to device
+            set_base_prompt for finding and setting device prompt
+            disable_paging for non interact output in commands
+        """
+        await self.establish_connection()
+        await self.set_base_prompt()
+        await self.enable()
+        await self.disable_paging(command='terminal pager 0')
 
     async def send_command(self, command_string, strip_prompt=True, strip_command=True):
         """
@@ -47,13 +57,10 @@ class CiscoAsaSSH(NetDevSSH):
             context = 'system'
         self._base_prompt = prompt
         self._context = context
-        self._base_pattern = self.prompt_pattern.format(re.escape(self._base_prompt), re.escape(self.priv_prompt_term),
-                                                        re.escape(self.unpriv_prompt_term))
+        self._base_pattern = r"{0}(\/\w+)?(\(.*?\))?[{1}|{2}]".format(re.escape(self._base_prompt),
+                                                                      re.escape(self.priv_prompt_term),
+                                                                      re.escape(self.unpriv_prompt_term))
         logging.debug("Base Prompt is {0}".format(self._base_prompt))
         logging.debug("Base Pattern is {0}".format(self._base_pattern))
         logging.debug("Current Context is {0}".format(self._context))
         return self._base_prompt
-
-    @property
-    def prompt_pattern(self):
-        return r"{0}(\/\w+)?(\(.*?\))?[{1}|{2}]"
