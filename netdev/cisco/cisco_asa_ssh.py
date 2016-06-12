@@ -12,21 +12,22 @@ class CiscoAsaSSH(NetDevSSH):
     def __init__(self, ip=u'', host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'',
                  ssh_strict=False):
         super().__init__(ip, host, username, password, secret, port, device_type, ssh_strict)
-        self._context = ''
+        self.context = ''
 
     async def connect(self):
         """
         Async Connection method
 
-        Usual using 3 functions:
-            establish_connection for connecting to device
-            set_base_prompt for finding and setting device prompt
-            disable_paging for non interact output in commands
+        Usual using 4 functions:
+            establish_connection() for connecting to device
+            set_base_prompt() for finding and setting device prompt
+            enable() for getting privilege exec mode
+            disable_paging() for non interact output in commands
         """
-        await self.establish_connection()
-        await self.set_base_prompt()
-        await self.enable()
-        await self.disable_paging(command='terminal pager 0')
+        await self._establish_connection()
+        await self._set_base_prompt()
+        await self._enable()
+        await self._disable_paging(command='terminal pager 0')
 
     async def send_command(self, command_string, strip_prompt=True, strip_command=True):
         """
@@ -35,10 +36,10 @@ class CiscoAsaSSH(NetDevSSH):
         """
         output = await super(CiscoAsaSSH, self).send_command(command_string, strip_prompt, strip_command)
         if "changet" in command_string:
-            await self.set_base_prompt()
+            await self._set_base_prompt()
         return output
 
-    async def set_base_prompt(self):
+    async def _set_base_prompt(self):
         """
         Setting three important vars for ASA
             base_prompt - textual prompt in CLI (usually hostname)
@@ -48,19 +49,19 @@ class CiscoAsaSSH(NetDevSSH):
         For ASA devices base_pattern is "prompt(\/\w+)?(\(.*?\))?[#|>]
         """
         logging.info("In set_base_prompt")
-        prompt = await self.find_prompt()
+        prompt = await self._find_prompt()
         # Cut off prompt from "prompt/context"
         if '/' in prompt:
             prompt, context = prompt[:-1].split('/')
         else:
             prompt = prompt[:-1]
             context = 'system'
-        self._base_prompt = prompt
-        self._context = context
-        self._base_pattern = r"{0}(\/\w+)?(\(.*?\))?[{1}|{2}]".format(re.escape(self._base_prompt),
-                                                                      re.escape(self.priv_prompt_term),
-                                                                      re.escape(self.unpriv_prompt_term))
-        logging.debug("Base Prompt is {0}".format(self._base_prompt))
+        self.base_prompt = prompt
+        self.context = context
+        self._base_pattern = r"{0}(\/\w+)?(\(.*?\))?[{1}|{2}]".format(re.escape(self.base_prompt),
+                                                                      re.escape(self._priv_prompt_term),
+                                                                      re.escape(self._unpriv_prompt_term))
+        logging.debug("Base Prompt is {0}".format(self.base_prompt))
         logging.debug("Base Pattern is {0}".format(self._base_pattern))
-        logging.debug("Current Context is {0}".format(self._context))
-        return self._base_prompt
+        logging.debug("Current Context is {0}".format(self.context))
+        return self.base_prompt

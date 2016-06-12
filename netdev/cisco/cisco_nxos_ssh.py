@@ -5,7 +5,7 @@ from netdev.netdev_base import NetDevSSH
 
 class CiscoNxosSSH(NetDevSSH):
     @staticmethod
-    def normalize_linefeeds(a_string):
+    def _normalize_linefeeds(a_string):
         """
         Convert '\r\n' or '\r\r\n' to '\n, and remove extra '\r's in the text
         """
