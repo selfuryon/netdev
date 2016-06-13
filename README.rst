@@ -18,7 +18,8 @@ Supports:
 * Cisco IOS-XE 
 * Cisco ASA
 * Cisco NX-OS 
-* HP Comware 
+* HP Comware
+* Fujitsu Blade Switches
 
 
  

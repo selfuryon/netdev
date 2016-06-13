@@ -1,20 +1,19 @@
 import asyncio
+import logging
 
 import yaml
 
 import netdev
 
-import logging
-
 config_path = 'config.yaml'
 
-logging.basicConfig(level=logging.WARN, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 async def task(param):
     fuj = netdev.connect(**param)
     await fuj.connect()
-    out = await fuj.send_config_set(['int bc5-SW01/0/1', 'exit'])
+    out = await fuj.send_config_set(['vlan database', 'exit'])
     print(out)
 
 
