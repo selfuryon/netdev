@@ -5,7 +5,7 @@ import yaml
 
 import netdev
 
-creds = 'device_credits.yaml'
+config_path = 'config.yaml'
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -19,7 +19,8 @@ async def task(param):
 
 
 async def run():
-    devices = yaml.load(open(creds, 'r'))
+    config = yaml.load(open(config_path, 'r'))
+    devices = yaml.load(open(config['device_credentials'], 'r'))
     params = [p for p in devices if p['device_type'] == 'cisco_asa']
     tasks = []
     for param in params:

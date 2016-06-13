@@ -5,7 +5,7 @@ import yaml
 
 import netdev
 
-creds = 'device_credits.yaml'
+config_path = 'config.yaml'
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -13,13 +13,13 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 async def task(param):
     hp = netdev.connect(**param)
     await hp.connect()
-    commands = ["interface Vlan-interface1", "quit"]
-    out = await hp.send_config_set(commands)
+    out = await hp.send_command('display ver')
     print(out)
 
 
 async def run():
-    devices = yaml.load(open(creds, 'r'))
+    config = yaml.load(open(config_path, 'r'))
+    devices = yaml.load(open(config['device_credentials'], 'r'))
     params = [p for p in devices if p['device_type'] == 'hp_comware']
     tasks = []
     for param in params:
