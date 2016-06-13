@@ -327,6 +327,7 @@ class NetDevSSH(object):
         if exit_config_mode:
             output += await self._exit_config_mode()
 
+        output = self._normalize_linefeeds(output)
         logging.debug("Output is {0}".format(output))
         return output
 
