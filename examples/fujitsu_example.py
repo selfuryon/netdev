@@ -5,21 +5,22 @@ import yaml
 
 import netdev
 
-creds = "cisco_ios_credits.yaml"
+config_path = 'config.yaml'
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 async def task(param):
-    br = netdev.connect(**param)
-    await br.connect()
-    out = await br.send_command("sh ver")
-    prompt = await br.find_prompt()
-    print("{0} Done".format(prompt, out))
+    fuj = netdev.connect(**param)
+    await fuj.connect()
+    out = await fuj.send_config_set(['vlan database', 'exit'])
+    print(out)
 
 
 async def run():
-    params = yaml.load(open(creds, 'r'))
+    config = yaml.load(open(config_path, 'r'))
+    devices = yaml.load(open(config['device_credentials'], 'r'))
+    params = [p for p in devices if p['device_type'] == 'fujitsu_switch']
     tasks = []
     for param in params:
         tasks.append(task(param))

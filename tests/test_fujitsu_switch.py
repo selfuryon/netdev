@@ -13,7 +13,7 @@ def load_credits():
     config_path = 'config.yaml'
     config = yaml.load(open(config_path, 'r'))
     devices = yaml.load(open(config['device_credentials'], 'r'))
-    params = [p for p in devices if p['device_type'] == 'cisco_asa']
+    params = [p for p in devices if p['device_type'] == 'fujitsu_switch']
     return params
 
 
@@ -27,10 +27,10 @@ class TestCisco(unittest.TestCase):
         params = load_credits()
 
         async def task(param):
-            asa = netdev.connect(**param)
-            await asa.connect()
-            out = await asa.send_command('show run | i hostname')
-            self.assertIn("hostname", out)
+            fuj = netdev.connect(**param)
+            await fuj.connect()
+            out = await fuj.send_command('show run | i snmp')
+            self.assertIn("snmp", out)
 
         async def run():
             tasks = []
@@ -44,11 +44,11 @@ class TestCisco(unittest.TestCase):
         params = load_credits()
 
         async def task(param):
-            asa = netdev.connect(**param)
-            await asa.connect()
+            fuj = netdev.connect(**param)
+            await fuj.connect()
             commands = ["dir", "show ver", "show run", "show ssh"]
             for cmd in commands:
-                out = await asa.send_command(cmd, strip_command=False)
+                out = await fuj.send_command(cmd, strip_command=False)
                 self.assertIn(cmd, out)
 
         async def run():
@@ -63,11 +63,11 @@ class TestCisco(unittest.TestCase):
         params = load_credits()
 
         async def task(param):
-            asa = netdev.connect(**param)
-            await asa.connect()
-            commands = ["interface Management0/0", "exit"]
-            out = await asa.send_config_set(commands)
-            self.assertIn("interface Management0/0", out)
+            fuj = netdev.connect(**param)
+            await fuj.connect()
+            commands = ["vlan database", "exit"]
+            out = await fuj.send_config_set(commands)
+            self.assertIn("vlan database", out)
             self.assertIn("exit", out)
 
         async def run():

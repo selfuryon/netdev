@@ -11,17 +11,16 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 async def task(param):
-    asa = netdev.connect(**param)
-    await asa.connect()
-    commands = ["interface Management0/0", "exit"]
-    out = await asa.send_config_set(commands)
+    ios = netdev.connect(**param)
+    await ios.connect()
+    out = await ios.send_command("show ssh")
     print(out)
 
 
 async def run():
     config = yaml.load(open(config_path, 'r'))
     devices = yaml.load(open(config['device_credentials'], 'r'))
-    params = [p for p in devices if p['device_type'] == 'cisco_asa']
+    params = [p for p in devices if p['device_type'] == 'cisco_ios']
     tasks = []
     for param in params:
         tasks.append(task(param))

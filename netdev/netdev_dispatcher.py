@@ -5,10 +5,20 @@ from netdev.cisco import CiscoAsaSSH
 from netdev.cisco import CiscoIosSSH
 from netdev.cisco import CiscoNxosSSH
 from netdev.hp import HPComwareSSH
+from netdev.fujitsu import FujitsuSwitchSSH
 
+# @formatter:off
 # The keys of this dictionary are the supported device_types
-CLASS_MAPPER = {'cisco_ios': CiscoIosSSH, 'cisco_xe': CiscoIosSSH, 'cisco_asa': CiscoAsaSSH, 'cisco_nxos': CiscoNxosSSH,
-                'hp_comware': HPComwareSSH}
+CLASS_MAPPER = {
+    'cisco_ios': CiscoIosSSH,
+    'cisco_xe': CiscoIosSSH,
+    'cisco_asa': CiscoAsaSSH,
+    'cisco_nxos': CiscoNxosSSH,
+    'hp_comware': HPComwareSSH,
+    'fujitsu_switch': FujitsuSwitchSSH,
+}
+
+# @formatter:on
 
 platforms = list(CLASS_MAPPER.keys())
 platforms.sort()

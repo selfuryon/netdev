@@ -32,7 +32,7 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 
-Some codes are used from netmiko project which uses MIT license.
+Some code are used from netmiko project which uses MIT license.
 The MIT License (MIT)
 
 Copyright (c) 2016 Kirk Byers

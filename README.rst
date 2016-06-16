@@ -1,7 +1,8 @@
 Netdev
 ======
 
-Async multi-vendor library for working with network devices
+Async multi-vendor library for working with network devices.
+
 Inspired by netmiko
 
 Requires:
@@ -17,7 +18,8 @@ Supports:
 * Cisco IOS-XE 
 * Cisco ASA
 * Cisco NX-OS 
-* HP Comware 
+* HP Comware
+* Fujitsu Blade Switches
 
 
  
