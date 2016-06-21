@@ -83,12 +83,12 @@ class NetDevSSH(object):
         output = ""
         # initiate SSH connection
         self._conn = await asyncssh.connect(**self._connect_params_dict)
-        self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='vt100')
+        self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb')
         # Flush unnecessary data
         output = await self._read_until_pattern(
             r"{0}|{1}".format(re.escape(self._priv_prompt_term), re.escape(self._unpriv_prompt_term)))
         logging.info("Start Connection to {0}:{1}".format(self._host, self._port))
-        logging.info("Establish Connection Output {0}".format(output))
+        logging.debug("Establish Connection Output: {0}".format(output))
         return output
 
     async def _set_base_prompt(self):
