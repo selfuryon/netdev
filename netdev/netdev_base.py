@@ -334,7 +334,7 @@ class NetDevSSH(object):
     @staticmethod
     def _strip_ansi_escape_codes(string_buffer):
         """
-        Remove any ANSI (VT100) ESC codes from the output
+        Remove some ANSI ESC codes from the output
 
         http://en.wikipedia.org/wiki/ANSI_escape_code
 
@@ -349,11 +349,25 @@ class NetDevSSH(object):
         ESC[E        Next line (HP does ESC-E)
         ESC[2K       Erase line
         ESC[1;24r    Enable scrolling from start to row end
+        ESC7         Save cursor position
+        ESC[r        Scroll all screen
+        ESC8         Restore cursor position
+        ESC[nA       Move cursor up to n cells
+        ESC[nB       Move cursor down to n cells
 
-        HP ProCurve's and F5 LTM's require this (possible others)
+        require:
+            HP ProCurve
+            F5 LTM's
+            Mikrotik
         """
         logging.info("In strip_ansi_escape_codes")
         logging.debug("repr = {0}".format(repr(string_buffer)))
+
+        code_save_cursor = chr(27) + r'7'
+        code_scroll_screen = chr(27) + r'\[r'
+        code_restore_cursor = chr(27) + r'8'
+        code_cursor_up = chr(27) + r'\[\d+A'
+        code_cursor_down = chr(27) + r'\[\d+B'
 
         code_position_cursor = chr(27) + r'\[\d+;\d+H'
         code_show_cursor = chr(27) + r'\[\?25h'
@@ -361,7 +375,8 @@ class NetDevSSH(object):
         code_erase_line = chr(27) + r'\[2K'
         code_enable_scroll = chr(27) + r'\[\d+;\d+r'
 
-        code_set = [code_position_cursor, code_show_cursor, code_erase_line, code_enable_scroll]
+        code_set = [code_save_cursor, code_scroll_screen, code_restore_cursor, code_cursor_up, code_cursor_down,
+                    code_position_cursor, code_show_cursor, code_erase_line, code_enable_scroll]
 
         output = string_buffer
         for ansi_esc_code in code_set:
@@ -370,8 +385,8 @@ class NetDevSSH(object):
         # CODE_NEXT_LINE must substitute with '\n'
         output = re.sub(code_next_line, '\n', output)
 
-        logging.debug("new_output = %s" % output)
-        logging.debug("repr = %s" % repr(output))
+        logging.debug('new repr: {}'.format(repr(output)))
+        logging.debug('new output: {}'.format(output))
 
         return output
 
