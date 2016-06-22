@@ -127,7 +127,7 @@ class NetDevSSH(object):
     async def _find_prompt(self):
         """Finds the current network device prompt, last line only."""
         logging.info("In find_prompt")
-        self._stdin.write("\n")
+        self._stdin.write(self._normalize_cmd("\n"))
         prompt = ''
         prompt = await self._read_until_pattern(
             r"{0}|{1}".format(re.escape(self._priv_prompt_term), re.escape(self._unpriv_prompt_term)))
@@ -245,7 +245,7 @@ class NetDevSSH(object):
 
     async def _check_enable_mode(self, check_string='#'):
         """Check if in enable mode. Return boolean."""
-        self._stdin.write('\n')
+        self._stdin.write(self._normalize_cmd('\n'))
         output = await self._read_until_prompt()
         return check_string in output
 
@@ -275,7 +275,7 @@ class NetDevSSH(object):
         """Checks if the device is in configuration mode or not."""
         if not pattern:
             pattern = self._base_pattern
-        self._stdin.write('\n')
+        self._stdin.write(self._normalize_cmd('\n'))
         output = await self._read_until_pattern(pattern=pattern)
         return check_string in output
 
@@ -394,7 +394,7 @@ class NetDevSSH(object):
     def _cleanup(self):
         """ Any needed cleanup before closing connection """
         self._exit_config_mode()
-        self._stdin.write("exit\n")
+        self._stdin.write(self._normalize_cmd("exit"))
 
     async def disconnect(self):
         """ Gracefully close the SSH connection """
