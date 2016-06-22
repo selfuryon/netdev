@@ -139,7 +139,7 @@ class NetDevSSH(object):
         logging.debug("Prompt is {0}".format(prompt))
         return prompt
 
-    async def send_command(self, command_string, strip_command=True):
+    async def send_command(self, command_string, strip_command=True, strip_prompt=True):
         """
         Send command to SSH Channel
 
@@ -156,7 +156,8 @@ class NetDevSSH(object):
         if self._ansi_escape_codes:
             output = self._strip_ansi_escape_codes(output)
         output = self._normalize_linefeeds(output)
-        output = self._strip_prompt(output)
+        if strip_prompt:
+            output = self._strip_prompt(output)
         if strip_command:
             output = self._strip_command(command_string, output)
 
