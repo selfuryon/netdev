@@ -69,12 +69,10 @@ class MikrotikRouterOSSSH(NetDevSSH):
         """
         self._base_pattern = r"\[.*?\] (\/.*?)?\>"
         logging.info("In set_base_prompt")
-        self._stdin.write("\r")
         prompt = await self._find_prompt()
         user = ''
         # Strip off trailing terminator
-        prompt = prompt.splitlines()
-        prompt = prompt[-1][1:-4]
+        prompt = prompt[1:-3]
         if '@' in prompt:
             prompt = prompt.split('@')[1]
         self.base_prompt = prompt
