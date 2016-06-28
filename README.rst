@@ -20,6 +20,7 @@ Supports:
 * Cisco NX-OS 
 * HP Comware
 * Fujitsu Blade Switches
+* Mikrotik RouterOS
 
 
  

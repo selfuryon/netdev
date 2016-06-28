@@ -83,12 +83,12 @@ class NetDevSSH(object):
         output = ""
         # initiate SSH connection
         self._conn = await asyncssh.connect(**self._connect_params_dict)
-        self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='vt100')
+        self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb')
         # Flush unnecessary data
         output = await self._read_until_pattern(
             r"{0}|{1}".format(re.escape(self._priv_prompt_term), re.escape(self._unpriv_prompt_term)))
         logging.info("Start Connection to {0}:{1}".format(self._host, self._port))
-        logging.info("Establish Connection Output {0}".format(output))
+        logging.debug("Establish Connection Output: {0}".format(output))
         return output
 
     async def _set_base_prompt(self):
@@ -127,7 +127,7 @@ class NetDevSSH(object):
     async def _find_prompt(self):
         """Finds the current network device prompt, last line only."""
         logging.info("In find_prompt")
-        self._stdin.write("\n")
+        self._stdin.write(self._normalize_cmd("\n"))
         prompt = ''
         prompt = await self._read_until_pattern(
             r"{0}|{1}".format(re.escape(self._priv_prompt_term), re.escape(self._unpriv_prompt_term)))
@@ -139,7 +139,7 @@ class NetDevSSH(object):
         logging.debug("Prompt is {0}".format(prompt))
         return prompt
 
-    async def send_command(self, command_string, strip_command=True):
+    async def send_command(self, command_string, strip_command=True, strip_prompt=True):
         """
         Send command to SSH Channel
 
@@ -156,7 +156,8 @@ class NetDevSSH(object):
         if self._ansi_escape_codes:
             output = self._strip_ansi_escape_codes(output)
         output = self._normalize_linefeeds(output)
-        output = self._strip_prompt(output)
+        if strip_prompt:
+            output = self._strip_prompt(output)
         if strip_command:
             output = self._strip_command(command_string, output)
 
@@ -244,7 +245,7 @@ class NetDevSSH(object):
 
     async def _check_enable_mode(self, check_string='#'):
         """Check if in enable mode. Return boolean."""
-        self._stdin.write('\n')
+        self._stdin.write(self._normalize_cmd('\n'))
         output = await self._read_until_prompt()
         return check_string in output
 
@@ -274,7 +275,7 @@ class NetDevSSH(object):
         """Checks if the device is in configuration mode or not."""
         if not pattern:
             pattern = self._base_pattern
-        self._stdin.write('\n')
+        self._stdin.write(self._normalize_cmd('\n'))
         output = await self._read_until_pattern(pattern=pattern)
         return check_string in output
 
@@ -334,7 +335,7 @@ class NetDevSSH(object):
     @staticmethod
     def _strip_ansi_escape_codes(string_buffer):
         """
-        Remove any ANSI (VT100) ESC codes from the output
+        Remove some ANSI ESC codes from the output
 
         http://en.wikipedia.org/wiki/ANSI_escape_code
 
@@ -349,11 +350,25 @@ class NetDevSSH(object):
         ESC[E        Next line (HP does ESC-E)
         ESC[2K       Erase line
         ESC[1;24r    Enable scrolling from start to row end
+        ESC7         Save cursor position
+        ESC[r        Scroll all screen
+        ESC8         Restore cursor position
+        ESC[nA       Move cursor up to n cells
+        ESC[nB       Move cursor down to n cells
 
-        HP ProCurve's and F5 LTM's require this (possible others)
+        require:
+            HP ProCurve
+            F5 LTM's
+            Mikrotik
         """
         logging.info("In strip_ansi_escape_codes")
         logging.debug("repr = {0}".format(repr(string_buffer)))
+
+        code_save_cursor = chr(27) + r'7'
+        code_scroll_screen = chr(27) + r'\[r'
+        code_restore_cursor = chr(27) + r'8'
+        code_cursor_up = chr(27) + r'\[\d+A'
+        code_cursor_down = chr(27) + r'\[\d+B'
 
         code_position_cursor = chr(27) + r'\[\d+;\d+H'
         code_show_cursor = chr(27) + r'\[\?25h'
@@ -361,7 +376,8 @@ class NetDevSSH(object):
         code_erase_line = chr(27) + r'\[2K'
         code_enable_scroll = chr(27) + r'\[\d+;\d+r'
 
-        code_set = [code_position_cursor, code_show_cursor, code_erase_line, code_enable_scroll]
+        code_set = [code_save_cursor, code_scroll_screen, code_restore_cursor, code_cursor_up, code_cursor_down,
+                    code_position_cursor, code_show_cursor, code_erase_line, code_enable_scroll]
 
         output = string_buffer
         for ansi_esc_code in code_set:
@@ -370,15 +386,15 @@ class NetDevSSH(object):
         # CODE_NEXT_LINE must substitute with '\n'
         output = re.sub(code_next_line, '\n', output)
 
-        logging.debug("new_output = %s" % output)
-        logging.debug("repr = %s" % repr(output))
+        logging.debug('new repr: {}'.format(repr(output)))
+        logging.debug('new output: {}'.format(output))
 
         return output
 
     def _cleanup(self):
         """ Any needed cleanup before closing connection """
         self._exit_config_mode()
-        self._stdin.write("exit\n")
+        self._stdin.write(self._normalize_cmd("exit"))
 
     async def disconnect(self):
         """ Gracefully close the SSH connection """

@@ -19,7 +19,7 @@ setup(
     author='Yakovlev Sergey',
     author_email='selfuryon@gmail.com',
     description='Async network devices interaction library',
-    requires=['asyncssh', 'yaml'],
+    requires=['asyncssh', 'pyyaml'],
     long_description=long_description,
     keywords='network automation',
     classifiers=[
@@ -29,7 +29,7 @@ setup(
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 3.5',
-        'Intended Audience :: System Administrators'
+        'Intended Audience :: System Administrators',
         'Topic :: System :: Networking',
       ],
 )

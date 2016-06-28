@@ -6,6 +6,7 @@ from netdev.cisco import CiscoIosSSH
 from netdev.cisco import CiscoNxosSSH
 from netdev.hp import HPComwareSSH
 from netdev.fujitsu import FujitsuSwitchSSH
+from netdev.mikrotik import MikrotikRouterOSSSH
 
 # @formatter:off
 # The keys of this dictionary are the supported device_types
@@ -16,6 +17,7 @@ CLASS_MAPPER = {
     'cisco_nxos': CiscoNxosSSH,
     'hp_comware': HPComwareSSH,
     'fujitsu_switch': FujitsuSwitchSSH,
+    'mikrotik_routeros': MikrotikRouterOSSSH,
 }
 
 # @formatter:on
