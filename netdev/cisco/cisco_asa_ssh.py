@@ -12,7 +12,8 @@ class CiscoAsaSSH(NetDevSSH):
     def __init__(self, ip=u'', host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'',
                  ssh_strict=False):
         super().__init__(ip, host, username, password, secret, port, device_type, ssh_strict)
-        self.context = ''
+        self.current_context = 'system'
+        self.context_mode = None
 
     async def connect(self):
         """
@@ -28,6 +29,7 @@ class CiscoAsaSSH(NetDevSSH):
         await self._set_base_prompt()
         await self._enable()
         await self._disable_paging(command='terminal pager 0')
+        await self._check_context()
 
     async def send_command(self, command_string, strip_prompt=True, strip_command=True):
         """
@@ -50,18 +52,29 @@ class CiscoAsaSSH(NetDevSSH):
         """
         logging.info("In set_base_prompt")
         prompt = await self._find_prompt()
+        context = 'system'
         # Cut off prompt from "prompt/context"
         if '/' in prompt:
             prompt, context = prompt[:-1].split('/')
         else:
             prompt = prompt[:-1]
-            context = 'system'
         self.base_prompt = prompt
-        self.context = context
+        self.current_context = context
         self._base_pattern = r"{0}(\/\w+)?(\(.*?\))?[{1}|{2}]".format(re.escape(self.base_prompt),
                                                                       re.escape(self._priv_prompt_term),
                                                                       re.escape(self._unpriv_prompt_term))
         logging.debug("Base Prompt is {0}".format(self.base_prompt))
         logging.debug("Base Pattern is {0}".format(self._base_pattern))
-        logging.debug("Current Context is {0}".format(self.context))
+        logging.debug("Current Context is {0}".format(self.current_context))
         return self.base_prompt
+
+    async def _check_context(self):
+        """
+        Check mode multiple. If mode is multiple we adding info about contexts
+        """
+        logging.info("In check_context")
+        out = await self.send_command('show mode')
+        if 'multiple' in out:
+            self.context_mode = True
+
+        logging.debug("context mode is {}".format(self.context_mode))

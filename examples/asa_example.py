@@ -13,9 +13,15 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 async def task(param):
     asa = netdev.connect(**param)
     await asa.connect()
-    commands = ["interface Management0/0", "exit"]
-    out = await asa.send_config_set(commands)
-    print(out)
+    print(asa.current_context)
+    await asa.send_command("changeto context inet")
+    print(asa.current_context)
+    await asa.send_command("changeto context wan")
+    print(asa.current_context)
+    await asa.send_command("changeto system")
+    print(asa.current_context)
+    await asa.send_command("changeto context admin")
+    print(asa.current_context)
 
 
 async def run():
