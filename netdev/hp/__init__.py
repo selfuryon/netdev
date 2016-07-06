@@ -1,3 +1,3 @@
-from netdev.hp.hp_comware_ssh import HPComwareSSH
+from netdev.hp.hp_comware import HPComwareSSH
 
 __all__ = ['HPComwareSSH']

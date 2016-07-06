@@ -1,3 +1,3 @@
-from netdev.fujitsu.fujitsu_os_ssh import FujitsuSwitchSSH
+from netdev.fujitsu.fujitsu_switch import FujitsuSwitchSSH
 
 __all__ = ['FujitsuSwitchSSH']
