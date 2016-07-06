@@ -2,6 +2,7 @@ import logging
 
 import asyncssh
 
+import netdev.exceptions
 from netdev.netdev_base import NetDevSSH
 
 
@@ -51,7 +52,12 @@ class MikrotikRouterOSSSH(NetDevSSH):
         """
         output = ""
         # initiate SSH connection
-        self._conn = await asyncssh.connect(**self._connect_params_dict)
+        try:
+            self._conn = await asyncssh.connect(**self._connect_params_dict)
+        except asyncssh.DisconnectError as e:
+            logging.debug("Catch asyncssh disconnect error. Code:{0}. Reason:{1}".format(e.code, e.reason))
+            raise netdev.DisconnectError(self._host, e.code, e.reason)
+
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='dumb')
         # Flush unnecessary data
         output = await self._read_until_prompt()
