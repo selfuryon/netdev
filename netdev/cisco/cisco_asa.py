@@ -13,7 +13,7 @@ class CiscoAsaSSH(NetDevSSH):
                  ssh_strict=False):
         super().__init__(ip, host, username, password, secret, port, device_type, ssh_strict)
         self.current_context = 'system'
-        self.context_mode = None
+        self.mode_multiple = False
 
     async def connect(self):
         """
@@ -75,6 +75,6 @@ class CiscoAsaSSH(NetDevSSH):
         logging.info("In check_context")
         out = await self.send_command('show mode')
         if 'multiple' in out:
-            self.context_mode = True
+            self.mode_multiple = True
 
-        logging.debug("context mode is {}".format(self.context_mode))
+        logging.debug("context mode is {}".format(self.mode_multiple))
