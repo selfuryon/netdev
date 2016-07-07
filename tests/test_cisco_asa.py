@@ -77,3 +77,28 @@ class TestCisco(unittest.TestCase):
             await asyncio.wait(tasks)
 
         self.loop.run_until_complete(run())
+
+    def test_current_context(self):
+        params = load_credits()
+
+        async def task(param):
+            asa = netdev.connect(**param)
+            await asa.connect()
+            if asa.mode_miltiple:
+                asa.send_command('changeto system')
+                self.assertIn('system', asa.current_context)
+                out = await asa.send_command('sh run | i ^context')
+                contexts = out.splitlines()
+                for ctx in contexts:
+                    out = await asa.send_command('changeto {}'.format(ctx))
+                    self.assertIn(ctx.split()[1], asa.current_context)
+            else:
+                self.assertIn('system', asa.current_context)
+
+        async def run():
+            tasks = []
+            for param in params:
+                tasks.append(task(param))
+            await asyncio.wait(tasks)
+
+        self.loop.run_until_complete(run())
