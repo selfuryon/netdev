@@ -20,25 +20,35 @@ class NetDevSSH(object):
     It used by default Cisco params
     """
 
-    def __init__(self, ip=u'', host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'',
-                 ssh_strict=False):
-        # Filling vars
-        if ip:
-            self._host = ip
-            self._ip = ip
-        elif host:
+    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
+                 local_addr=None, client_keys=None, passphrase=None):
+        """
+        Initialize base class for async working with network devices
+
+        :param host: hostname or ip address for connection
+        :param username: username for logging to device
+        :param password: password for user for logging to device
+        :param secret: secret password for privilege mode
+        :param port: ssh port for connection. Default is 22
+        :param device_type: network device type. This is subclasses of this class
+        :param known_hosts: file with known hosts. Default is None (no policy). with () it will use default file
+        :param local_addr: local address for binding source of tcp connection
+        :param client_keys: path for client keys. With () it will use default file in OS.
+        :param passphrase: password for encrypted client keys
+        """
+        if host:
             self._host = host
-        if not ip and not host:
+        else:
             raise ValueError("Either ip or host must be set")
         self._port = int(port)
         self._username = username
         self._password = password
         self._secret = secret
         self._device_type = device_type
-        if ssh_strict:
-            self._key_policy = ()
-        else:
-            self._key_policy = None
+        self._known_hosts = known_hosts
+        self._local_addr = local_addr
+        self._client_keys = client_keys
+        self._passphrase = passphrase
 
         # Filling internal vars
         self._stdin = self._stdout = self._stderr = self._conn = None
@@ -75,7 +85,8 @@ class NetDevSSH(object):
         Convert needed connect params to a dictionary for simplicity
         """
         return {'host': self._host, 'port': self._port, 'username': self._username, 'password': self._password,
-                'known_hosts': self._key_policy}
+                'known_hosts': self._known_hosts, 'local_addr': self._local_addr, 'client_keys': self._client_keys,
+                'passphrase': self._passphrase}
 
     async def _establish_connection(self):
         """

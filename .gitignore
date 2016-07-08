@@ -58,4 +58,3 @@ target/
 examples/*.yaml
 tests/*.yaml
 /MANIFEST
-.pypirc
