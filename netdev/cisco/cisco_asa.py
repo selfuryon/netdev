@@ -9,9 +9,11 @@ from netdev.netdev_base import NetDevSSH
 class CiscoAsaSSH(NetDevSSH):
     """Subclass specific to Cisco ASA."""
 
-    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None):
+    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
+                 local_addr=None, client_keys=None, passphrase=None):
         super().__init__(host=host, username=username, password=password, secret=secret, port=port,
-                         device_type=device_type, known_hosts=known_hosts)
+                         device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
+                         client_keys=client_keys, passphrase=passphrase)
         self.current_context = 'system'
         self.mode_multiple = False
 

@@ -7,7 +7,8 @@ from netdev.netdev_base import NetDevSSH
 
 
 class MikrotikRouterOSSSH(NetDevSSH):
-    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None):
+    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
+                 local_addr=None, client_keys=None, passphrase=None):
         """
         Invoke init with some special params (base_pattern and username)
 
@@ -19,7 +20,8 @@ class MikrotikRouterOSSSH(NetDevSSH):
         '+80w' set terminal width to 80 rows
         """
         super(MikrotikRouterOSSSH, self).__init__(host=host, username=username, password=password, secret=secret,
-                                                  port=port, device_type=device_type, known_hosts=known_hosts)
+                                                  port=port, device_type=device_type, known_hosts=known_hosts,
+                                                  local_addr=local_addr, client_keys=client_keys, passphrase=passphrase)
 
         self._base_pattern = r"\[.*?\] \>.*\[.*?\] \>"
         self._username += '+ct80w'
