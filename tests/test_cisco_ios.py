@@ -23,7 +23,7 @@ class TestCisco(unittest.TestCase):
         self.loop.set_debug(False)
         asyncio.set_event_loop(self.loop)
 
-    def test_show_hostname(self):
+    def test_show_run_hostname(self):
         params = load_credits()
 
         async def task(param):

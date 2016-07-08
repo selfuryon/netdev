@@ -13,7 +13,7 @@ def load_credits():
     config_path = 'config.yaml'
     config = yaml.load(open(config_path, 'r'))
     devices = yaml.load(open(config['device_credentials'], 'r'))
-    params = [p for p in devices if p['device_type'] == 'cisco_asa']
+    params = [p for p in devices if p['device_type'] == 'hp_comware']
     return params
 
 
@@ -23,7 +23,7 @@ class TestCisco(unittest.TestCase):
         self.loop.set_debug(False)
         asyncio.set_event_loop(self.loop)
 
-    def test_show_hostname(self):
+    def test_show_sysname(self):
         params = load_credits()
 
         async def task(param):
