@@ -47,7 +47,7 @@ class TestCisco(unittest.TestCase):
         async def task(param):
             hp = netdev.connect(**param)
             await hp.connect()
-            commands = ["dir", "display ver", "display run", "display ssh server status"]
+            commands = ["dir", "display ver", "display cur", "display ssh server status"]
             for cmd in commands:
                 out = await hp.send_command(cmd, strip_command=False)
                 self.assertIn(cmd, out)
