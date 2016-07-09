@@ -101,17 +101,6 @@ class MikrotikRouterOS(NetDev):
         logging.debug("Prompt is {0}".format(prompt))
         return prompt
 
-    async def _config_mode(self, config_command='config', exit_config_mode=True):
-        """No need for entering configuration mode"""
-        return ""
-
-    async def _exit_config_mode(self, exit_config='end', pattern=''):
-        """No need for exiting configuration mode"""
-        return ""
-
-    async def send_command(self, command_string, strip_command=True, strip_prompt=False):
-        return await super(MikrotikRouterOS, self).send_command(command_string, strip_command, strip_prompt)
-
     @staticmethod
     def _normalize_cmd(command):
         """Specific trailing newline for Mikrotik"""

@@ -16,15 +16,7 @@ class HPComware(NetDev):
         """
         await self._establish_connection()
         await self._set_base_prompt()
-        await self._disable_paging(command='screen-length disable')
-
-    @property
-    def _priv_prompt_term(self):
-        return ']'
-
-    @property
-    def _unpriv_prompt_term(self):
-        return '>'
+        await self._disable_paging()
 
     async def _set_base_prompt(self):
         """
@@ -66,15 +58,3 @@ class HPComware(NetDev):
         }
         # @formatter:on
         return command_mapper[command]
-
-    async def _config_mode(self, config_command='system-view', exit_config_mode=True):
-        """Enter configuration mode."""
-        return await super(HPComware, self)._config_mode(config_command=config_command)
-
-    async def _exit_config_mode(self, exit_config='return', pattern=''):
-        """Exit config mode."""
-        return await super(HPComware, self)._exit_config_mode(exit_config=exit_config)
-
-    async def _check_config_mode(self, check_string=']', pattern=''):
-        """Check whether device is in configuration mode. Return a boolean."""
-        return await super(HPComware, self)._check_config_mode(check_string=check_string)

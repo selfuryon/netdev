@@ -18,15 +18,7 @@ class FujitsuSwitch(NetDev):
         await self._establish_connection()
         await self._set_base_prompt()
         await self._enable()
-        await self._disable_paging('no pager')
-
-    @property
-    def _priv_prompt_term(self):
-        return '#'
-
-    @property
-    def _unpriv_prompt_term(self):
-        return '>'
+        await self._disable_paging()
 
     async def _set_base_prompt(self):
         """
@@ -47,10 +39,6 @@ class FujitsuSwitch(NetDev):
         logging.debug("Base Prompt is {0}".format(self.base_prompt))
         logging.debug("Base Pattern is {0}".format(self._base_pattern))
         return self.base_prompt
-
-    async def _config_mode(self, config_command='config', exit_config_mode=True):
-        """Enter configuration mode."""
-        return await super(FujitsuSwitch, self)._config_mode(config_command=config_command)
 
     @staticmethod
     def _normalize_linefeeds(a_string):
