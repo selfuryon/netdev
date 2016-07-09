@@ -439,14 +439,14 @@ class NetDevSSH(object):
 
         return output
 
-    def _cleanup(self):
+    async def _cleanup(self):
         """ Any needed cleanup before closing connection """
-        self._exit_config_mode()
+        await self._exit_config_mode()
         self._stdin.write(self._normalize_cmd("exit"))
 
     async def disconnect(self):
         """ Gracefully close the SSH connection """
-        self._cleanup()
+        await self._cleanup()
         self._conn.close()
 
     async def commit(self):

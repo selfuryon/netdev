@@ -30,7 +30,7 @@ class CiscoAsaSSH(NetDevSSH):
         await self._establish_connection()
         await self._set_base_prompt()
         await self._enable()
-        await self._disable_paging(command='terminal pager 0')
+        await self._disable_paging()
         await self._check_context()
 
     async def send_command(self, command_string, strip_prompt=True, strip_command=True):
@@ -62,9 +62,10 @@ class CiscoAsaSSH(NetDevSSH):
             prompt = prompt[:-1]
         self.base_prompt = prompt
         self.current_context = context
+        priv_prompt = self._get_default_command('priv_prompt')
+        unpriv_prompt = self._get_default_command('unpriv_prompt')
         self._base_pattern = r"{0}(\/\w+)?(\(.*?\))?[{1}|{2}]".format(re.escape(self.base_prompt),
-                                                                      re.escape(self._priv_prompt_term),
-                                                                      re.escape(self._unpriv_prompt_term))
+                                                                      re.escape(priv_prompt), re.escape(unpriv_prompt))
         logging.debug("Base Prompt is {0}".format(self.base_prompt))
         logging.debug("Base Pattern is {0}".format(self._base_pattern))
         logging.debug("Current Context is {0}".format(self.current_context))
@@ -80,3 +81,24 @@ class CiscoAsaSSH(NetDevSSH):
             self.mode_multiple = True
 
         logging.debug("context mode is {}".format(self.mode_multiple))
+
+    def _get_default_command(self, command):
+        """
+        Returning default commands for device
+
+        :param command: command for returning
+        :return: real command for this network device
+        """
+        # @formatter:off
+        command_mapper = {
+            'priv_prompt': '#',
+            'unpriv_prompt': '>',
+            'disable_paging': 'terminal pager 0',
+            'priv_enter': 'enable',
+            'priv_exit': 'enable',
+            'config_enter': 'conf t',
+            'config_exit': 'end',
+            'check_config_mode': ')#'
+        }
+        # @formatter:on
+        return command_mapper[command]
