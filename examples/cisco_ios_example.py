@@ -15,6 +15,10 @@ async def task(param):
     await ios.connect()
     out = await ios.send_command("show ssh")
     print(out)
+    commands = ["line console 0", "exit"]
+    out = await ios.send_config_set(commands)
+    print(out)
+    await ios.disconnect()
 
 
 async def run():

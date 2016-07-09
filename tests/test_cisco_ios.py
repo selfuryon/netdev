@@ -13,7 +13,7 @@ def load_credits():
     config_path = 'config.yaml'
     config = yaml.load(open(config_path, 'r'))
     devices = yaml.load(open(config['device_credentials'], 'r'))
-    params = [p for p in devices if p['device_type'] == 'cisco_asa']
+    params = [p for p in devices if p['device_type'] == 'cisco_ios']
     return params
 
 
@@ -31,6 +31,7 @@ class TestCisco(unittest.TestCase):
             await br.connect()
             out = await br.send_command('show run | i hostname')
             self.assertIn("hostname", out)
+            await br.disconnect()
 
         async def run():
             tasks = []
@@ -50,6 +51,7 @@ class TestCisco(unittest.TestCase):
             for cmd in commands:
                 out = await br.send_command(cmd, strip_command=False)
                 self.assertIn(cmd, out)
+            await br.disconnect()
 
         async def run():
             tasks = []
@@ -65,10 +67,11 @@ class TestCisco(unittest.TestCase):
         async def task(param):
             br = netdev.connect(**param)
             await br.connect()
-            commands = ["int fa0/0", "exit"]
+            commands = ["line con 0", "exit"]
             out = await br.send_config_set(commands)
-            self.assertIn("int fa0/0", out)
+            self.assertIn("line con 0", out)
             self.assertIn("exit", out)
+            await br.disconnect()
 
         async def run():
             tasks = []

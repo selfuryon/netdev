@@ -3,10 +3,10 @@ import logging
 import asyncssh
 
 import netdev.exceptions
-from netdev.netdev_base import NetDevSSH
+from netdev.netdev_base import NetDev
 
 
-class MikrotikRouterOSSSH(NetDevSSH):
+class MikrotikRouterOS(NetDev):
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
                  local_addr=None, client_keys=None, passphrase=None):
         """
@@ -19,9 +19,9 @@ class MikrotikRouterOSSSH(NetDevSSH):
         '+t' disable auto term capabilities detection
         '+80w' set terminal width to 80 rows
         """
-        super(MikrotikRouterOSSSH, self).__init__(host=host, username=username, password=password, secret=secret,
-                                                  port=port, device_type=device_type, known_hosts=known_hosts,
-                                                  local_addr=local_addr, client_keys=client_keys, passphrase=passphrase)
+        super(MikrotikRouterOS, self).__init__(host=host, username=username, password=password, secret=secret,
+                                               port=port, device_type=device_type, known_hosts=known_hosts,
+                                               local_addr=local_addr, client_keys=client_keys, passphrase=passphrase)
 
         self._base_pattern = r"\[.*?\] \>.*\[.*?\] \>"
         self._username += '+ct80w'
@@ -101,20 +101,30 @@ class MikrotikRouterOSSSH(NetDevSSH):
         logging.debug("Prompt is {0}".format(prompt))
         return prompt
 
-    async def _config_mode(self, config_command='config', exit_config_mode=True):
-        """No need for entering configuration mode"""
-        return ""
-
-    async def _exit_config_mode(self, exit_config='end', pattern=''):
-        """No need for exiting configuration mode"""
-        return ""
-
-    async def send_command(self, command_string, strip_command=True, strip_prompt=False):
-        return await super(MikrotikRouterOSSSH, self).send_command(command_string, strip_command, strip_prompt)
-
     @staticmethod
     def _normalize_cmd(command):
         """Specific trailing newline for Mikrotik"""
         command = command.rstrip("\n")
         command += '\r'
         return command
+
+    def _get_default_command(self, command):
+        """
+        Returning default commands for device
+
+        :param command: command for returning
+        :return: real command for this network device
+        """
+        # @formatter:off
+        command_mapper = {
+            'priv_prompt': '>',
+            'unpriv_prompt': '>',
+            'disable_paging': '',
+            'priv_enter': '',
+            'priv_exit': '',
+            'config_enter': '',
+            'config_exit': '',
+            'check_config_mode': '>'
+        }
+        # @formatter:on
+        return command_mapper[command]

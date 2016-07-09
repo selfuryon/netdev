@@ -1,23 +1,23 @@
 """
 Factory function for creating netdev
 """
-from netdev.cisco import CiscoAsaSSH
-from netdev.cisco import CiscoIosSSH
-from netdev.cisco import CiscoNxosSSH
-from netdev.hp import HPComwareSSH
-from netdev.fujitsu import FujitsuSwitchSSH
-from netdev.mikrotik import MikrotikRouterOSSSH
+from netdev.cisco import CiscoAsa
+from netdev.cisco import CiscoIos
+from netdev.cisco import CiscoNxos
+from netdev.hp import HPComware
+from netdev.fujitsu import FujitsuSwitch
+from netdev.mikrotik import MikrotikRouterOS
 
 # @formatter:off
 # The keys of this dictionary are the supported device_types
 CLASS_MAPPER = {
-    'cisco_ios': CiscoIosSSH,
-    'cisco_xe': CiscoIosSSH,
-    'cisco_asa': CiscoAsaSSH,
-    'cisco_nxos': CiscoNxosSSH,
-    'hp_comware': HPComwareSSH,
-    'fujitsu_switch': FujitsuSwitchSSH,
-    'mikrotik_routeros': MikrotikRouterOSSSH,
+    'cisco_ios': CiscoIos,
+    'cisco_xe': CiscoIos,
+    'cisco_asa': CiscoAsa,
+    'cisco_nxos': CiscoNxos,
+    'hp_comware': HPComware,
+    'fujitsu_switch': FujitsuSwitch,
+    'mikrotik_routeros': MikrotikRouterOS,
 }
 
 # @formatter:on

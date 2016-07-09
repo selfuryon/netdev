@@ -1,10 +1,10 @@
 import logging
 import re
 
-from netdev.netdev_base import NetDevSSH
+from netdev.netdev_base import NetDev
 
 
-class FujitsuSwitchSSH(NetDevSSH):
+class FujitsuSwitch(NetDev):
     async def connect(self):
         """
         Async Connection method
@@ -18,15 +18,7 @@ class FujitsuSwitchSSH(NetDevSSH):
         await self._establish_connection()
         await self._set_base_prompt()
         await self._enable()
-        await self._disable_paging('no pager')
-
-    @property
-    def _priv_prompt_term(self):
-        return '#'
-
-    @property
-    def _unpriv_prompt_term(self):
-        return '>'
+        await self._disable_paging()
 
     async def _set_base_prompt(self):
         """
@@ -40,16 +32,13 @@ class FujitsuSwitchSSH(NetDevSSH):
         prompt = await self._find_prompt()
         # Strip off trailing terminator
         self.base_prompt = prompt[1:-3]
-        self._base_pattern = r"\({0}\) (\(.*?\))?[{1}|{2}]".format(re.escape(self.base_prompt),
-                                                                   re.escape(self._priv_prompt_term),
-                                                                   re.escape(self._unpriv_prompt_term))
+        priv_prompt = self._get_default_command('priv_prompt')
+        unpriv_prompt = self._get_default_command('unpriv_prompt')
+        self._base_pattern = r"\({0}\) (\(.*?\))?[{1}|{2}]".format(re.escape(self.base_prompt), re.escape(priv_prompt),
+                                                                   re.escape(unpriv_prompt))
         logging.debug("Base Prompt is {0}".format(self.base_prompt))
         logging.debug("Base Pattern is {0}".format(self._base_pattern))
         return self.base_prompt
-
-    async def _config_mode(self, config_command='config', exit_config_mode=True):
-        """Enter configuration mode."""
-        return await super(FujitsuSwitchSSH, self)._config_mode(config_command=config_command)
 
     @staticmethod
     def _normalize_linefeeds(a_string):
@@ -58,3 +47,24 @@ class FujitsuSwitchSSH(NetDevSSH):
         """
         newline = re.compile(r'(\r\r\n|\r\n|\n\r)')
         return newline.sub('\n', a_string).replace('\n\n', '\n')
+
+    def _get_default_command(self, command):
+        """
+        Returning default commands for device
+
+        :param command: command for returning
+        :return: real command for this network device
+        """
+        # @formatter:off
+        command_mapper = {
+            'priv_prompt': '#',
+            'unpriv_prompt': '>',
+            'disable_paging': 'no pager',
+            'priv_enter': 'enable',
+            'priv_exit': 'disable',
+            'config_enter': 'conf',
+            'config_exit': 'end',
+            'check_config_mode': ')#'
+        }
+        # @formatter:on
+        return command_mapper[command]

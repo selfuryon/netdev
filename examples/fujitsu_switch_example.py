@@ -15,6 +15,9 @@ async def task(param):
     await fuj.connect()
     out = await fuj.send_config_set(['vlan database', 'exit'])
     print(out)
+    out = await fuj.send_command('show ver')
+    print(out)
+    await fuj.disconnect()
 
 
 async def run():

@@ -1,9 +1,9 @@
 import re
 
-from netdev.netdev_base import NetDevSSH
+from netdev.netdev_base import NetDev
 
 
-class CiscoNxosSSH(NetDevSSH):
+class CiscoNxos(NetDev):
     @staticmethod
     def _normalize_linefeeds(a_string):
         """

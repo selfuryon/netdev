@@ -7,21 +7,19 @@ import netdev
 
 config_path = 'config.yaml'
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.WARN, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 async def task(param):
     asa = netdev.connect(**param)
     await asa.connect()
     print(asa.current_context)
-    await asa.send_command("changeto context inet")
-    print(asa.current_context)
-    await asa.send_command("changeto context wan")
-    print(asa.current_context)
-    await asa.send_command("changeto system")
-    print(asa.current_context)
-    await asa.send_command("changeto context admin")
-    print(asa.current_context)
+    out = await asa.send_command('show run | i hostname', strip_command=False)
+    print(out)
+    commands = ["policy-map global_policy", "exit"]
+    out = await asa.send_config_set(commands)
+    print(out)
+    await asa.disconnect()
 
 
 async def run():
