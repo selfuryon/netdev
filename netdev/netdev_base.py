@@ -13,7 +13,7 @@ import netdev.exceptions
 import asyncssh
 
 
-class NetDevSSH(object):
+class NetDev(object):
     """
     Base Class for working with network devices
 

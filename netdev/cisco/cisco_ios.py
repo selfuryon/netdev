@@ -1,7 +1,7 @@
-from netdev.netdev_base import NetDevSSH
+from netdev.netdev_base import NetDev
 
 
-class CiscoIosSSH(NetDevSSH):
+class CiscoIos(NetDev):
     """
     Subclass specific fo Cisco IOS/IOS XE
     """

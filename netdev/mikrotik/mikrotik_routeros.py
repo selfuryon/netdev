@@ -3,10 +3,10 @@ import logging
 import asyncssh
 
 import netdev.exceptions
-from netdev.netdev_base import NetDevSSH
+from netdev.netdev_base import NetDev
 
 
-class MikrotikRouterOSSSH(NetDevSSH):
+class MikrotikRouterOSSSH(NetDev):
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
                  local_addr=None, client_keys=None, passphrase=None):
         """

@@ -1,10 +1,10 @@
 import logging
 import re
 
-from netdev.netdev_base import NetDevSSH
+from netdev.netdev_base import NetDev
 
 
-class FujitsuSwitchSSH(NetDevSSH):
+class FujitsuSwitch(NetDev):
     async def connect(self):
         """
         Async Connection method
@@ -49,7 +49,7 @@ class FujitsuSwitchSSH(NetDevSSH):
 
     async def _config_mode(self, config_command='config', exit_config_mode=True):
         """Enter configuration mode."""
-        return await super(FujitsuSwitchSSH, self)._config_mode(config_command=config_command)
+        return await super(FujitsuSwitch, self)._config_mode(config_command=config_command)
 
     @staticmethod
     def _normalize_linefeeds(a_string):

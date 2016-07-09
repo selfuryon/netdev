@@ -3,10 +3,10 @@
 import logging
 import re
 
-from netdev.netdev_base import NetDevSSH
+from netdev.netdev_base import NetDev
 
 
-class CiscoAsaSSH(NetDevSSH):
+class CiscoAsa(NetDev):
     """Subclass specific to Cisco ASA."""
 
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
@@ -38,7 +38,7 @@ class CiscoAsaSSH(NetDevSSH):
         If the ASA is in multi-context mode, then the base_prompt needs to be
         updated after each context change.
         """
-        output = await super(CiscoAsaSSH, self).send_command(command_string, strip_prompt, strip_command)
+        output = await super(CiscoAsa, self).send_command(command_string, strip_prompt, strip_command)
         if "changet" in command_string:
             await self._set_base_prompt()
         return output
