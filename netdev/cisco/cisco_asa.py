@@ -38,7 +38,8 @@ class CiscoAsa(NetDev):
         If the ASA is in multi-context mode, then the base_prompt needs to be
         updated after each context change.
         """
-        output = await super(CiscoAsa, self).send_command(command_string, strip_prompt, strip_command)
+        output = await super(CiscoAsa, self).send_command(command_string=command_string, strip_prompt=strip_prompt,
+                                                          strip_command=strip_command)
         if "changet" in command_string:
             await self._set_base_prompt()
         return output
