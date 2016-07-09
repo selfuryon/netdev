@@ -31,6 +31,7 @@ class TestCisco(unittest.TestCase):
             await fuj.connect()
             out = await fuj.send_command('show run | i snmp')
             self.assertIn("snmp", out)
+            await fuj.disconnect()
 
         async def run():
             tasks = []
@@ -50,6 +51,7 @@ class TestCisco(unittest.TestCase):
             for cmd in commands:
                 out = await fuj.send_command(cmd, strip_command=False)
                 self.assertIn(cmd, out)
+            await fuj.disconnect()
 
         async def run():
             tasks = []
@@ -69,6 +71,7 @@ class TestCisco(unittest.TestCase):
             out = await fuj.send_config_set(commands)
             self.assertIn("vlan database", out)
             self.assertIn("exit", out)
+            await fuj.disconnect()
 
         async def run():
             tasks = []

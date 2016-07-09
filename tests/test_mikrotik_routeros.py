@@ -31,6 +31,7 @@ class TestCisco(unittest.TestCase):
             await mik.connect()
             out = await mik.send_command('/system identity print')
             self.assertIn(mik.base_prompt, out)
+            await mik.disconnect()
 
         async def run():
             tasks = []
@@ -50,6 +51,7 @@ class TestCisco(unittest.TestCase):
             for cmd in commands:
                 out = await mik.send_command(cmd, strip_command=False)
                 self.assertIn(cmd, out)
+            await mik.disconnect()
 
         async def run():
             tasks = []

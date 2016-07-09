@@ -31,6 +31,7 @@ class TestCisco(unittest.TestCase):
             await hp.connect()
             out = await hp.send_command('display cur | i sysname')
             self.assertIn("sysname", out)
+            await hp.disconnect()
 
         async def run():
             tasks = []
@@ -50,6 +51,7 @@ class TestCisco(unittest.TestCase):
             for cmd in commands:
                 out = await hp.send_command(cmd, strip_command=False)
                 self.assertIn(cmd, out)
+            await hp.disconnect()
 
         async def run():
             tasks = []
@@ -65,10 +67,11 @@ class TestCisco(unittest.TestCase):
         async def task(param):
             hp = netdev.connect(**param)
             await hp.connect()
-            commands = ["interface Vlan-interface1", "quit"]
+            commands = ["vlan 1", "quit"]
             out = await hp.send_config_set(commands)
-            self.assertIn("interface Vlan-interface1", out)
+            self.assertIn("vlan 1", out)
             self.assertIn("quit", out)
+            await hp.disconnect()
 
         async def run():
             tasks = []
