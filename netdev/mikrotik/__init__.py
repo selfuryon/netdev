@@ -1,3 +1,3 @@
-from netdev.mikrotik.mikrotik_routeros import MikrotikRouterOSSSH
+from netdev.mikrotik.mikrotik_routeros import MikrotikRouterOS
 
-__all__ = ['MikrotikRouterOSSSH']
+__all__ = ['MikrotikRouterOS']
