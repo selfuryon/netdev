@@ -8,9 +8,10 @@ Default params are used for Cisco
 
 import logging
 import re
-import netdev.exceptions
 
 import asyncssh
+
+import netdev.exceptions
 
 
 class NetDev(object):
@@ -143,8 +144,7 @@ class NetDev(object):
         self.base_prompt = prompt[:-1]
         priv_prompt = self._get_default_command('priv_prompt')
         unpriv_prompt = self._get_default_command('unpriv_prompt')
-        self._base_pattern = r"{0}(\(.*?\))?[{1}|{2}]".format(re.escape(self.base_prompt), re.escape(priv_prompt),
-                                                              re.escape(unpriv_prompt))
+        self._base_pattern = r"\w+(\(.*?\))?[{}|{}]".format(re.escape(priv_prompt), re.escape(unpriv_prompt))
         logging.debug("Base Prompt is {0}".format(self.base_prompt))
         logging.debug("Base Pattern is {0}".format(self._base_pattern))
         return self.base_prompt
