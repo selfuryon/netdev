@@ -78,14 +78,6 @@ class NetDev(object):
         # @formatter:on
         return command_mapper[command]
 
-    @property
-    def _priv_prompt_term(self):
-        return '#'
-
-    @property
-    def _unpriv_prompt_term(self):
-        return '>'
-
     async def connect(self):
         """
         Async Connection method
@@ -149,7 +141,7 @@ class NetDev(object):
         logging.debug("Base Pattern is {0}".format(self._base_pattern))
         return self.base_prompt
 
-    async def _disable_paging(self, command='terminal length 0'):
+    async def _disable_paging(self):
         """
         Disable paging method
         """
@@ -284,14 +276,14 @@ class NetDev(object):
         command += '\n'
         return command
 
-    async def _check_enable_mode(self, check_string='#'):
+    async def _check_enable_mode(self):
         """Check if in enable mode. Return boolean."""
         check_string = self._get_default_command('priv_prompt')
         self._stdin.write(self._normalize_cmd('\n'))
         output = await self._read_until_prompt()
         return check_string in output
 
-    async def _enable(self, enable_command='enable', pattern='password', re_flags=re.IGNORECASE):
+    async def _enable(self, pattern='password', re_flags=re.IGNORECASE):
         """Enter enable mode."""
         output = ""
         enable_command = self._get_default_command('priv_enter')
@@ -304,7 +296,7 @@ class NetDev(object):
                 raise ValueError("Failed to enter enable mode.")
         return output
 
-    async def _exit_enable_mode(self, exit_enable='disable'):
+    async def _exit_enable_mode(self):
         """Exit enable mode."""
         output = ""
         exit_enable = self._get_default_command('priv_exit')
@@ -315,7 +307,7 @@ class NetDev(object):
                 raise ValueError("Failed to exit enable mode.")
         return output
 
-    async def _check_config_mode(self, check_string=')#', pattern=''):
+    async def _check_config_mode(self, pattern=''):
         """Checks if the device is in configuration mode or not."""
         logging.debug('In check_config_mode')
         check_string = self._get_default_command('check_config_mode')
@@ -325,7 +317,7 @@ class NetDev(object):
         output = await self._read_until_pattern(pattern=pattern)
         return check_string in output
 
-    async def _config_mode(self, config_command='config term', pattern=''):
+    async def _config_mode(self, pattern=''):
         """Enter into config_mode."""
         output = ''
         config_command = self._get_default_command('config_enter')
@@ -338,7 +330,7 @@ class NetDev(object):
                 raise ValueError("Failed to enter configuration mode.")
         return output
 
-    async def _exit_config_mode(self, exit_config='end', pattern=''):
+    async def _exit_config_mode(self, pattern=''):
         """Exit from configuration mode."""
         output = ''
         exit_config = self._get_default_command('config_exit')
