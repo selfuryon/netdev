@@ -69,7 +69,7 @@ class NetDev(object):
             'unpriv_prompt': '>',
             'disable_paging': 'terminal length 0',
             'priv_enter': 'enable',
-            'priv_exit': 'enable',
+            'priv_exit': 'disable',
             'config_enter': 'conf t',
             'config_exit': 'end',
             'check_config_mode': ')#'
