@@ -98,9 +98,16 @@ class NetDev(object):
         """
         Convert needed connect params to a dictionary for simplicity
         """
-        return {'host': self._host, 'port': self._port, 'username': self._username, 'password': self._password,
-                'known_hosts': self._known_hosts, 'local_addr': self._local_addr, 'client_keys': self._client_keys,
+        # @formatter:off
+        return {'host': self._host,
+                'port': self._port,
+                'username': self._username,
+                'password': self._password,
+                'known_hosts': self._known_hosts,
+                'local_addr': self._local_addr,
+                'client_keys': self._client_keys,
                 'passphrase': self._passphrase}
+        # @formatter:on
 
     async def _establish_connection(self):
         """
@@ -133,7 +140,7 @@ class NetDev(object):
         logging.info("In set_base_prompt")
         prompt = await self._find_prompt()
         # Strip off trailing terminator
-        self.base_prompt = prompt[:-1]
+        self.base_prompt = self._extract_prompt(prompt)
         priv_prompt = self._get_default_command('priv_prompt')
         unpriv_prompt = self._get_default_command('unpriv_prompt')
         self._base_pattern = r"\w+(\(.*?\))?[{}|{}]".format(re.escape(priv_prompt), re.escape(unpriv_prompt))

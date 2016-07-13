@@ -39,14 +39,6 @@ class MikrotikRouterOS(NetDev):
         await self._establish_connection()
         await self._set_base_prompt()
 
-    @property
-    def _priv_prompt_term(self):
-        return '>'
-
-    @property
-    def _unpriv_prompt_term(self):
-        return self._priv_prompt_term
-
     async def _establish_connection(self):
         """
         Need change the read until prompt not pattern with priv or unpriv terminators
