@@ -73,7 +73,7 @@ class NetDev(object):
             'priv_exit': 'disable',
             'config_enter': 'conf t',
             'config_exit': 'end',
-            'check_config_mode': ')#'
+            'check_config_mode': ')#',
         }
         # @formatter:on
         return command_mapper[command]
@@ -441,7 +441,6 @@ class NetDev(object):
     async def _cleanup(self):
         """ Any needed cleanup before closing connection """
         await self._exit_config_mode()
-        self._stdin.write(self._normalize_cmd("exit"))
 
     async def disconnect(self):
         """ Gracefully close the SSH connection """

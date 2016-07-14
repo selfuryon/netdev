@@ -120,3 +120,7 @@ class MikrotikRouterOS(NetDev):
         }
         # @formatter:on
         return command_mapper[command]
+
+    async def _cleanup(self):
+        """ Don't need anything """
+        pass
