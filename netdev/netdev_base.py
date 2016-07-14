@@ -140,7 +140,7 @@ class NetDev(object):
         logging.info("In set_base_prompt")
         prompt = await self._find_prompt()
         # Strip off trailing terminator
-        self.base_prompt = self._extract_prompt(prompt)
+        self.base_prompt = prompt[:-1]
         priv_prompt = self._get_default_command('priv_prompt')
         unpriv_prompt = self._get_default_command('unpriv_prompt')
         self._base_pattern = r"\w+(\(.*?\))?[{}|{}]".format(re.escape(priv_prompt), re.escape(unpriv_prompt))
