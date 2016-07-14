@@ -18,6 +18,8 @@ async def task(param):
     commands = ["Vlan 1", "quit"]
     out = await hp.send_config_set(commands)
     print(out)
+    out = await hp.send_command('display cur')
+    print(out)
     await hp.disconnect()
 
 
