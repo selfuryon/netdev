@@ -7,17 +7,14 @@ import netdev
 
 config_path = 'config.yaml'
 
-logging.basicConfig(level=logging.WARN, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 async def task(param):
     asa = netdev.connect(**param)
     await asa.connect()
-    print(asa.current_context)
-    out = await asa.send_command('show run | i hostname', strip_command=False)
-    print(out)
-    commands = ["policy-map global_policy", "exit"]
-    out = await asa.send_config_set(commands)
+    # print(asa.current_context)
+    out = await asa.send_command('show run', strip_command=True)
     print(out)
     await asa.disconnect()
 

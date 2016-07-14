@@ -18,6 +18,8 @@ async def task(param):
     commands = ["line console 0", "exit"]
     out = await ios.send_config_set(commands)
     print(out)
+    out = await ios.send_command("show run")
+    print(out)
     await ios.disconnect()
 
 
