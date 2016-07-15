@@ -22,13 +22,13 @@ class TestCisco(unittest.TestCase):
         self.loop = asyncio.new_event_loop()
         self.loop.set_debug(False)
         asyncio.set_event_loop(self.loop)
+        self.devices = self.load_credits()
+        self.assertFalse(len(self.devices) == 0)
 
     def test_show_run_hostname(self):
-        params = self.load_credits()
-
         async def task():
-            for param in params:
-                ios = netdev.connect(**param)
+            for dev in self.devices:
+                ios = netdev.connect(**dev)
                 await ios.connect()
                 out = await ios.send_command('show run | i hostname')
                 self.assertIn("hostname", out)
@@ -37,11 +37,9 @@ class TestCisco(unittest.TestCase):
         self.loop.run_until_complete(task())
 
     def test_show_several_commands(self):
-        params = self.load_credits()
-
         async def task():
-            for param in params:
-                ios = netdev.connect(**param)
+            for dev in self.devices:
+                ios = netdev.connect(**dev)
                 await ios.connect()
                 commands = ["dir", "show ver", "show run", "show ssh"]
                 for cmd in commands:
@@ -52,11 +50,9 @@ class TestCisco(unittest.TestCase):
         self.loop.run_until_complete(task())
 
     def test_config_set(self):
-        params = self.load_credits()
-
         async def task():
-            for param in params:
-                ios = netdev.connect(**param)
+            for dev in self.devices:
+                ios = netdev.connect(**dev)
                 await ios.connect()
                 commands = ["line con 0", "exit"]
                 out = await ios.send_config_set(commands)
@@ -67,11 +63,9 @@ class TestCisco(unittest.TestCase):
         self.loop.run_until_complete(task())
 
     def test_base_prompt(self):
-        params = self.load_credits()
-
         async def task():
-            for param in params:
-                ios = netdev.connect(**param)
+            for dev in self.devices:
+                ios = netdev.connect(**dev)
                 await ios.connect()
                 out = await ios.send_command('sh run | i hostname')
                 self.assertIn(ios.base_prompt, out)

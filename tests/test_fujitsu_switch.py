@@ -22,13 +22,13 @@ class TestCisco(unittest.TestCase):
         self.loop = asyncio.new_event_loop()
         self.loop.set_debug(False)
         asyncio.set_event_loop(self.loop)
+        self.devices = self.load_credits()
+        self.assertFalse(len(self.devices) == 0)
 
     def test_show_run_hostname(self):
-        params = self.load_credits()
-
         async def task():
-            for param in params:
-                fuj = netdev.connect(**param)
+            for dev in self.devices:
+                fuj = netdev.connect(**dev)
                 await fuj.connect()
                 out = await fuj.send_command('show run | i snmp')
                 self.assertIn("snmp", out)
@@ -37,11 +37,9 @@ class TestCisco(unittest.TestCase):
         self.loop.run_until_complete(task())
 
     def test_show_several_commands(self):
-        params = self.load_credits()
-
         async def task():
-            for param in params:
-                fuj = netdev.connect(**param)
+            for dev in self.devices:
+                fuj = netdev.connect(**dev)
                 await fuj.connect()
                 commands = ["dir", "show ver", "show run", "show ssh"]
                 for cmd in commands:
@@ -52,11 +50,9 @@ class TestCisco(unittest.TestCase):
         self.loop.run_until_complete(task())
 
     def test_config_set(self):
-        params = self.load_credits()
-
         async def task():
-            for param in params:
-                fuj = netdev.connect(**param)
+            for dev in self.devices:
+                fuj = netdev.connect(**dev)
                 await fuj.connect()
                 commands = ["vlan database", "exit"]
                 out = await fuj.send_config_set(commands)
@@ -67,11 +63,9 @@ class TestCisco(unittest.TestCase):
         self.loop.run_until_complete(task())
 
     def test_base_prompt(self):
-        params = self.load_credits()
-
         async def task():
-            for param in params:
-                fuj = netdev.connect(**param)
+            for dev in self.devices:
+                fuj = netdev.connect(**dev)
                 await fuj.connect()
                 out = await fuj.send_command("sh run | i 'switch '")
                 self.assertIn(fuj.base_prompt, out)
