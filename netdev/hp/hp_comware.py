@@ -14,9 +14,11 @@ class HPComware(NetDev):
             set_base_prompt() for finding and setting device prompt
             disable_paging() for non interact output in commands
         """
+        logger.info("Connecting to device")
         await self._establish_connection()
         await self._set_base_prompt()
         await self._disable_paging()
+        logger.info("Connected to device")
 
     async def _set_base_prompt(self):
         """
@@ -26,7 +28,7 @@ class HPComware(NetDev):
 
         For Comware devices base_pattern is "[\]|>]prompt(\-\w+)?[\]|>]
         """
-        logger.info("In set_base_prompt")
+        logger.info("Setting base prompt")
         prompt = await self._find_prompt()
         # Strip off trailing terminator
         self.base_prompt = prompt[1:-1]
@@ -34,8 +36,8 @@ class HPComware(NetDev):
         unpriv_prompt = self._get_default_command('unpriv_prompt')
         self._base_pattern = r"[\[|<]{}[\-\w]*[{}|{}]".format(re.escape(self.base_prompt[:12]), re.escape(priv_prompt),
                                                               re.escape(unpriv_prompt))
-        logger.debug("Base Prompt is {0}".format(self.base_prompt))
-        logger.debug("Base Pattern is {0}".format(self._base_pattern))
+        logger.debug("Base Prompt: {}".format(self.base_prompt))
+        logger.debug("Base Pattern: {}".format(self._base_pattern))
         return self.base_prompt
 
     def _get_default_command(self, command):

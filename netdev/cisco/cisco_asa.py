@@ -15,7 +15,7 @@ class CiscoAsa(NetDev):
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
                          client_keys=client_keys, passphrase=passphrase)
         self.current_context = 'system'
-        self.mode_multiple = False
+        self.multiple_mode = False
 
     async def connect(self):
         """
@@ -27,11 +27,13 @@ class CiscoAsa(NetDev):
             enable() for getting privilege exec mode
             disable_paging() for non interact output in commands
         """
+        logger.info("Connecting to device")
         await self._establish_connection()
         await self._set_base_prompt()
         await self._enable()
         await self._disable_paging()
-        await self._check_context()
+        await self._check_multiple_mode()
+        logger.info("Connected to device")
 
     async def send_command(self, command_string, strip_prompt=True, strip_command=True):
         """
@@ -53,7 +55,7 @@ class CiscoAsa(NetDev):
 
         For ASA devices base_pattern is "prompt(\/\w+)?(\(.*?\))?[#|>]
         """
-        logger.info("In set_base_prompt")
+        logger.info("Setting base prompt")
         prompt = await self._find_prompt()
         context = 'system'
         # Cut off prompt from "prompt/context"
@@ -67,21 +69,21 @@ class CiscoAsa(NetDev):
         unpriv_prompt = self._get_default_command('unpriv_prompt')
         self._base_pattern = r"{}.*(\/\w+)?(\(.*?\))?[{}|{}]".format(re.escape(self.base_prompt[:12]),
                                                                      re.escape(priv_prompt), re.escape(unpriv_prompt))
-        logger.debug("Base Prompt is {0}".format(self.base_prompt))
-        logger.debug("Base Pattern is {0}".format(self._base_pattern))
-        logger.debug("Current Context is {0}".format(self.current_context))
+        logger.debug("Base Prompt: {}".format(self.base_prompt))
+        logger.debug("Base Pattern: {}".format(self._base_pattern))
+        logger.debug("Current Context: {}".format(self.current_context))
         return self.base_prompt
 
-    async def _check_context(self):
+    async def _check_multiple_mode(self):
         """
         Check mode multiple. If mode is multiple we adding info about contexts
         """
-        logger.info("In check_context")
+        logger.info("Checking multiple mode")
         out = await self.send_command('show mode')
         if 'multiple' in out:
-            self.mode_multiple = True
+            self.multiple_mode = True
 
-        logger.debug("context mode is {}".format(self.mode_multiple))
+        logger.debug("Multiple mode: {}".format(self.multiple_mode))
 
     def _get_default_command(self, command):
         """

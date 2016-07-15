@@ -180,7 +180,7 @@ class NetDev(object):
         if self._ansi_escape_codes:
             prompt = self._strip_ansi_escape_codes(prompt)
         if not prompt:
-            logger.error("Can't find prompt")
+            logger.error("Unable to find prompt: {0}".format(prompt))
             raise ValueError("Unable to find prompt: {0}".format(prompt))
         logger.debug("Prompt: {0}".format(prompt))
         return prompt
