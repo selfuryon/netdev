@@ -65,8 +65,8 @@ class CiscoAsa(NetDev):
         self.current_context = context
         priv_prompt = self._get_default_command('priv_prompt')
         unpriv_prompt = self._get_default_command('unpriv_prompt')
-        self._base_pattern = r"{}(\/\w+)?(\(.*?\))?[{}|{}]".format(re.escape(self.base_prompt), re.escape(priv_prompt),
-                                                                   re.escape(unpriv_prompt))
+        self._base_pattern = r"{}.*(\/\w+)?(\(.*?\))?[{}|{}]".format(re.escape(self.base_prompt[:12]),
+                                                                     re.escape(priv_prompt), re.escape(unpriv_prompt))
         logging.debug("Base Prompt is {0}".format(self.base_prompt))
         logging.debug("Base Pattern is {0}".format(self._base_pattern))
         logging.debug("Current Context is {0}".format(self.current_context))

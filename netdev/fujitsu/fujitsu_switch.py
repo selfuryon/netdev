@@ -34,7 +34,8 @@ class FujitsuSwitch(NetDev):
         self.base_prompt = prompt[1:-3]
         priv_prompt = self._get_default_command('priv_prompt')
         unpriv_prompt = self._get_default_command('unpriv_prompt')
-        self._base_pattern = r"\(.*?\) (\(.*?\))?[{}|{}]".format(re.escape(priv_prompt), re.escape(unpriv_prompt))
+        self._base_pattern = r"\({}.*?\) (\(.*?\))?[{}|{}]".format(re.escape(self.base_prompt[:12]),
+                                                                   re.escape(priv_prompt), re.escape(unpriv_prompt))
         logging.debug("Base Prompt is {0}".format(self.base_prompt))
         logging.debug("Base Pattern is {0}".format(self._base_pattern))
         return self.base_prompt
