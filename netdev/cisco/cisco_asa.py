@@ -1,8 +1,8 @@
 """Subclass specific to Cisco ASA."""
 
-import logging
 import re
 
+from netdev.logger import logger
 from netdev.netdev_base import NetDev
 
 
@@ -53,7 +53,7 @@ class CiscoAsa(NetDev):
 
         For ASA devices base_pattern is "prompt(\/\w+)?(\(.*?\))?[#|>]
         """
-        logging.info("In set_base_prompt")
+        logger.info("In set_base_prompt")
         prompt = await self._find_prompt()
         context = 'system'
         # Cut off prompt from "prompt/context"
@@ -67,21 +67,21 @@ class CiscoAsa(NetDev):
         unpriv_prompt = self._get_default_command('unpriv_prompt')
         self._base_pattern = r"{}.*(\/\w+)?(\(.*?\))?[{}|{}]".format(re.escape(self.base_prompt[:12]),
                                                                      re.escape(priv_prompt), re.escape(unpriv_prompt))
-        logging.debug("Base Prompt is {0}".format(self.base_prompt))
-        logging.debug("Base Pattern is {0}".format(self._base_pattern))
-        logging.debug("Current Context is {0}".format(self.current_context))
+        logger.debug("Base Prompt is {0}".format(self.base_prompt))
+        logger.debug("Base Pattern is {0}".format(self._base_pattern))
+        logger.debug("Current Context is {0}".format(self.current_context))
         return self.base_prompt
 
     async def _check_context(self):
         """
         Check mode multiple. If mode is multiple we adding info about contexts
         """
-        logging.info("In check_context")
+        logger.info("In check_context")
         out = await self.send_command('show mode')
         if 'multiple' in out:
             self.mode_multiple = True
 
-        logging.debug("context mode is {}".format(self.mode_multiple))
+        logger.debug("context mode is {}".format(self.mode_multiple))
 
     def _get_default_command(self, command):
         """

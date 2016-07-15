@@ -6,12 +6,12 @@ Default params are used for Cisco
 
 """
 
-import logging
 import re
 
 import asyncssh
 
 import netdev.exceptions
+from netdev.logger import logger
 
 
 class NetDev(object):
@@ -27,8 +27,8 @@ class NetDev(object):
         Initialize base class for async working with network devices
 
         :param host: hostname or ip address for connection
-        :param username: username for logging to device
-        :param password: password for user for logging to device
+        :param username: username for logger to device
+        :param password: password for user for logger to device
         :param secret: secret password for privilege mode
         :param port: ssh port for connection. Default is 22
         :param device_type: network device type. This is subclasses of this class
@@ -118,15 +118,15 @@ class NetDev(object):
         try:
             self._conn = await asyncssh.connect(**self._connect_params_dict)
         except asyncssh.DisconnectError as e:
-            logging.debug("Catch asyncssh disconnect error. Code:{0}. Reason:{1}".format(e.code, e.reason))
+            logger.debug("Catch asyncssh disconnect error. Code:{0}. Reason:{1}".format(e.code, e.reason))
             raise netdev.DisconnectError(self._host, e.code, e.reason)
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb')
         # Flush unnecessary data
         priv_prompt = self._get_default_command('priv_prompt')
         unpriv_prompt = self._get_default_command('unpriv_prompt')
         output = await self._read_until_pattern(r"{0}|{1}".format(re.escape(priv_prompt), re.escape(unpriv_prompt)))
-        logging.info("Start Connection to {0}:{1}".format(self._host, self._port))
-        logging.debug("Establish Connection Output: {0}".format(output))
+        logger.info("Start Connection to {0}:{1}".format(self._host, self._port))
+        logger.debug("Establish Connection Output: {0}".format(output))
         return output
 
     async def _set_base_prompt(self):
@@ -137,7 +137,7 @@ class NetDev(object):
 
         For Cisco devices base_pattern is "prompt(\(.*?\))?[#|>]
         """
-        logging.info("In set_base_prompt")
+        logger.info("In set_base_prompt")
         prompt = await self._find_prompt()
         # Strip off trailing terminator
         self.base_prompt = prompt[:-1]
@@ -145,8 +145,8 @@ class NetDev(object):
         unpriv_prompt = self._get_default_command('unpriv_prompt')
         self._base_pattern = r"{}.*?(\(.*?\))?[{}|{}]".format(re.escape(self.base_prompt[:12]), re.escape(priv_prompt),
                                                               re.escape(unpriv_prompt))
-        logging.debug("Base Prompt is {0}".format(self.base_prompt))
-        logging.debug("Base Pattern is {0}".format(self._base_pattern))
+        logger.debug("Base Prompt is {0}".format(self.base_prompt))
+        logger.debug("Base Pattern is {0}".format(self._base_pattern))
         return self.base_prompt
 
     async def _disable_paging(self):
@@ -155,18 +155,18 @@ class NetDev(object):
         """
         command = self._get_default_command('disable_paging')
         command = self._normalize_cmd(command)
-        logging.info("In disable_paging")
-        logging.debug("Command: {}".format(command))
+        logger.info("In disable_paging")
+        logger.debug("Command: {}".format(command))
         self._stdin.write(command)
         output = await self._read_until_prompt()
-        logging.debug("Output: {}".format(output))
+        logger.debug("Output: {}".format(output))
         if self._ansi_escape_codes:
             output = self._strip_ansi_escape_codes(output)
         return output
 
     async def _find_prompt(self):
         """Finds the current network device prompt, last line only."""
-        logging.info("In find_prompt")
+        logger.info("In find_prompt")
         self._stdin.write(self._normalize_cmd("\n"))
         prompt = ''
         priv_prompt = self._get_default_command('priv_prompt')
@@ -177,7 +177,7 @@ class NetDev(object):
             prompt = self._strip_ansi_escape_codes(prompt)
         if not prompt:
             raise ValueError("Unable to find prompt: {0}".format(prompt))
-        logging.debug("Prompt is {0}".format(prompt))
+        logger.debug("Prompt is {0}".format(prompt))
         return prompt
 
     async def send_command(self, command_string, strip_command=True, strip_prompt=True):
@@ -186,10 +186,10 @@ class NetDev(object):
 
         Returns the output of the command.
         """
-        logging.info('In send_command')
+        logger.info('In send_command')
         output = ''
         command_string = self._normalize_cmd(command_string)
-        logging.debug("Command is: {0}".format(command_string))
+        logger.debug("Command is: {0}".format(command_string))
         self._stdin.write(command_string)
         output = await self._read_until_prompt()
 
@@ -202,7 +202,7 @@ class NetDev(object):
         if strip_command:
             output = self._strip_command(command_string, output)
 
-        logging.debug("Output is: {0}".format(output))
+        logger.debug("Output is: {0}".format(output))
         return output
 
     def _strip_prompt(self, a_string):
@@ -223,27 +223,27 @@ class NetDev(object):
     async def _read_until_pattern(self, pattern='', re_flags=0):
         """Read channel until pattern detected. Return ALL data available."""
         output = ''
-        logging.info("In read_until_pattern")
+        logger.info("In read_until_pattern")
         if not pattern:
             pattern = self._base_pattern
-        logging.debug("Pattern is: {}".format(pattern))
+        logger.debug("Pattern is: {}".format(pattern))
         while True:
             output += await self._stdout.read(self._MAX_BUFFER)
             if re.search(pattern, output, flags=re_flags):
-                logging.debug("Pattern '{0}' found: {1}".format(pattern, output))
+                logger.debug("Pattern '{0}' found: {1}".format(pattern, output))
                 return output
 
     async def _read_until_prompt_or_pattern(self, pattern='', re_flags=0):
         """Read until either self.base_pattern or pattern is detected. Return ALL data available."""
         output = ''
-        logging.info("In read_until_prompt_or_pattern")
+        logger.info("In read_until_prompt_or_pattern")
         if not pattern:
             pattern = self._base_pattern
         base_prompt_pattern = self._base_pattern
         while True:
             output += await self._stdout.read(self._MAX_BUFFER)
             if re.search(pattern, output, flags=re_flags) or re.search(base_prompt_pattern, output, flags=re_flags):
-                logging.debug("Pattern '{0}' or '{1}' Found: {2}".format(pattern, base_prompt_pattern, output))
+                logger.debug("Pattern '{0}' or '{1}' Found: {2}".format(pattern, base_prompt_pattern, output))
                 return output
 
     @staticmethod
@@ -317,7 +317,7 @@ class NetDev(object):
 
     async def _check_config_mode(self, pattern=''):
         """Checks if the device is in configuration mode or not."""
-        logging.debug('In check_config_mode')
+        logger.debug('In check_config_mode')
         check_string = self._get_default_command('check_config_mode')
         if not pattern:
             pattern = self._base_pattern
@@ -360,7 +360,7 @@ class NetDev(object):
 
         Automatically exits/enters configuration mode.
         """
-        logging.info("In send_config_set")
+        logger.info("In send_config_set")
         if config_commands is None:
             return ''
         if not hasattr(config_commands, '__iter__'):
@@ -368,7 +368,7 @@ class NetDev(object):
 
         # Send config commands
         output = await self._config_mode()
-        logging.debug("Config commands are: {0}".format(config_commands))
+        logger.debug("Config commands are: {0}".format(config_commands))
         for cmd in config_commands:
             self._stdin.write(self._normalize_cmd(cmd))
             output += await self._read_until_prompt()
@@ -377,7 +377,7 @@ class NetDev(object):
             output += await self._exit_config_mode()
 
         output = self._normalize_linefeeds(output)
-        logging.debug("Output is {0}".format(output))
+        logger.debug("Output is {0}".format(output))
         return output
 
     @staticmethod
@@ -409,8 +409,8 @@ class NetDev(object):
             F5 LTM's
             Mikrotik
         """
-        logging.info("In strip_ansi_escape_codes")
-        logging.debug("repr = {0}".format(repr(string_buffer)))
+        logger.info("In strip_ansi_escape_codes")
+        logger.debug("repr = {0}".format(repr(string_buffer)))
 
         code_save_cursor = chr(27) + r'7'
         code_scroll_screen = chr(27) + r'\[r'
@@ -434,8 +434,8 @@ class NetDev(object):
         # CODE_NEXT_LINE must substitute with '\n'
         output = re.sub(code_next_line, '\n', output)
 
-        logging.debug('new repr: {}'.format(repr(output)))
-        logging.debug('new output: {}'.format(output))
+        logger.debug('new repr: {}'.format(repr(output)))
+        logger.debug('new output: {}'.format(output))
 
         return output
 

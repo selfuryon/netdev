@@ -1,8 +1,7 @@
-import logging
-
 import asyncssh
 
 import netdev.exceptions
+from netdev.logger import logger
 from netdev.netdev_base import NetDev
 
 
@@ -48,14 +47,14 @@ class MikrotikRouterOS(NetDev):
         try:
             self._conn = await asyncssh.connect(**self._connect_params_dict)
         except asyncssh.DisconnectError as e:
-            logging.debug("Catch asyncssh disconnect error. Code:{0}. Reason:{1}".format(e.code, e.reason))
+            logger.debug("Catch asyncssh disconnect error. Code:{0}. Reason:{1}".format(e.code, e.reason))
             raise netdev.DisconnectError(self._host, e.code, e.reason)
 
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='dumb')
         # Flush unnecessary data
         output = await self._read_until_prompt()
-        logging.info("Start Connection to {0}:{1}".format(self._host, self._port))
-        logging.debug("Establish Connection Output: {0}".format(output))
+        logger.info("Start Connection to {0}:{1}".format(self._host, self._port))
+        logger.debug("Establish Connection Output: {0}".format(output))
         return output
 
     async def _set_base_prompt(self):
@@ -67,7 +66,7 @@ class MikrotikRouterOS(NetDev):
         For Mikrotik devices base_pattern is "<
         """
         self._base_pattern = r"\[.*?\] (\/.*?)?\>"
-        logging.info("In set_base_prompt")
+        logger.info("In set_base_prompt")
         prompt = await self._find_prompt()
         user = ''
         # Strip off trailing terminator
@@ -75,13 +74,13 @@ class MikrotikRouterOS(NetDev):
         if '@' in prompt:
             prompt = prompt.split('@')[1]
         self.base_prompt = prompt
-        logging.debug("Base Prompt is {0}".format(self.base_prompt))
-        logging.debug("Base Pattern is {0}".format(self._base_pattern))
+        logger.debug("Base Prompt is {0}".format(self.base_prompt))
+        logger.debug("Base Pattern is {0}".format(self._base_pattern))
         return self.base_prompt
 
     async def _find_prompt(self):
         """Finds the current network device prompt, last line only."""
-        logging.info("In find_prompt")
+        logger.info("In find_prompt")
         self._stdin.write("\r")
         prompt = ''
         prompt = await self._read_until_prompt()
@@ -90,7 +89,7 @@ class MikrotikRouterOS(NetDev):
             prompt = self._strip_ansi_escape_codes(prompt)
         if not prompt:
             raise ValueError("Unable to find prompt: {0}".format(prompt))
-        logging.debug("Prompt is {0}".format(prompt))
+        logger.debug("Prompt is {0}".format(prompt))
         return prompt
 
     @staticmethod
