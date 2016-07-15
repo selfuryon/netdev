@@ -1,5 +1,5 @@
-from netdev.cisco.cisco_asa_ssh import CiscoAsaSSH
-from netdev.cisco.cisco_ios_ssh import CiscoIosSSH
-from netdev.cisco.cisco_nxos_ssh import CiscoNxosSSH
+from netdev.cisco.cisco_asa import CiscoAsa
+from netdev.cisco.cisco_ios import CiscoIos
+from netdev.cisco.cisco_nxos import CiscoNxos
 
-__all__ = ['CiscoIosSSH', 'CiscoAsaSSH', 'CiscoNxosSSH']
+__all__ = ['CiscoIos', 'CiscoAsa', 'CiscoNxos']

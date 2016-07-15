@@ -11,16 +11,23 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 async def task(param):
-    ios = netdev.connect(**param)
-    await ios.connect()
-    out = await ios.send_command("show ssh")
+    hp = netdev.connect(**param)
+    await hp.connect()
+    out = await hp.send_command('display ver')
     print(out)
+    commands = ["Vlan 1", "quit"]
+    out = await hp.send_config_set(commands)
+    print(out)
+    out = await hp.send_command('display cur')
+    print(out)
+    await hp.disconnect()
+
 
 
 async def run():
     config = yaml.load(open(config_path, 'r'))
     devices = yaml.load(open(config['device_credentials'], 'r'))
-    params = [p for p in devices if p['device_type'] == 'cisco_ios']
+    params = [p for p in devices if p['device_type'] == 'hp_comware']
     tasks = []
     for param in params:
         tasks.append(task(param))

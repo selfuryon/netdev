@@ -11,17 +11,18 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 async def task(param):
-    asa = netdev.connect(**param)
-    await asa.connect()
-    commands = ["interface Management0/0", "exit"]
-    out = await asa.send_config_set(commands)
-    print(out)
+    routeros = netdev.connect(**param)
+    await routeros.connect()
+    commands = ['/ip address', 'print', '/']
+    for cmd in commands:
+        print(await routeros.send_command(cmd))
+    await routeros.disconnect()
 
 
 async def run():
     config = yaml.load(open(config_path, 'r'))
     devices = yaml.load(open(config['device_credentials'], 'r'))
-    params = [p for p in devices if p['device_type'] == 'cisco_asa']
+    params = [p for p in devices if p['device_type'] == 'mikrotik_routeros']
     tasks = []
     for param in params:
         tasks.append(task(param))

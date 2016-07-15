@@ -11,16 +11,22 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 async def task(param):
-    fuj = netdev.connect(**param)
-    await fuj.connect()
-    out = await fuj.send_config_set(['vlan database', 'exit'])
+    ios = netdev.connect(**param)
+    await ios.connect()
+    out = await ios.send_command("show ssh")
     print(out)
+    commands = ["line console 0", "exit"]
+    out = await ios.send_config_set(commands)
+    print(out)
+    out = await ios.send_command("show run")
+    print(out)
+    await ios.disconnect()
 
 
 async def run():
     config = yaml.load(open(config_path, 'r'))
     devices = yaml.load(open(config['device_credentials'], 'r'))
-    params = [p for p in devices if p['device_type'] == 'fujitsu_switch']
+    params = [p for p in devices if p['device_type'] == 'cisco_ios']
     tasks = []
     for param in params:
         tasks.append(task(param))

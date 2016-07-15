@@ -2,12 +2,13 @@ import logging
 
 import asyncssh
 
-from netdev.netdev_base import NetDevSSH
+import netdev.exceptions
+from netdev.netdev_base import NetDev
 
 
-class MikrotikRouterOSSSH(NetDevSSH):
-    def __init__(self, ip=u'', host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'',
-                 ssh_strict=False):
+class MikrotikRouterOS(NetDev):
+    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
+                 local_addr=None, client_keys=None, passphrase=None):
         """
         Invoke init with some special params (base_pattern and username)
 
@@ -18,8 +19,9 @@ class MikrotikRouterOSSSH(NetDevSSH):
         '+t' disable auto term capabilities detection
         '+80w' set terminal width to 80 rows
         """
-        super(MikrotikRouterOSSSH, self).__init__(ip=ip, host=host, username=username, password=password, secret=secret,
-                                                  port=port, device_type=device_type, ssh_strict=ssh_strict)
+        super(MikrotikRouterOS, self).__init__(host=host, username=username, password=password, secret=secret,
+                                               port=port, device_type=device_type, known_hosts=known_hosts,
+                                               local_addr=local_addr, client_keys=client_keys, passphrase=passphrase)
 
         self._base_pattern = r"\[.*?\] \>.*\[.*?\] \>"
         self._username += '+ct80w'
@@ -37,21 +39,18 @@ class MikrotikRouterOSSSH(NetDevSSH):
         await self._establish_connection()
         await self._set_base_prompt()
 
-    @property
-    def _priv_prompt_term(self):
-        return '>'
-
-    @property
-    def _unpriv_prompt_term(self):
-        return self._priv_prompt_term
-
     async def _establish_connection(self):
         """
         Need change the read until prompt not pattern with priv or unpriv terminators
         """
         output = ""
         # initiate SSH connection
-        self._conn = await asyncssh.connect(**self._connect_params_dict)
+        try:
+            self._conn = await asyncssh.connect(**self._connect_params_dict)
+        except asyncssh.DisconnectError as e:
+            logging.debug("Catch asyncssh disconnect error. Code:{0}. Reason:{1}".format(e.code, e.reason))
+            raise netdev.DisconnectError(self._host, e.code, e.reason)
+
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='dumb')
         # Flush unnecessary data
         output = await self._read_until_prompt()
@@ -94,20 +93,34 @@ class MikrotikRouterOSSSH(NetDevSSH):
         logging.debug("Prompt is {0}".format(prompt))
         return prompt
 
-    async def _config_mode(self, config_command='config', exit_config_mode=True):
-        """No need for entering configuration mode"""
-        return ""
-
-    async def _exit_config_mode(self, exit_config='end', pattern=''):
-        """No need for exiting configuration mode"""
-        return ""
-
-    async def send_command(self, command_string, strip_command=True, strip_prompt=False):
-        return await super(MikrotikRouterOSSSH, self).send_command(command_string, strip_command, strip_prompt)
-
     @staticmethod
     def _normalize_cmd(command):
         """Specific trailing newline for Mikrotik"""
         command = command.rstrip("\n")
         command += '\r'
         return command
+
+    def _get_default_command(self, command):
+        """
+        Returning default commands for device
+
+        :param command: command for returning
+        :return: real command for this network device
+        """
+        # @formatter:off
+        command_mapper = {
+            'priv_prompt': '>',
+            'unpriv_prompt': '>',
+            'disable_paging': '',
+            'priv_enter': '',
+            'priv_exit': '',
+            'config_enter': '',
+            'config_exit': '',
+            'check_config_mode': '>'
+        }
+        # @formatter:on
+        return command_mapper[command]
+
+    async def _cleanup(self):
+        """ Don't need anything """
+        pass

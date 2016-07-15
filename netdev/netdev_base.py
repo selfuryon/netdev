@@ -11,33 +11,45 @@ import re
 
 import asyncssh
 
+import netdev.exceptions
 
-class NetDevSSH(object):
+
+class NetDev(object):
     """
     Base Class for working with network devices
 
     It used by default Cisco params
     """
 
-    def __init__(self, ip=u'', host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'',
-                 ssh_strict=False):
-        # Filling vars
-        if ip:
-            self._host = ip
-            self._ip = ip
-        elif host:
+    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
+                 local_addr=None, client_keys=None, passphrase=None):
+        """
+        Initialize base class for async working with network devices
+
+        :param host: hostname or ip address for connection
+        :param username: username for logging to device
+        :param password: password for user for logging to device
+        :param secret: secret password for privilege mode
+        :param port: ssh port for connection. Default is 22
+        :param device_type: network device type. This is subclasses of this class
+        :param known_hosts: file with known hosts. Default is None (no policy). with () it will use default file
+        :param local_addr: local address for binding source of tcp connection
+        :param client_keys: path for client keys. With () it will use default file in OS.
+        :param passphrase: password for encrypted client keys
+        """
+        if host:
             self._host = host
-        if not ip and not host:
-            raise ValueError("Either ip or host must be set")
+        else:
+            raise ValueError("Host must be set")
         self._port = int(port)
         self._username = username
         self._password = password
         self._secret = secret
         self._device_type = device_type
-        if ssh_strict:
-            self._key_policy = ()
-        else:
-            self._key_policy = None
+        self._known_hosts = known_hosts
+        self._local_addr = local_addr
+        self._client_keys = client_keys
+        self._passphrase = passphrase
 
         # Filling internal vars
         self._stdin = self._stdout = self._stderr = self._conn = None
@@ -45,13 +57,26 @@ class NetDevSSH(object):
         self._MAX_BUFFER = 65535
         self._ansi_escape_codes = False
 
-    @property
-    def _priv_prompt_term(self):
-        return '#'
+    def _get_default_command(self, command):
+        """
+        Returning default commands for device
 
-    @property
-    def _unpriv_prompt_term(self):
-        return '>'
+        :param command: command for returning
+        :return: real command for this network device
+        """
+        # @formatter:off
+        command_mapper = {
+            'priv_prompt': '#',
+            'unpriv_prompt': '>',
+            'disable_paging': 'terminal length 0',
+            'priv_enter': 'enable',
+            'priv_exit': 'disable',
+            'config_enter': 'conf t',
+            'config_exit': 'end',
+            'check_config_mode': ')#',
+        }
+        # @formatter:on
+        return command_mapper[command]
 
     async def connect(self):
         """
@@ -73,8 +98,16 @@ class NetDevSSH(object):
         """
         Convert needed connect params to a dictionary for simplicity
         """
-        return {'host': self._host, 'port': self._port, 'username': self._username, 'password': self._password,
-                'known_hosts': self._key_policy}
+        # @formatter:off
+        return {'host': self._host,
+                'port': self._port,
+                'username': self._username,
+                'password': self._password,
+                'known_hosts': self._known_hosts,
+                'local_addr': self._local_addr,
+                'client_keys': self._client_keys,
+                'passphrase': self._passphrase}
+        # @formatter:on
 
     async def _establish_connection(self):
         """
@@ -82,11 +115,16 @@ class NetDevSSH(object):
         """
         output = ""
         # initiate SSH connection
-        self._conn = await asyncssh.connect(**self._connect_params_dict)
+        try:
+            self._conn = await asyncssh.connect(**self._connect_params_dict)
+        except asyncssh.DisconnectError as e:
+            logging.debug("Catch asyncssh disconnect error. Code:{0}. Reason:{1}".format(e.code, e.reason))
+            raise netdev.DisconnectError(self._host, e.code, e.reason)
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb')
         # Flush unnecessary data
-        output = await self._read_until_pattern(
-            r"{0}|{1}".format(re.escape(self._priv_prompt_term), re.escape(self._unpriv_prompt_term)))
+        priv_prompt = self._get_default_command('priv_prompt')
+        unpriv_prompt = self._get_default_command('unpriv_prompt')
+        output = await self._read_until_pattern(r"{0}|{1}".format(re.escape(priv_prompt), re.escape(unpriv_prompt)))
         logging.info("Start Connection to {0}:{1}".format(self._host, self._port))
         logging.debug("Establish Connection Output: {0}".format(output))
         return output
@@ -103,17 +141,19 @@ class NetDevSSH(object):
         prompt = await self._find_prompt()
         # Strip off trailing terminator
         self.base_prompt = prompt[:-1]
-        self._base_pattern = r"{0}(\(.*?\))?[{1}|{2}]".format(re.escape(self.base_prompt),
-                                                              re.escape(self._priv_prompt_term),
-                                                              re.escape(self._unpriv_prompt_term))
+        priv_prompt = self._get_default_command('priv_prompt')
+        unpriv_prompt = self._get_default_command('unpriv_prompt')
+        self._base_pattern = r"{}.*?(\(.*?\))?[{}|{}]".format(re.escape(self.base_prompt[:12]), re.escape(priv_prompt),
+                                                              re.escape(unpriv_prompt))
         logging.debug("Base Prompt is {0}".format(self.base_prompt))
         logging.debug("Base Pattern is {0}".format(self._base_pattern))
         return self.base_prompt
 
-    async def _disable_paging(self, command='terminal length 0'):
+    async def _disable_paging(self):
         """
         Disable paging method
         """
+        command = self._get_default_command('disable_paging')
         command = self._normalize_cmd(command)
         logging.info("In disable_paging")
         logging.debug("Command: {}".format(command))
@@ -129,8 +169,9 @@ class NetDevSSH(object):
         logging.info("In find_prompt")
         self._stdin.write(self._normalize_cmd("\n"))
         prompt = ''
-        prompt = await self._read_until_pattern(
-            r"{0}|{1}".format(re.escape(self._priv_prompt_term), re.escape(self._unpriv_prompt_term)))
+        priv_prompt = self._get_default_command('priv_prompt')
+        unpriv_prompt = self._get_default_command('unpriv_prompt')
+        prompt = await self._read_until_pattern(r"{0}|{1}".format(re.escape(priv_prompt), re.escape(unpriv_prompt)))
         prompt = prompt.strip()
         if self._ansi_escape_codes:
             prompt = self._strip_ansi_escape_codes(prompt)
@@ -243,15 +284,17 @@ class NetDevSSH(object):
         command += '\n'
         return command
 
-    async def _check_enable_mode(self, check_string='#'):
+    async def _check_enable_mode(self):
         """Check if in enable mode. Return boolean."""
+        check_string = self._get_default_command('priv_prompt')
         self._stdin.write(self._normalize_cmd('\n'))
         output = await self._read_until_prompt()
         return check_string in output
 
-    async def _enable(self, enable_command='enable', pattern='password', re_flags=re.IGNORECASE):
+    async def _enable(self, pattern='password', re_flags=re.IGNORECASE):
         """Enter enable mode."""
         output = ""
+        enable_command = self._get_default_command('priv_enter')
         if not await self._check_enable_mode():
             self._stdin.write(self._normalize_cmd(enable_command))
             output += await self._read_until_prompt_or_pattern(pattern=pattern, re_flags=re_flags)
@@ -261,9 +304,10 @@ class NetDevSSH(object):
                 raise ValueError("Failed to enter enable mode.")
         return output
 
-    async def _exit_enable_mode(self, exit_enable='disable'):
+    async def _exit_enable_mode(self):
         """Exit enable mode."""
         output = ""
+        exit_enable = self._get_default_command('priv_exit')
         if await self._check_enable_mode():
             self._stdin.write(self._normalize_cmd(exit_enable))
             output += await self._read_until_prompt()
@@ -271,17 +315,20 @@ class NetDevSSH(object):
                 raise ValueError("Failed to exit enable mode.")
         return output
 
-    async def _check_config_mode(self, check_string=')#', pattern=''):
+    async def _check_config_mode(self, pattern=''):
         """Checks if the device is in configuration mode or not."""
+        logging.debug('In check_config_mode')
+        check_string = self._get_default_command('check_config_mode')
         if not pattern:
             pattern = self._base_pattern
         self._stdin.write(self._normalize_cmd('\n'))
         output = await self._read_until_pattern(pattern=pattern)
         return check_string in output
 
-    async def _config_mode(self, config_command='config term', pattern=''):
+    async def _config_mode(self, pattern=''):
         """Enter into config_mode."""
         output = ''
+        config_command = self._get_default_command('config_enter')
         if not pattern:
             pattern = self._base_pattern
         if not await self._check_config_mode():
@@ -291,9 +338,10 @@ class NetDevSSH(object):
                 raise ValueError("Failed to enter configuration mode.")
         return output
 
-    async def _exit_config_mode(self, exit_config='end', pattern=''):
+    async def _exit_config_mode(self, pattern=''):
         """Exit from configuration mode."""
         output = ''
+        exit_config = self._get_default_command('config_exit')
         if not pattern:
             pattern = self._base_pattern
         if await self._check_config_mode():
@@ -391,14 +439,13 @@ class NetDevSSH(object):
 
         return output
 
-    def _cleanup(self):
+    async def _cleanup(self):
         """ Any needed cleanup before closing connection """
-        self._exit_config_mode()
-        self._stdin.write(self._normalize_cmd("exit"))
+        await self._exit_config_mode()
 
     async def disconnect(self):
         """ Gracefully close the SSH connection """
-        self._cleanup()
+        await self._cleanup()
         self._conn.close()
 
     async def commit(self):
