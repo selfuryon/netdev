@@ -21,7 +21,7 @@ async def task(param):
 
 async def run():
     config = yaml.load(open(config_path, 'r'))
-    devices = yaml.load(open(config['device_credentials'], 'r'))
+    devices = yaml.load(open(config['device_list'], 'r'))
     params = [p for p in devices if p['device_type'] == 'cisco_asa']
     tasks = []
     for param in params:
