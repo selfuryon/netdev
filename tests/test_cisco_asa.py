@@ -67,7 +67,7 @@ class TestCisco(unittest.TestCase):
             for dev in self.devices:
                 asa = netdev.connect(**dev)
                 await asa.connect()
-                if asa.mode_multiple:
+                if asa.multiple_mode:
                     await asa.send_command('changeto system')
                     self.assertIn('system', asa.current_context)
                     out = await asa.send_command('sh run | i ^context')
