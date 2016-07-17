@@ -5,7 +5,9 @@
    api
    examples
 
+.. currentmodule:: netdev
 .. include:: ../README.rst
+
 
 Indices and tables
 ==================
