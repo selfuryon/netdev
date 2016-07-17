@@ -1,8 +1,9 @@
-Netdev Documentation
-====================
 .. toctree::
    :hidden:
    :maxdepth: 2
+
+   api
+   examples
 
 .. include:: ../README.rst
 
