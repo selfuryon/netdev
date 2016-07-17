@@ -1,13 +1,10 @@
 Netdev Documentation
 ====================
-
-Contents:
-
 .. toctree::
    :hidden:
    :maxdepth: 2
 
-Hello!!!
+.. include:: ../README.rst
 
 Indices and tables
 ==================
