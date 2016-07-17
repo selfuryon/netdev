@@ -1,4 +1,5 @@
 class DisconnectError(Exception):
+    """AsyncSSH Disconnect Error with ip address"""
     def __init__(self, ip_address, code, reason):
         self.ip_address = ip_address
         self.code = code
@@ -8,6 +9,7 @@ class DisconnectError(Exception):
 
 
 class PasswordChangeRequired(Exception):
+    """AsyncSSH PasswordChangeRequired Error with ip address"""
     def __init__(self, ip_address, prompt):
         self.prompt = prompt
         self.msg = "Host {} Password change required:{}".format(ip_address, prompt)
@@ -15,6 +17,7 @@ class PasswordChangeRequired(Exception):
 
 
 class BreakReceived(Exception):
+    """AsyncSSH BreakReceived Error with ip address"""
     def __init__(self, ip_address, msec):
         self.msec = msec
         self.msg = "Host {} Break for {} msec".format(ip_address, msec)
@@ -22,6 +25,7 @@ class BreakReceived(Exception):
 
 
 class SignalReceived(Exception):
+    """AsyncSSH SignalReceived Error with ip address"""
     def __init__(self, ip_address, signal):
         self.signal = signal
         self.msg = "Host {} signal received:{}".format(ip_address, signal)
@@ -29,6 +33,7 @@ class SignalReceived(Exception):
 
 
 class TerminalSizeChanged(Exception):
+    """AsyncSSH TerminalSizeChanged Error with ip address"""
     def __init__(self, ip_address, width, height, pixwidth, pixheight):
         self.width = width
         self.height = height
@@ -39,6 +44,7 @@ class TerminalSizeChanged(Exception):
 
 
 class ChannelOpenError(Exception):
+    """AsyncSSH ChannelOpenError Error with ip address"""
     def __init__(self, ip_address, code, reason):
         self.code = code
         self.reason = reason
