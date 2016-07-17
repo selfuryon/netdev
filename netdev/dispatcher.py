@@ -1,5 +1,5 @@
 """
-Factory function for creating netdev
+Factory function for creating netdev classes
 """
 from netdev.cisco import CiscoAsa
 from netdev.cisco import CiscoIos
@@ -28,7 +28,7 @@ platforms_str = u"\n".join(platforms)
 
 
 def connect(*args, **kwargs):
-    """Factory function selects the proper class and creates object based on device_type."""
+    """Factory function selects the proper class and creates object based on device_type"""
     if kwargs['device_type'] not in platforms:
         raise ValueError('Unsupported device_type: '
                          'currently supported platforms are: {0}'.format(platforms_str))
