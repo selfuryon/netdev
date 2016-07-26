@@ -33,14 +33,14 @@ class FujitsuSwitch(NetDev):
         logger.info("Setting base prompt")
         prompt = await self._find_prompt()
         # Strip off trailing terminator
-        self.base_prompt = prompt[1:-3]
+        self._base_prompt = prompt[1:-3]
         priv_prompt = self._get_default_command('priv_prompt')
         unpriv_prompt = self._get_default_command('unpriv_prompt')
-        self._base_pattern = r"\({}.*?\) (\(.*?\))?[{}|{}]".format(re.escape(self.base_prompt[:12]),
+        self._base_pattern = r"\({}.*?\) (\(.*?\))?[{}|{}]".format(re.escape(self._base_prompt[:12]),
                                                                    re.escape(priv_prompt), re.escape(unpriv_prompt))
-        logger.debug("Base Prompt: {}".format(self.base_prompt))
+        logger.debug("Base Prompt: {}".format(self._base_prompt))
         logger.debug("Base Pattern: {}".format(self._base_pattern))
-        return self.base_prompt
+        return self._base_prompt
 
     @staticmethod
     def _normalize_linefeeds(a_string):

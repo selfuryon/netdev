@@ -14,8 +14,18 @@ class CiscoAsa(NetDev):
         super().__init__(host=host, username=username, password=password, secret=secret, port=port,
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
                          client_keys=client_keys, passphrase=passphrase)
-        self.current_context = 'system'
-        self.multiple_mode = False
+        self._current_context = 'system'
+        self._multiple_mode = False
+
+    @property
+    def current_context(self):
+        """ Returning current context for ASA"""
+        return self._current_context
+
+    @property
+    def multiple_mode(self):
+        """ Returning Bool True if ASA in multiple mode"""
+        return self._multiple_mode
 
     async def connect(self):
         """
@@ -63,16 +73,16 @@ class CiscoAsa(NetDev):
             prompt, context = prompt[:-1].split('/')
         else:
             prompt = prompt[:-1]
-        self.base_prompt = prompt
-        self.current_context = context
+        self._base_prompt = prompt
+        self._current_context = context
         priv_prompt = self._get_default_command('priv_prompt')
         unpriv_prompt = self._get_default_command('unpriv_prompt')
-        self._base_pattern = r"{}.*(\/\w+)?(\(.*?\))?[{}|{}]".format(re.escape(self.base_prompt[:12]),
+        self._base_pattern = r"{}.*(\/\w+)?(\(.*?\))?[{}|{}]".format(re.escape(self._base_prompt[:12]),
                                                                      re.escape(priv_prompt), re.escape(unpriv_prompt))
-        logger.debug("Base Prompt: {}".format(self.base_prompt))
+        logger.debug("Base Prompt: {}".format(self._base_prompt))
         logger.debug("Base Pattern: {}".format(self._base_pattern))
-        logger.debug("Current Context: {}".format(self.current_context))
-        return self.base_prompt
+        logger.debug("Current Context: {}".format(self._current_context))
+        return self._base_prompt
 
     async def _check_multiple_mode(self):
         """
@@ -81,9 +91,9 @@ class CiscoAsa(NetDev):
         logger.info("Checking multiple mode")
         out = await self.send_command('show mode')
         if 'multiple' in out:
-            self.multiple_mode = True
+            self._multiple_mode = True
 
-        logger.debug("Multiple mode: {}".format(self.multiple_mode))
+        logger.debug("Multiple mode: {}".format(self._multiple_mode))
 
     def _get_default_command(self, command):
         """

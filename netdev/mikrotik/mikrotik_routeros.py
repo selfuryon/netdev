@@ -76,10 +76,10 @@ class MikrotikRouterOS(NetDev):
         prompt = prompt[1:-3]
         if '@' in prompt:
             prompt = prompt.split('@')[1]
-        self.base_prompt = prompt
-        logger.debug("Base Prompt: {}".format(self.base_prompt))
+        self._base_prompt = prompt
+        logger.debug("Base Prompt: {}".format(self._base_prompt))
         logger.debug("Base Pattern: {}".format(self._base_pattern))
-        return self.base_prompt
+        return self._base_prompt
 
     async def _find_prompt(self):
         """Finds the current network device prompt, last line only."""

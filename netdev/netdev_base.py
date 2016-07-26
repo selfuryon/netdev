@@ -52,9 +52,14 @@ class NetDev(object):
 
         # Filling internal vars
         self._stdin = self._stdout = self._stderr = self._conn = None
-        self.base_prompt = self._base_pattern = ''
+        self._base_prompt = self._base_pattern = ''
         self._MAX_BUFFER = 65535
         self._ansi_escape_codes = False
+
+    @property
+    def base_prompt(self):
+        """ Returning base prompt for this network device"""
+        return self._base_prompt
 
     def _get_default_command(self, command):
         """
@@ -140,14 +145,14 @@ class NetDev(object):
         logger.info("Setting base prompt")
         prompt = await self._find_prompt()
         # Strip off trailing terminator
-        self.base_prompt = prompt[:-1]
+        self._base_prompt = prompt[:-1]
         priv_prompt = self._get_default_command('priv_prompt')
         unpriv_prompt = self._get_default_command('unpriv_prompt')
-        self._base_pattern = r"{}.*?(\(.*?\))?[{}|{}]".format(re.escape(self.base_prompt[:12]), re.escape(priv_prompt),
+        self._base_pattern = r"{}.*?(\(.*?\))?[{}|{}]".format(re.escape(self._base_prompt[:12]), re.escape(priv_prompt),
                                                               re.escape(unpriv_prompt))
-        logger.debug("Base Prompt: {}".format(self.base_prompt))
+        logger.debug("Base Prompt: {}".format(self._base_prompt))
         logger.debug("Base Pattern: {}".format(self._base_pattern))
-        return self.base_prompt
+        return self._base_prompt
 
     async def _disable_paging(self):
         """Disable paging method"""
@@ -211,7 +216,7 @@ class NetDev(object):
         logger.info('Stripping prompt')
         response_list = a_string.split('\n')
         last_line = response_list[-1]
-        if self.base_prompt in last_line:
+        if self._base_prompt in last_line:
             return '\n'.join(response_list[:-1])
         else:
             return a_string
