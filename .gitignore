@@ -55,7 +55,7 @@ target/
 .idea
 
 #Examples for test
-examples/*.yaml
-tests/*.yaml
+*.yaml
 /MANIFEST
-config.yaml
+/docs/_build
+/docs/[Mm]ake*
