@@ -27,7 +27,8 @@ Sample of working is:
    loop = asyncio.get_event_loop()
    loop.run_until_complete(working_with_netdev())
 
-Public API
+Factory method
+==============
 
 .. autofunction:: create
 
@@ -37,5 +38,18 @@ Classes
 .. autoclass:: netdev.netdev_base.NetDev
    :members:
    :special-members: __init__
+
+.. autoclass:: netdev.cisco.cisco_asa.CiscoAsa
+   :members: current_context, multiple_mode
+
+.. autoclass:: netdev.cisco.cisco_ios.CiscoIos
+
+.. autoclass:: netdev.cisco.cisco_nxos.CiscoNxos
+
+.. autoclass:: netdev.fujitsu.fujitsu_switch.FujitsuSwitch
+
+.. autoclass:: netdev.hp.hp_comware.HPComware
+
+.. autoclass:: netdev.mikrotik.mikrotik_routeros.MikrotikRouterOS
 
 
