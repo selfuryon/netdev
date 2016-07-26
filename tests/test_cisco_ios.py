@@ -30,7 +30,7 @@ class TestIOS(unittest.TestCase):
     def test_show_run_hostname(self):
         async def task():
             for dev in self.devices:
-                ios = netdev.connect(**dev)
+                ios = netdev.create(**dev)
                 await ios.connect()
                 out = await ios.send_command('show run | i hostname')
                 self.assertIn("hostname", out)
@@ -41,7 +41,7 @@ class TestIOS(unittest.TestCase):
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:
-                ios = netdev.connect(**dev)
+                ios = netdev.create(**dev)
                 await ios.connect()
                 commands = ["dir", "show ver", "show run", "show ssh"]
                 for cmd in commands:
@@ -54,7 +54,7 @@ class TestIOS(unittest.TestCase):
     def test_config_set(self):
         async def task():
             for dev in self.devices:
-                ios = netdev.connect(**dev)
+                ios = netdev.create(**dev)
                 await ios.connect()
                 commands = ["line con 0", "exit"]
                 out = await ios.send_config_set(commands)
@@ -67,7 +67,7 @@ class TestIOS(unittest.TestCase):
     def test_base_prompt(self):
         async def task():
             for dev in self.devices:
-                ios = netdev.connect(**dev)
+                ios = netdev.create(**dev)
                 await ios.connect()
                 out = await ios.send_command('sh run | i hostname')
                 self.assertIn(ios.base_prompt, out)

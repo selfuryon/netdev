@@ -30,7 +30,7 @@ class TestComware(unittest.TestCase):
     def test_show_sysname(self):
         async def task():
             for dev in self.devices:
-                hp = netdev.connect(**dev)
+                hp = netdev.create(**dev)
                 await hp.connect()
                 out = await hp.send_command('display cur | i sysname')
                 self.assertIn("sysname", out)
@@ -41,7 +41,7 @@ class TestComware(unittest.TestCase):
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:
-                hp = netdev.connect(**dev)
+                hp = netdev.create(**dev)
                 await hp.connect()
                 commands = ["dir", "display ver", "display cur", "display ssh server status"]
                 for cmd in commands:
@@ -54,7 +54,7 @@ class TestComware(unittest.TestCase):
     def test_config_set(self):
         async def task():
             for dev in self.devices:
-                hp = netdev.connect(**dev)
+                hp = netdev.create(**dev)
                 await hp.connect()
                 commands = ["vlan 1", "quit"]
                 out = await hp.send_config_set(commands)
@@ -67,7 +67,7 @@ class TestComware(unittest.TestCase):
     def test_base_prompt(self):
         async def task():
             for dev in self.devices:
-                hp = netdev.connect(**dev)
+                hp = netdev.create(**dev)
                 await hp.connect()
                 out = await hp.send_command('display cur | i sysname')
                 self.assertIn(hp.base_prompt, out)

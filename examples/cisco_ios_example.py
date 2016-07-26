@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 async def task(param):
-    ios = netdev.connect(**param)
+    ios = netdev.create(**param)
     await ios.connect()
     out = await ios.send_command("show ssh")
     print(out)

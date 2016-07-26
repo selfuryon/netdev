@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 async def task(param):
-    hp = netdev.connect(**param)
+    hp = netdev.create(**param)
     await hp.connect()
     out = await hp.send_command('display ver')
     print(out)

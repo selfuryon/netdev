@@ -27,7 +27,7 @@ platforms.sort()
 platforms_str = u"\n".join(platforms)
 
 
-def connect(*args, **kwargs):
+def create(*args, **kwargs):
     """Factory function selects the proper class and creates object based on device_type"""
     if kwargs['device_type'] not in platforms:
         raise ValueError('Unsupported device_type: '

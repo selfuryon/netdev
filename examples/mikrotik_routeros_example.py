@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 async def task(param):
-    routeros = netdev.connect(**param)
+    routeros = netdev.create(**param)
     await routeros.connect()
     commands = ['/ip address', 'print', '/']
     for cmd in commands:

@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 async def task(param):
-    asa = netdev.connect(**param)
+    asa = netdev.create(**param)
     await asa.connect()
     # print(asa.current_context)
     out = await asa.send_command('show run', strip_command=True)

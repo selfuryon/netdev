@@ -30,7 +30,7 @@ class TestFujitsu(unittest.TestCase):
     def test_show_run_hostname(self):
         async def task():
             for dev in self.devices:
-                fuj = netdev.connect(**dev)
+                fuj = netdev.create(**dev)
                 await fuj.connect()
                 out = await fuj.send_command('show run | i snmp')
                 self.assertIn("snmp", out)
@@ -41,7 +41,7 @@ class TestFujitsu(unittest.TestCase):
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:
-                fuj = netdev.connect(**dev)
+                fuj = netdev.create(**dev)
                 await fuj.connect()
                 commands = ["dir", "show ver", "show run", "show ssh"]
                 for cmd in commands:
@@ -54,7 +54,7 @@ class TestFujitsu(unittest.TestCase):
     def test_config_set(self):
         async def task():
             for dev in self.devices:
-                fuj = netdev.connect(**dev)
+                fuj = netdev.create(**dev)
                 await fuj.connect()
                 commands = ["vlan database", "exit"]
                 out = await fuj.send_config_set(commands)
@@ -67,7 +67,7 @@ class TestFujitsu(unittest.TestCase):
     def test_base_prompt(self):
         async def task():
             for dev in self.devices:
-                fuj = netdev.connect(**dev)
+                fuj = netdev.create(**dev)
                 await fuj.connect()
                 out = await fuj.send_command("sh run | i 'switch '")
                 self.assertIn(fuj.base_prompt, out)

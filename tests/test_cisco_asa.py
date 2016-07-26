@@ -30,7 +30,7 @@ class TestASA(unittest.TestCase):
     def test_show_run_hostname(self):
         async def task():
             for dev in self.devices:
-                asa = netdev.connect(**dev)
+                asa = netdev.create(**dev)
                 await asa.connect()
                 out = await asa.send_command('show run | i hostname')
                 self.assertIn("hostname", out)
@@ -41,7 +41,7 @@ class TestASA(unittest.TestCase):
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:
-                asa = netdev.connect(**dev)
+                asa = netdev.create(**dev)
                 await asa.connect()
                 commands = ["show ver", "show run", "show ssh"]
                 for cmd in commands:
@@ -54,7 +54,7 @@ class TestASA(unittest.TestCase):
     def test_config_set(self):
         async def task():
             for dev in self.devices:
-                asa = netdev.connect(**dev)
+                asa = netdev.create(**dev)
                 await asa.connect()
                 commands = ["interface Management0/0", "exit"]
                 out = await asa.send_config_set(commands)
@@ -67,7 +67,7 @@ class TestASA(unittest.TestCase):
     def test_current_context(self):
         async def task():
             for dev in self.devices:
-                asa = netdev.connect(**dev)
+                asa = netdev.create(**dev)
                 await asa.connect()
                 if asa.multiple_mode:
                     await asa.send_command('changeto system')

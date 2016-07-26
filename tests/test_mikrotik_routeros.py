@@ -30,7 +30,7 @@ class TestRouterOS(unittest.TestCase):
     def test_show_system_identity(self):
         async def task():
             for dev in self.devices:
-                mik = netdev.connect(**dev)
+                mik = netdev.create(**dev)
                 await mik.connect()
                 out = await mik.send_command('/system identity print')
                 self.assertIn(mik.base_prompt, out)
@@ -41,7 +41,7 @@ class TestRouterOS(unittest.TestCase):
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:
-                mik = netdev.connect(**dev)
+                mik = netdev.create(**dev)
                 await mik.connect()
                 commands = ["/ip address print", "/system package print", " /user print"]
                 for cmd in commands:
