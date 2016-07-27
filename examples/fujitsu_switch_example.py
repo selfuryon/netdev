@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 async def task(param):
-    fuj = netdev.connect(**param)
+    fuj = netdev.create(**param)
     await fuj.connect()
     out = await fuj.send_config_set(['vlan database', 'exit'])
     print(out)
@@ -22,7 +22,7 @@ async def task(param):
 
 async def run():
     config = yaml.load(open(config_path, 'r'))
-    devices = yaml.load(open(config['device_credentials'], 'r'))
+    devices = yaml.load(open(config['device_list'], 'r'))
     params = [p for p in devices if p['device_type'] == 'fujitsu_switch']
     tasks = []
     for param in params:

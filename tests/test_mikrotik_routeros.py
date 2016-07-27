@@ -6,16 +6,19 @@ import yaml
 
 import netdev
 
-logging.basicConfig(filename="unittest.log", level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='tests/unittest.log', level=logging.DEBUG)
+config_path = 'config.yaml'
 
-class TestCisco(unittest.TestCase):
+
+class TestRouterOS(unittest.TestCase):
     @staticmethod
     def load_credits():
-        config_path = 'config.yaml'
-        config = yaml.load(open(config_path, 'r'))
-        devices = yaml.load(open(config['device_credentials'], 'r'))
-        params = [p for p in devices if p['device_type'] == 'mikrotik_routeros']
-        return params
+        with open(config_path, 'r') as conf:
+            config = yaml.load(conf)
+            with open(config['device_list'], 'r') as devs:
+                devices = yaml.load(devs)
+                params = [p for p in devices if p['device_type'] == 'mikrotik_routeros']
+                return params
 
     def setUp(self):
         self.loop = asyncio.new_event_loop()
@@ -27,7 +30,7 @@ class TestCisco(unittest.TestCase):
     def test_show_system_identity(self):
         async def task():
             for dev in self.devices:
-                mik = netdev.connect(**dev)
+                mik = netdev.create(**dev)
                 await mik.connect()
                 out = await mik.send_command('/system identity print')
                 self.assertIn(mik.base_prompt, out)
@@ -38,7 +41,7 @@ class TestCisco(unittest.TestCase):
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:
-                mik = netdev.connect(**dev)
+                mik = netdev.create(**dev)
                 await mik.connect()
                 commands = ["/ip address print", "/system package print", " /user print"]
                 for cmd in commands:

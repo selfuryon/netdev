@@ -7,11 +7,11 @@ import netdev
 
 config_path = 'config.yaml'
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG)
 
 
 async def task(param):
-    ios = netdev.connect(**param)
+    ios = netdev.create(**param)
     await ios.connect()
     out = await ios.send_command("show ssh")
     print(out)
@@ -25,7 +25,7 @@ async def task(param):
 
 async def run():
     config = yaml.load(open(config_path, 'r'))
-    devices = yaml.load(open(config['device_credentials'], 'r'))
+    devices = yaml.load(open(config['device_list'], 'r'))
     params = [p for p in devices if p['device_type'] == 'cisco_ios']
     tasks = []
     for param in params:

@@ -1,6 +1,6 @@
-import logging
 import re
 
+from netdev.logger import logger
 from netdev.netdev_base import NetDev
 
 
@@ -15,10 +15,12 @@ class FujitsuSwitch(NetDev):
             enable() for getting privilege exec mode
             disable_paging() for non interact output in commands
         """
+        logger.info("Connecting to device")
         await self._establish_connection()
         await self._set_base_prompt()
         await self._enable()
         await self._disable_paging()
+        logger.info("Connected to device")
 
     async def _set_base_prompt(self):
         """
@@ -28,17 +30,17 @@ class FujitsuSwitch(NetDev):
 
         For Fujitsu devices base_pattern is "(prompt) (\(.*?\))?[>|#]"
         """
-        logging.info("In set_base_prompt")
+        logger.info("Setting base prompt")
         prompt = await self._find_prompt()
         # Strip off trailing terminator
-        self.base_prompt = prompt[1:-3]
+        self._base_prompt = prompt[1:-3]
         priv_prompt = self._get_default_command('priv_prompt')
         unpriv_prompt = self._get_default_command('unpriv_prompt')
-        self._base_pattern = r"\({}.*?\) (\(.*?\))?[{}|{}]".format(re.escape(self.base_prompt[:12]),
+        self._base_pattern = r"\({}.*?\) (\(.*?\))?[{}|{}]".format(re.escape(self._base_prompt[:12]),
                                                                    re.escape(priv_prompt), re.escape(unpriv_prompt))
-        logging.debug("Base Prompt is {0}".format(self.base_prompt))
-        logging.debug("Base Pattern is {0}".format(self._base_pattern))
-        return self.base_prompt
+        logger.debug("Base Prompt: {}".format(self._base_prompt))
+        logger.debug("Base Pattern: {}".format(self._base_pattern))
+        return self._base_prompt
 
     @staticmethod
     def _normalize_linefeeds(a_string):
