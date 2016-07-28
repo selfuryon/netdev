@@ -127,3 +127,30 @@ class MikrotikRouterOS(NetDev):
     async def _cleanup(self):
         """ Don't need anything """
         pass
+
+    async def send_config_set(self, config_commands=None, exit_config_mode=False):
+        """
+        Send configuration commands down the SSH channel.
+
+        config_commands is an iterable containing all of the configuration commands.
+        The commands will be executed one after the other.
+        Automatically exits/enters configuration mode.
+        :param list config_commands: piterable string list with commands for applying to network devices in conf mode
+        :param Bool exit_config_mode: If true it will quit from configuration mode automatically
+        :return: The output of this commands
+        """
+        logger.info("Sending configuration settings")
+        if config_commands is None:
+            return ''
+        if not hasattr(config_commands, '__iter__'):
+            raise ValueError("Invalid argument passed into send_config_set")
+
+        # Send config commands
+        output = ''
+        logger.debug("Config commands: {}".format(config_commands))
+        for cmd in config_commands:
+            output += await self.send_command(cmd, strip_command=False, strip_prompt=False)
+
+        output = self._normalize_linefeeds(output)
+        logger.debug("Config commands output: {}".format(output))
+        return output
