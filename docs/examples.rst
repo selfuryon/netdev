@@ -22,13 +22,13 @@ Examples
 In examples are used configuration files.
 config.yaml:
 
-.. code-block:: yaml
+.. code-block:: text
 
    device_list: credentials.yaml
 
 credentials.yaml
 
-.. code-block:: yaml
+.. code-block:: text
 
    - device_type: cisco_asa
      host: 1.1.1.1
