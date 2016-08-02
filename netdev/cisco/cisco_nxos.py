@@ -1,6 +1,6 @@
 import re
 
-from netdev.netdev_base import NetDev
+from ..netdev_base import NetDev
 
 
 class CiscoNxos(NetDev):

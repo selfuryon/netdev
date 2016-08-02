@@ -1,12 +1,12 @@
 """
 Factory function for creating netdev classes
 """
-from netdev.cisco import CiscoAsa
-from netdev.cisco import CiscoIos
-from netdev.cisco import CiscoNxos
-from netdev.hp import HPComware
-from netdev.fujitsu import FujitsuSwitch
-from netdev.mikrotik import MikrotikRouterOS
+from .cisco import CiscoAsa
+from .cisco import CiscoIos
+from .cisco import CiscoNxos
+from .hp import HPComware
+from .fujitsu import FujitsuSwitch
+from .mikrotik import MikrotikRouterOS
 
 # @formatter:off
 # The keys of this dictionary are the supported device_types

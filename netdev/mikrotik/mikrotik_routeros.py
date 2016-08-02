@@ -1,8 +1,8 @@
 import asyncssh
 
-import netdev.exceptions
-from netdev.logger import logger
-from netdev.netdev_base import NetDev
+from ..exceptions import DisconnectError
+from ..logger import logger
+from ..netdev_base import NetDev
 
 
 class MikrotikRouterOS(NetDev):
@@ -51,7 +51,7 @@ class MikrotikRouterOS(NetDev):
             self._conn = await asyncssh.connect(**self._connect_params_dict)
         except asyncssh.DisconnectError as e:
             logger.debug("Catch asyncssh disconnect error. Code:{0}. Reason:{1}".format(e.code, e.reason))
-            raise netdev.DisconnectError(self._host, e.code, e.reason)
+            raise DisconnectError(self._host, e.code, e.reason)
 
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='dumb')
         logger.info("Connection is established to {}:{}".format(self._host, self._port))

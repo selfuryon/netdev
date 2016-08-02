@@ -8,8 +8,8 @@ import re
 
 import asyncssh
 
-import netdev.exceptions
-from netdev.logger import logger
+from .exceptions import DisconnectError
+from .logger import logger
 
 
 class NetDev(object):
@@ -123,7 +123,7 @@ class NetDev(object):
         try:
             self._conn = await asyncssh.connect(**self._connect_params_dict)
         except asyncssh.DisconnectError as e:
-            raise netdev.DisconnectError(self._host, e.code, e.reason)
+            raise DisconnectError(self._host, e.code, e.reason)
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb')
         logger.info("Connection is established to {}:{}".format(self._host, self._port))
         # Flush unnecessary data
