@@ -8,7 +8,7 @@ import netdev
 config_path = 'config.yaml'
 
 logging.basicConfig(level=logging.DEBUG)
-
+netdev.logger.setLevel(logging.DEBUG)
 
 async def task(param):
     ios = netdev.create(**param)

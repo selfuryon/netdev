@@ -8,6 +8,7 @@ import netdev
 config_path = 'config.yaml'
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+netdev.logger.setLevel(logging.DEBUG)
 
 
 async def task(param):
