@@ -1,3 +1,3 @@
-from netdev.hp.hp_comware import HPComware
+from .hp_comware import HPComware
 
 __all__ = ['HPComware']

@@ -1,8 +1,8 @@
 import asyncssh
 
-import netdev.exceptions
-from netdev.logger import logger
-from netdev.netdev_base import NetDev
+from ..exceptions import DisconnectError
+from ..logger import logger
+from ..netdev_base import NetDev
 
 
 class MikrotikRouterOS(NetDev):
@@ -51,7 +51,7 @@ class MikrotikRouterOS(NetDev):
             self._conn = await asyncssh.connect(**self._connect_params_dict)
         except asyncssh.DisconnectError as e:
             logger.debug("Catch asyncssh disconnect error. Code:{0}. Reason:{1}".format(e.code, e.reason))
-            raise netdev.DisconnectError(self._host, e.code, e.reason)
+            raise DisconnectError(self._host, e.code, e.reason)
 
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='dumb')
         logger.info("Connection is established to {}:{}".format(self._host, self._port))
@@ -127,3 +127,30 @@ class MikrotikRouterOS(NetDev):
     async def _cleanup(self):
         """ Don't need anything """
         pass
+
+    async def send_config_set(self, config_commands=None, exit_config_mode=False):
+        """
+        Send configuration commands down the SSH channel.
+
+        config_commands is an iterable containing all of the configuration commands.
+        The commands will be executed one after the other.
+        Automatically exits/enters configuration mode.
+        :param list config_commands: piterable string list with commands for applying to network devices in conf mode
+        :param Bool exit_config_mode: If true it will quit from configuration mode automatically
+        :return: The output of this commands
+        """
+        logger.info("Sending configuration settings")
+        if config_commands is None:
+            return ''
+        if not hasattr(config_commands, '__iter__'):
+            raise ValueError("Invalid argument passed into send_config_set")
+
+        # Send config commands
+        output = ''
+        logger.debug("Config commands: {}".format(config_commands))
+        for cmd in config_commands:
+            output += await self.send_command(cmd, strip_command=False, strip_prompt=False)
+
+        output = self._normalize_linefeeds(output)
+        logger.debug("Config commands output: {}".format(output))
+        return output

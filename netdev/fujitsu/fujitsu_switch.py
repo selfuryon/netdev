@@ -1,7 +1,7 @@
 import re
 
-from netdev.logger import logger
-from netdev.netdev_base import NetDev
+from ..logger import logger
+from ..netdev_base import NetDev
 
 
 class FujitsuSwitch(NetDev):

@@ -10,23 +10,19 @@ config_path = 'config.yaml'
 logging.basicConfig(level=logging.DEBUG)
 netdev.logger.setLevel(logging.DEBUG)
 
+
 async def task(param):
-    ios = netdev.create(**param)
-    await ios.connect()
-    out = await ios.send_command("show ssh")
+    nxos = netdev.create(**param)
+    await nxos.connect()
+    out = await nxos.send_command('show run', strip_command=True)
     print(out)
-    commands = ["line console 0", "exit"]
-    out = await ios.send_config_set(commands)
-    print(out)
-    out = await ios.send_command("show run")
-    print(out)
-    await ios.disconnect()
+    await nxos.disconnect()
 
 
 async def run():
     config = yaml.load(open(config_path, 'r'))
     devices = yaml.load(open(config['device_list'], 'r'))
-    params = [p for p in devices if p['device_type'] == 'cisco_ios']
+    params = [p for p in devices if p['device_type'] == 'cisco_nxos']
     tasks = []
     for param in params:
         tasks.append(task(param))

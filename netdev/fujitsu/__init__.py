@@ -1,3 +1,3 @@
-from netdev.fujitsu.fujitsu_switch import FujitsuSwitch
+from .fujitsu_switch import FujitsuSwitch
 
 __all__ = ['FujitsuSwitch']
