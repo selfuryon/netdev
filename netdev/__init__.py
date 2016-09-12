@@ -9,9 +9,8 @@ from .hp import HPComware
 from .logger import logger
 from .mikrotik import MikrotikRouterOS
 from .netdev_base import NetDev
+from .version import __author__, __author_email__, __url__, __version__
 
-__version__ = '0.4.2'
 __all__ = (
 'create', 'platforms', 'DisconnectError', 'logger', 'CiscoAsa', 'CiscoIos', 'CiscoNxos', 'HPComware', 'FujitsuSwitch',
 'MikrotikRouterOS', 'NetDev')
-__author__ = 'Yakovlev Sergey'
