@@ -35,29 +35,28 @@ class MikrotikRouterOS(NetDev):
             set_base_prompt() for finding and setting device prompt
             disable_paging() not needed for Mikrotik. without-paging is argument for show commands
         """
-        logger.info("Connecting to device")
+        logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
         await self._set_base_prompt()
-        logger.info("Connected to device")
+        logger.info("Host {}: Connected to device".format(self._host))
 
     async def _establish_connection(self):
         """
         Need change the read until prompt not pattern with priv or unpriv terminators
         """
-        logger.info('Establishing connection to {}:{}'.format(self._host, self._port))
+        logger.info('Host {}: Establishing connection to port {}'.format(self._host, self._port))
         output = ""
         # initiate SSH connection
         try:
             self._conn = await asyncssh.connect(**self._connect_params_dict)
         except asyncssh.DisconnectError as e:
-            logger.debug("Catch asyncssh disconnect error. Code:{0}. Reason:{1}".format(e.code, e.reason))
             raise DisconnectError(self._host, e.code, e.reason)
 
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='dumb')
-        logger.info("Connection is established to {}:{}".format(self._host, self._port))
+        logger.info("Host {}: Connection is established".format(self._host))
         # Flush unnecessary data
         output = await self._read_until_prompt()
-        logger.debug("Establish Connection Output: {}".format(output))
+        logger.debug("Host {}: Establish Connection Output: {}".format(self._host, output))
         return output
 
     async def _set_base_prompt(self):
@@ -68,7 +67,7 @@ class MikrotikRouterOS(NetDev):
 
         For Mikrotik devices base_pattern is "<
         """
-        logger.info("Setting base prompt")
+        logger.info("Host {}: Setting base prompt".format(self._host))
         self._base_pattern = r"\[.*?\] (\/.*?)?\>"
         prompt = await self._find_prompt()
         user = ''
@@ -77,13 +76,13 @@ class MikrotikRouterOS(NetDev):
         if '@' in prompt:
             prompt = prompt.split('@')[1]
         self._base_prompt = prompt
-        logger.debug("Base Prompt: {}".format(self._base_prompt))
-        logger.debug("Base Pattern: {}".format(self._base_pattern))
+        logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
+        logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
 
     async def _find_prompt(self):
         """Finds the current network device prompt, last line only."""
-        logger.info("Finding prompt")
+        logger.info("Host {}: Finding prompt".format(self._host))
         self._stdin.write("\r")
         prompt = ''
         prompt = await self._read_until_prompt()
@@ -91,9 +90,8 @@ class MikrotikRouterOS(NetDev):
         if self._ansi_escape_codes:
             prompt = self._strip_ansi_escape_codes(prompt)
         if not prompt:
-            logger.error("Unable to find prompt: {0}".format(prompt))
             raise ValueError("Unable to find prompt: {0}".format(prompt))
-        logger.debug("Prompt: {0}".format(prompt))
+        logger.debug("Host {}: Prompt: {}".format(self._host, prompt))
         return prompt
 
     @staticmethod
@@ -139,7 +137,7 @@ class MikrotikRouterOS(NetDev):
         :param Bool exit_config_mode: If true it will quit from configuration mode automatically
         :return: The output of this commands
         """
-        logger.info("Sending configuration settings")
+        logger.info("Host {}: Sending configuration settings".format(self._host))
         if config_commands is None:
             return ''
         if not hasattr(config_commands, '__iter__'):
@@ -147,10 +145,10 @@ class MikrotikRouterOS(NetDev):
 
         # Send config commands
         output = ''
-        logger.debug("Config commands: {}".format(config_commands))
+        logger.debug("Host {}: Config commands: {}".format(self._host, config_commands))
         for cmd in config_commands:
             output += await self.send_command(cmd, strip_command=False, strip_prompt=False)
 
         output = self._normalize_linefeeds(output)
-        logger.debug("Config commands output: {}".format(output))
+        logger.debug("Host {}: Config commands output: {}".format(self._host, output))
         return output

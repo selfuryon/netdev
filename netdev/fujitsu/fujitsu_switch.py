@@ -15,12 +15,12 @@ class FujitsuSwitch(NetDev):
             enable() for getting privilege exec mode
             disable_paging() for non interact output in commands
         """
-        logger.info("Connecting to device")
+        logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
         await self._set_base_prompt()
         await self._enable()
         await self._disable_paging()
-        logger.info("Connected to device")
+        logger.info("Host {}: Connected to device".format(self._host))
 
     async def _set_base_prompt(self):
         """
@@ -30,7 +30,7 @@ class FujitsuSwitch(NetDev):
 
         For Fujitsu devices base_pattern is "(prompt) (\(.*?\))?[>|#]"
         """
-        logger.info("Setting base prompt")
+        logger.info("Host {}: Setting base prompt".format(self._host))
         prompt = await self._find_prompt()
         # Strip off trailing terminator
         self._base_prompt = prompt[1:-3]
@@ -38,8 +38,8 @@ class FujitsuSwitch(NetDev):
         unpriv_prompt = self._get_default_command('unpriv_prompt')
         self._base_pattern = r"\({}.*?\) (\(.*?\))?[{}|{}]".format(re.escape(self._base_prompt[:12]),
                                                                    re.escape(priv_prompt), re.escape(unpriv_prompt))
-        logger.debug("Base Prompt: {}".format(self._base_prompt))
-        logger.debug("Base Pattern: {}".format(self._base_pattern))
+        logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
+        logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
 
     @staticmethod
