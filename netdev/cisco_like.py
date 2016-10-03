@@ -79,19 +79,6 @@ class CiscoLikeDevice(BaseDevice):
         await self._disable_paging()
         logger.info("Host {}: Connected to device".format(self._host))
 
-    async def _disable_paging(self):
-        """Disable paging method"""
-        logger.info("Host {}: Trying to disable paging".format(self._host))
-        command = self._get_default_command('disable_paging')
-        command = self._normalize_cmd(command)
-        logger.debug("Host {}: Disable paging command: {}".format(self._host, command))
-        self._stdin.write(command)
-        output = await self._read_until_prompt()
-        logger.debug("Host {}: Disable paging output: {}".format(self._host, output))
-        if self._ansi_escape_codes:
-            output = self._strip_ansi_escape_codes(output)
-        return output
-
     async def _check_enable_mode(self):
         """Check if in enable mode. Return boolean"""
         logger.info('Host {}: Checking enable mode'.format(self._host))

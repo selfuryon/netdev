@@ -76,6 +76,7 @@ class BaseDevice(object):
             'delimeter1': '#',
             'delimeter2': '>',
             'pattern': r"{}.*?(\(.*?\))?[{}|{}]",
+            'disable_paging': 'terminal length 0',
         }
         # @formatter:on
         return command_mapper[command]
@@ -156,7 +157,16 @@ class BaseDevice(object):
 
     async def _disable_paging(self):
         """Disable paging method"""
-        pass
+        logger.info("Host {}: Trying to disable paging".format(self._host))
+        command = self._get_default_command('disable_paging')
+        command = self._normalize_cmd(command)
+        logger.debug("Host {}: Disable paging command: {}".format(self._host, command))
+        self._stdin.write(command)
+        output = await self._read_until_prompt()
+        logger.debug("Host {}: Disable paging output: {}".format(self._host, output))
+        if self._ansi_escape_codes:
+            output = self._strip_ansi_escape_codes(output)
+        return output
 
     async def _find_prompt(self):
         """Finds the current network device prompt, last line only"""
