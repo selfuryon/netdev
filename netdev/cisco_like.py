@@ -95,8 +95,9 @@ class CiscoLikeDevice(BaseDevice):
         if not await self._check_enable_mode():
             self._stdin.write(self._normalize_cmd(enable_command))
             output += await self._read_until_prompt_or_pattern(pattern=pattern, re_flags=re_flags)
-            self._stdin.write(self._normalize_cmd(self._secret))
-            output += await self._read_until_prompt()
+            if re.match(pattern, output, re_flags):
+                self._stdin.write(self._normalize_cmd(self._secret))
+                output += await self._read_until_prompt()
             if not await self._check_enable_mode():
                 raise ValueError("Failed to enter to enable mode")
         return output
