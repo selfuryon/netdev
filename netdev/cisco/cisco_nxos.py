@@ -1,9 +1,9 @@
 import re
 
-from ..netdev_base import NetDev
+from ..cisco_like import CiscoLikeDevice
 
 
-class CiscoNxos(NetDev):
+class CiscoNxos(CiscoLikeDevice):
     @staticmethod
     def _normalize_linefeeds(a_string):
         """
