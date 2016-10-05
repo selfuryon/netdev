@@ -81,6 +81,15 @@ class BaseDevice(object):
         # @formatter:on
         return command_mapper[command]
 
+    async def __aenter__(self):
+        """Async Context Manager"""
+        await self.connect()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async Context Manager"""
+        await self.disconnect()
+
     async def connect(self):
         """
         Basic asynchronous connection method
