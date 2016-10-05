@@ -2,8 +2,9 @@
    :hidden:
    :maxdepth: 2
 
+       overview
    api
    examples
 
-.. currentmodule:: netdev
+.. module:: netdev
 .. include:: ../README.rst

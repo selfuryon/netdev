@@ -8,7 +8,7 @@ API Documentation
 Overview
 ========
 
-Netdev is an asynchronous library for working with network devices. For each vendor you should use separate class for
+Asynchronous multi-vendor library for interacting with network devices. For each vendor you should use separate class for
 working. For this purpose are used Factory method :func:`create`. In params for this method you should specify
 device_type for correct working.
 Sample of working is:
