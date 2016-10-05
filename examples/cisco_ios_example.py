@@ -11,16 +11,14 @@ logging.basicConfig(level=logging.DEBUG)
 netdev.logger.setLevel(logging.DEBUG)
 
 async def task(param):
-    ios = netdev.create(**param)
-    await ios.connect()
-    out = await ios.send_command("show ssh")
-    print(out)
-    commands = ["line console 0", "exit"]
-    out = await ios.send_config_set(commands)
-    print(out)
-    out = await ios.send_command("show run")
-    print(out)
-    await ios.disconnect()
+    async with netdev.create(**param) as ios:
+        out = await ios.send_command("show ssh")
+        print(out)
+        commands = ["line console 0", "exit"]
+        out = await ios.send_config_set(commands)
+        print(out)
+        out = await ios.send_command("show run")
+        print(out)
 
 
 async def run():
