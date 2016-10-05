@@ -4,6 +4,7 @@ Base Class for using in connection to network devices
 Connection Method are based upon AsyncSSH and should be running in asyncio loop
 """
 
+import asyncio
 import re
 
 import asyncssh
@@ -12,15 +13,13 @@ from .exceptions import DisconnectError
 from .logger import logger
 
 
-class NetDev(object):
+class BaseDevice(object):
     """
-    Base Class for working with network devices
-
-    It used by default Cisco params
+    Base Abstract Class for working with network devices
     """
 
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
-                 local_addr=None, client_keys=None, passphrase=None):
+                 local_addr=None, client_keys=None, passphrase=None, loop=None):
         """
         Initialize base class for asynchronous working with network devices
 
@@ -49,6 +48,10 @@ class NetDev(object):
         self._local_addr = local_addr
         self._client_keys = client_keys
         self._passphrase = passphrase
+        if loop is None:
+            self._loop = asyncio.get_event_loop()
+        else:
+            self._loop = loop
 
         # Filling internal vars
         self._stdin = self._stdout = self._stderr = self._conn = None
@@ -70,14 +73,10 @@ class NetDev(object):
         """
         # @formatter:off
         command_mapper = {
-            'priv_prompt': '#',
-            'unpriv_prompt': '>',
+            'delimeter1': '#',
+            'delimeter2': '>',
+            'pattern': r"{}.*?(\(.*?\))?[{}|{}]",
             'disable_paging': 'terminal length 0',
-            'priv_enter': 'enable',
-            'priv_exit': 'disable',
-            'config_enter': 'conf t',
-            'config_exit': 'end',
-            'check_config_mode': ')#',
         }
         # @formatter:on
         return command_mapper[command]
@@ -97,7 +96,6 @@ class NetDev(object):
         logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
         await self._set_base_prompt()
-        await self._enable()
         await self._disable_paging()
         logger.info("Host {}: Connected to device".format(self._host))
 
@@ -126,10 +124,11 @@ class NetDev(object):
             raise DisconnectError(self._host, e.code, e.reason)
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb')
         logger.info("Host {}: Connection is established".format(self._host))
+
         # Flush unnecessary data
-        priv_prompt = self._get_default_command('priv_prompt')
-        unpriv_prompt = self._get_default_command('unpriv_prompt')
-        output = await self._read_until_pattern(r"{}|{}".format(re.escape(priv_prompt), re.escape(unpriv_prompt)))
+        delimeter1 = self._get_default_command('delimeter1')
+        delimeter2 = self._get_default_command('delimeter2')
+        output = await self._read_until_pattern(r"{}|{}".format(re.escape(delimeter1), re.escape(delimeter2)))
         logger.debug("Host {}: Establish Connection Output: {}".format(self._host, output))
         return output
 
@@ -144,19 +143,21 @@ class NetDev(object):
         """
         logger.info("Host {}: Setting base prompt".format(self._host))
         prompt = await self._find_prompt()
+
         # Strip off trailing terminator
         self._base_prompt = prompt[:-1]
-        priv_prompt = self._get_default_command('priv_prompt')
-        unpriv_prompt = self._get_default_command('unpriv_prompt')
-        self._base_pattern = r"{}.*?(\(.*?\))?[{}|{}]".format(re.escape(self._base_prompt[:12]), re.escape(priv_prompt),
-                                                              re.escape(unpriv_prompt))
+        delimeter1 = self._get_default_command('delimeter1')
+        delimeter2 = self._get_default_command('delimeter2')
+        pattern = self._get_default_command('pattern')
+        self._base_pattern = pattern.format(re.escape(self._base_prompt[:12]), re.escape(delimeter1),
+                                            re.escape(delimeter2))
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
 
     async def _disable_paging(self):
         """Disable paging method"""
-        logger.info("Host {}: Trying disable paging".format(self._host))
+        logger.info("Host {}: Trying to disable paging".format(self._host))
         command = self._get_default_command('disable_paging')
         command = self._normalize_cmd(command)
         logger.debug("Host {}: Disable paging command: {}".format(self._host, command))
@@ -172,9 +173,9 @@ class NetDev(object):
         logger.info("Host {}: Finding prompt".format(self._host))
         self._stdin.write(self._normalize_cmd("\n"))
         prompt = ''
-        priv_prompt = self._get_default_command('priv_prompt')
-        unpriv_prompt = self._get_default_command('unpriv_prompt')
-        prompt = await self._read_until_pattern(r"{0}|{1}".format(re.escape(priv_prompt), re.escape(unpriv_prompt)))
+        delimeter1 = self._get_default_command('delimeter1')
+        delimeter2 = self._get_default_command('delimeter2')
+        prompt = await self._read_until_pattern(r"{}|{}".format(re.escape(delimeter1), re.escape(delimeter2)))
         prompt = prompt.strip()
         if self._ansi_escape_codes:
             prompt = self._strip_ansi_escape_codes(prompt)
@@ -291,79 +292,7 @@ class NetDev(object):
         command += '\n'
         return command
 
-    async def _check_enable_mode(self):
-        """Check if in enable mode. Return boolean"""
-        logger.info('Host {}: Checking enable mode'.format(self._host))
-        check_string = self._get_default_command('priv_prompt')
-        self._stdin.write(self._normalize_cmd('\n'))
-        output = await self._read_until_prompt()
-        return check_string in output
-
-    async def _enable(self, pattern='password', re_flags=re.IGNORECASE):
-        """Enter enable mode"""
-        logger.info('Host {}: Entering to enable mode'.format(self._host))
-        output = ""
-        enable_command = self._get_default_command('priv_enter')
-        if not await self._check_enable_mode():
-            self._stdin.write(self._normalize_cmd(enable_command))
-            output += await self._read_until_prompt_or_pattern(pattern=pattern, re_flags=re_flags)
-            self._stdin.write(self._normalize_cmd(self._secret))
-            output += await self._read_until_prompt()
-            if not await self._check_enable_mode():
-                raise ValueError("Failed to enter to enable mode")
-        return output
-
-    async def _exit_enable_mode(self):
-        """Exit enable mode"""
-        logger.info('Host {}: Exiting from enable mode'.format(self._host))
-        output = ""
-        exit_enable = self._get_default_command('priv_exit')
-        if await self._check_enable_mode():
-            self._stdin.write(self._normalize_cmd(exit_enable))
-            output += await self._read_until_prompt()
-            if await self._check_enable_mode():
-                raise ValueError("Failed to exit from enable mode")
-        return output
-
-    async def _check_config_mode(self, pattern=''):
-        """Checks if the device is in configuration mode or not"""
-        logger.info('Host {}: Checking config mode'.format(self._host))
-        check_string = self._get_default_command('check_config_mode')
-        if not pattern:
-            pattern = self._base_pattern
-        self._stdin.write(self._normalize_cmd('\n'))
-        output = await self._read_until_pattern(pattern=pattern)
-        return check_string in output
-
-    async def _config_mode(self, pattern=''):
-        """Enter into config_mode"""
-        logger.info('Host {}: Entering to config mode'.format(self._host))
-        output = ''
-        config_command = self._get_default_command('config_enter')
-        if not pattern:
-            pattern = self._base_pattern
-        if not await self._check_config_mode():
-            self._stdin.write(self._normalize_cmd(config_command))
-            output = await self._read_until_pattern(pattern=pattern)
-            if not await self._check_config_mode():
-                raise ValueError('Failed to enter to configuration mode')
-        return output
-
-    async def _exit_config_mode(self, pattern=''):
-        """Exit from configuration mode"""
-        logger.info('Host {}: Exiting from config mode'.format(self._host))
-        output = ''
-        exit_config = self._get_default_command('config_exit')
-        if not pattern:
-            pattern = self._base_pattern
-        if await self._check_config_mode():
-            self._stdin.write(self._normalize_cmd(exit_config))
-            output = await self._read_until_pattern(pattern=pattern)
-            if await self._check_config_mode():
-                raise ValueError("Failed to exit from configuration mode")
-        return output
-
-    async def send_config_set(self, config_commands=None, exit_config_mode=True):
+    async def send_config_set(self, config_commands=None):
         """
         Send configuration commands down the SSH channel.
 
@@ -381,14 +310,11 @@ class NetDev(object):
             raise ValueError("Host {}: Invalid argument passed into send_config_set".format(self._host))
 
         # Send config commands
-        output = await self._config_mode()
         logger.debug("Host {}: Config commands: {}".format(self._host, config_commands))
+        output = ''
         for cmd in config_commands:
             self._stdin.write(self._normalize_cmd(cmd))
             output += await self._read_until_prompt()
-
-        if exit_config_mode:
-            output += await self._exit_config_mode()
 
         output = self._normalize_linefeeds(output)
         logger.debug("Host {}: Config commands output: {}".format(self._host, output))
@@ -456,11 +382,11 @@ class NetDev(object):
     async def _cleanup(self):
         """ Any needed cleanup before closing connection """
         logger.info("Host {}: Cleanup session".format(self._host))
-        await self._exit_config_mode()
+        pass
 
     async def disconnect(self):
         """ Gracefully close the SSH connection """
         logger.info("Host {}: Disconnecting".format(self._host))
         await self._cleanup()
         self._conn.close()
-
+        await self._conn.wait_closed()

@@ -1,27 +1,10 @@
 import re
 
+from ..cisco_like import CiscoLikeDevice
 from ..logger import logger
-from ..netdev_base import NetDev
 
 
-class FujitsuSwitch(NetDev):
-    async def connect(self):
-        """
-        Async Connection method
-
-        Usual using 4 functions:
-            establish_connection() for connecting to device
-            set_base_prompt() for finding and setting device prompt
-            enable() for getting privilege exec mode
-            disable_paging() for non interact output in commands
-        """
-        logger.info("Host {}: Connecting to device".format(self._host))
-        await self._establish_connection()
-        await self._set_base_prompt()
-        await self._enable()
-        await self._disable_paging()
-        logger.info("Host {}: Connected to device".format(self._host))
-
+class FujitsuSwitch(CiscoLikeDevice):
     async def _set_base_prompt(self):
         """
         Setting two important vars
@@ -34,10 +17,11 @@ class FujitsuSwitch(NetDev):
         prompt = await self._find_prompt()
         # Strip off trailing terminator
         self._base_prompt = prompt[1:-3]
-        priv_prompt = self._get_default_command('priv_prompt')
-        unpriv_prompt = self._get_default_command('unpriv_prompt')
-        self._base_pattern = r"\({}.*?\) (\(.*?\))?[{}|{}]".format(re.escape(self._base_prompt[:12]),
-                                                                   re.escape(priv_prompt), re.escape(unpriv_prompt))
+        delimeter1 = self._get_default_command('delimeter1')
+        delimeter2 = self._get_default_command('delimeter2')
+        pattern = self._get_default_command('pattern')
+        self._base_pattern = pattern.format(re.escape(self._base_prompt[:12]), re.escape(delimeter1),
+                                            re.escape(delimeter2))
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
@@ -59,14 +43,15 @@ class FujitsuSwitch(NetDev):
         """
         # @formatter:off
         command_mapper = {
-            'priv_prompt': '#',
-            'unpriv_prompt': '>',
+            'delimeter1': '>',
+            'delimeter2': '#',
+            'pattern': r"\({}.*?\) (\(.*?\))?[{}|{}]",
             'disable_paging': 'no pager',
             'priv_enter': 'enable',
             'priv_exit': 'disable',
             'config_enter': 'conf',
             'config_exit': 'end',
-            'check_config_mode': ')#'
+            'config_check': ')#',
         }
         # @formatter:on
         return command_mapper[command]

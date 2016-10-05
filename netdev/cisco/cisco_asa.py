@@ -3,17 +3,17 @@
 import re
 
 from ..logger import logger
-from ..netdev_base import NetDev
+from ..cisco_like import CiscoLikeDevice
 
 
-class CiscoAsa(NetDev):
+class CiscoAsa(CiscoLikeDevice):
     """Subclass specific to Cisco ASA."""
 
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
-                 local_addr=None, client_keys=None, passphrase=None):
+                 local_addr=None, client_keys=None, passphrase=None, loop=None):
         super().__init__(host=host, username=username, password=password, secret=secret, port=port,
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
-                         client_keys=client_keys, passphrase=passphrase)
+                         client_keys=client_keys, passphrase=passphrase, loop=loop)
         self._current_context = 'system'
         self._multiple_mode = False
 
@@ -75,10 +75,10 @@ class CiscoAsa(NetDev):
             prompt = prompt[:-1]
         self._base_prompt = prompt
         self._current_context = context
-        priv_prompt = self._get_default_command('priv_prompt')
-        unpriv_prompt = self._get_default_command('unpriv_prompt')
+        delimeter1 = self._get_default_command('delimeter1')
+        delimeter2 = self._get_default_command('delimeter2')
         self._base_pattern = r"{}.*(\/\w+)?(\(.*?\))?[{}|{}]".format(re.escape(self._base_prompt[:12]),
-                                                                     re.escape(priv_prompt), re.escape(unpriv_prompt))
+                                                                     re.escape(delimeter1), re.escape(delimeter2))
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         logger.debug("Host {}: Current Context: {}".format(self._host, self._current_context))
@@ -104,14 +104,16 @@ class CiscoAsa(NetDev):
         """
         # @formatter:off
         command_mapper = {
-            'priv_prompt': '#',
-            'unpriv_prompt': '>',
+            'delimeter1': '>',
+            'delimeter2': '#',
+            'pattern': r"{}.*?(\(.*?\))?[{}|{}]",
             'disable_paging': 'terminal pager 0',
             'priv_enter': 'enable',
-            'priv_exit': 'enable',
+            'priv_exit': 'disable',
             'config_enter': 'conf t',
             'config_exit': 'end',
-            'check_config_mode': ')#'
+            'config_check': ')#',
+            'check_config_mode': ')#',
         }
         # @formatter:on
         return command_mapper[command]
