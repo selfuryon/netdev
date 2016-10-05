@@ -1,13 +1,13 @@
 import asyncssh
 
+from ..base import BaseDevice
 from ..exceptions import DisconnectError
 from ..logger import logger
-from ..netdev_base import NetDev
 
 
-class MikrotikRouterOS(NetDev):
+class MikrotikRouterOS(BaseDevice):
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
-                 local_addr=None, client_keys=None, passphrase=None):
+                 local_addr=None, client_keys=None, passphrase=None, loop=None):
         """
         Invoke init with some special params (base_pattern and username)
 
@@ -20,7 +20,8 @@ class MikrotikRouterOS(NetDev):
         """
         super(MikrotikRouterOS, self).__init__(host=host, username=username, password=password, secret=secret,
                                                port=port, device_type=device_type, known_hosts=known_hosts,
-                                               local_addr=local_addr, client_keys=client_keys, passphrase=passphrase)
+                                               local_addr=local_addr, client_keys=client_keys, passphrase=passphrase,
+                                               loop=loop)
 
         self._base_pattern = r"\[.*?\] \>.*\[.*?\] \>"
         self._username += '+ct80w'
@@ -68,7 +69,7 @@ class MikrotikRouterOS(NetDev):
         For Mikrotik devices base_pattern is "<
         """
         logger.info("Host {}: Setting base prompt".format(self._host))
-        self._base_pattern = r"\[.*?\] (\/.*?)?\>"
+        self._base_pattern = self._get_default_command('pattern')
         prompt = await self._find_prompt()
         user = ''
         # Strip off trailing terminator
@@ -110,14 +111,7 @@ class MikrotikRouterOS(NetDev):
         """
         # @formatter:off
         command_mapper = {
-            'priv_prompt': '>',
-            'unpriv_prompt': '>',
-            'disable_paging': '',
-            'priv_enter': '',
-            'priv_exit': '',
-            'config_enter': '',
-            'config_exit': '',
-            'check_config_mode': '>'
+            'pattern': r"\[.*?\] (\/.*?)?\>",
         }
         # @formatter:on
         return command_mapper[command]
