@@ -7,13 +7,30 @@ from ..cisco_like import CiscoLikeDevice
 
 
 class CiscoAsa(CiscoLikeDevice):
-    """Subclass specific to Cisco ASA."""
+    """Class for working with Cisco ASA"""
 
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
                  local_addr=None, client_keys=None, passphrase=None, loop=None):
+        """
+        Initialize class for asynchronous working with network devices
+
+        :param str host: hostname or ip address for connection
+        :param str username: username for logger to device
+        :param str password: password for user for logger to device
+        :param str secret: secret password for privilege mode
+        :param int port: ssh port for connection. Default is 22
+        :param str device_type: network device type. This is subclasses of this class
+        :param known_hosts: file with known hosts. Default is None (no policy). with () it will use default file
+        :param str local_addr: local address for binding source of tcp connection
+        :param client_keys: path for client keys. With () it will use default file in OS.
+        :param str passphrase: password for encrypted client keys
+        :param loop: asyncio loop object
+        :returns: :class:`CiscoLikeDevice` class for working with devices like Cisco
+        """
         super().__init__(host=host, username=username, password=password, secret=secret, port=port,
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
                          client_keys=client_keys, passphrase=passphrase, loop=loop)
+
         self._current_context = 'system'
         self._multiple_mode = False
 
@@ -31,11 +48,13 @@ class CiscoAsa(CiscoLikeDevice):
         """
         Async Connection method
 
-        Usual using 4 functions:
-            establish_connection() for connecting to device
-            set_base_prompt() for finding and setting device prompt
-            enable() for getting privilege exec mode
-            disable_paging() for non interact output in commands
+        Using 5 functions:
+
+        * _establish_connection() for connecting to device
+        * _set_base_prompt() for finding and setting device prompt
+        * _enable() for getting privilege exec mode
+        * _disable_paging() for non interact output in commands
+        *  _check_multiple_mode() for checking multiple mode in ASA
         """
         logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
@@ -47,8 +66,9 @@ class CiscoAsa(CiscoLikeDevice):
 
     async def send_command(self, command_string, strip_prompt=True, strip_command=True):
         """
-        If the ASA is in multi-context mode, then the base_prompt needs to be
-        updated after each context change.
+        Sending command to Cisco ASA
+
+        If Cisco ASA in multi-context mode we need to change base prompt if context was changed
         """
         output = await super(CiscoAsa, self).send_command(command_string=command_string, strip_prompt=strip_prompt,
                                                           strip_command=strip_command)

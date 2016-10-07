@@ -33,7 +33,8 @@ class BaseDevice(object):
         :param str local_addr: local address for binding source of tcp connection
         :param client_keys: path for client keys. With () it will use default file in OS.
         :param str passphrase: password for encrypted client keys
-        :returns: :class:`netdev.netdev_base.NetDev` Base class for working with Cisco IOS device
+        :param loop: asyncio loop object
+        :returns: :class:`BaseDevice` Base class
         """
         if host:
             self._host = host
@@ -61,7 +62,7 @@ class BaseDevice(object):
 
     @property
     def base_prompt(self):
-        """ Returning base prompt for this network device"""
+        """Returning base prompt for this network device"""
         return self._base_prompt
 
     def _get_default_command(self, command):
@@ -95,12 +96,11 @@ class BaseDevice(object):
         Basic asynchronous connection method
 
         It connects to device and makes some preparation steps for working.
-        Usual using 4 functions:
+        Usual using 3 functions:
 
-            * establish_connection() for connecting to device
-            * set_base_prompt() for finding and setting device prompt
-            * enable() for getting privilege exec mode
-            * disable_paging() for non interact output in commands
+        * _establish_connection() for connecting to device
+        * _set_base_prompt() for finding and setting device prompt
+        * _disable_paging() for non interact output in commands
         """
         logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
@@ -195,7 +195,7 @@ class BaseDevice(object):
 
     async def send_command(self, command_string, strip_command=True, strip_prompt=True):
         """
-        Send command to SSH Channel
+        Sending command to device
 
         :param str command_string: command for executing basically in privilege mode
         :param bool strip_command: True or False for stripping command from output
@@ -303,13 +303,11 @@ class BaseDevice(object):
 
     async def send_config_set(self, config_commands=None):
         """
-        Send configuration commands down the SSH channel.
+        Sending configuration commands to device
 
-        config_commands is an iterable containing all of the configuration commands.
         The commands will be executed one after the other.
-        Automatically exits/enters configuration mode.
-        :param list config_commands: piterable string list with commands for applying to network devices in conf mode
-        :param Bool exit_config_mode: If true it will quit from configuration mode automatically
+
+        :param list config_commands: iterable string list with commands for applying to network device
         :return: The output of this commands
         """
         logger.info("Host {}: Sending configuration settings".format(self._host))
@@ -324,6 +322,9 @@ class BaseDevice(object):
         for cmd in config_commands:
             self._stdin.write(self._normalize_cmd(cmd))
             output += await self._read_until_prompt()
+
+        if self._ansi_escape_codes:
+            output = self._strip_ansi_escape_codes(output)
 
         output = self._normalize_linefeeds(output)
         logger.debug("Host {}: Config commands output: {}".format(self._host, output))

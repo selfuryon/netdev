@@ -1,5 +1,5 @@
 """
-Base Class for using in connection to network devices
+CiscoLikeDevice Class is abstract class for using in cisco like devices
 
 Connection Method are based upon AsyncSSH and should be running in asyncio loop
 """
@@ -12,15 +12,19 @@ from .logger import logger
 
 class CiscoLikeDevice(BaseDevice):
     """
-    Base Class for working with network devices
+    This Class is abstract class for working with cisco like devices
 
-    It used by default Cisco params
+    Cisco like devices having several concepts:
+
+    * user exec or unprivilege exec. This mode allows you perform basic tests and get system information.
+    * privilage exec. This mode allows the use of all EXEC mode commands available on the system
+    * configuration mode or config mode. This mode are used for configuration whole system.
     """
 
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
                  local_addr=None, client_keys=None, passphrase=None, loop=None):
         """
-        Initialize base class for asynchronous working with network devices
+        Initialize class for asynchronous working with network devices
 
         :param str host: hostname or ip address for connection
         :param str username: username for logger to device
@@ -32,7 +36,8 @@ class CiscoLikeDevice(BaseDevice):
         :param str local_addr: local address for binding source of tcp connection
         :param client_keys: path for client keys. With () it will use default file in OS.
         :param str passphrase: password for encrypted client keys
-        :returns: :class:`netdev.netdev_base.NetDev` Base class for working with Cisco IOS device
+        :param loop: asyncio loop object
+        :returns: :class:`CiscoLikeDevice` class for working with devices like Cisco
         """
         super().__init__(host=host, username=username, password=password, secret=secret, port=port,
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
@@ -64,13 +69,13 @@ class CiscoLikeDevice(BaseDevice):
         """
         Basic asynchronous connection method
 
-        It connects to device and makes some preparation steps for working.
+        It connects to device and makes some preparation steps for working with cisco like devices
         Usual using 4 functions:
 
-            * establish_connection() for connecting to device
-            * set_base_prompt() for finding and setting device prompt
-            * enable() for getting privilege exec mode
-            * disable_paging() for non interact output in commands
+        * _establish_connection() for connecting to device
+        * _set_base_prompt() for finding and setting device prompt
+        * _enable() for getting privilege exec mode
+        * _disable_paging() for non interact output in commands
         """
         logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
@@ -148,13 +153,13 @@ class CiscoLikeDevice(BaseDevice):
 
     async def send_config_set(self, config_commands=None, exit_config_mode=True):
         """
-        Send configuration commands down the SSH channel.
+        Sending configuration commands to cisco like devices
 
-        config_commands is an iterable containing all of the configuration commands.
         The commands will be executed one after the other.
         Automatically exits/enters configuration mode.
-        :param list config_commands: piterable string list with commands for applying to network devices in conf mode
-        :param Bool exit_config_mode: If true it will quit from configuration mode automatically
+
+        :param list config_commands: iterable string list with commands for applying to network devices in conf mode
+        :param bool exit_config_mode: If true it will quit from configuration mode automatically
         :return: The output of this commands
         """
 

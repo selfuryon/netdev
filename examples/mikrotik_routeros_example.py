@@ -17,6 +17,8 @@ async def task(param):
     commands = ['/ip address', 'print', '/']
     for cmd in commands:
         print(await routeros.send_command(cmd))
+    out = await routeros.send_config_set(commands)
+    print(out)
     await routeros.disconnect()
 
 

@@ -5,6 +5,7 @@ from ..logger import logger
 
 
 class FujitsuSwitch(CiscoLikeDevice):
+    """Class for working with Fujitsu Blade switch"""
     async def _set_base_prompt(self):
         """
         Setting two important vars
