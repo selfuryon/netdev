@@ -15,10 +15,10 @@ class CiscoLikeDevice(BaseDevice):
     This Class is abstract class for working with cisco like devices
 
     Cisco like devices having several concepts:
-        * user exec or unprivilege exec. This mode allows you to connect to remote devices, change terminal
-            settings on a temporary basis, perform basic tests, and list system information.
-        * privilage exec. This mode allows the use of all EXEC mode commands available on the system
-        * configuration mode or config mode. This mode are used for configuration whole system.
+
+    * user exec or unprivilege exec. This mode allows you perform basic tests and get system information.
+    * privilage exec. This mode allows the use of all EXEC mode commands available on the system
+    * configuration mode or config mode. This mode are used for configuration whole system.
     """
 
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
@@ -72,10 +72,10 @@ class CiscoLikeDevice(BaseDevice):
         It connects to device and makes some preparation steps for working with cisco like devices
         Usual using 4 functions:
 
-            * establish_connection() for connecting to device
-            * set_base_prompt() for finding and setting device prompt
-            * enable() for getting privilege exec mode
-            * disable_paging() for non interact output in commands
+        * _establish_connection() for connecting to device
+        * _set_base_prompt() for finding and setting device prompt
+        * _enable() for getting privilege exec mode
+        * _disable_paging() for non interact output in commands
         """
         logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
@@ -155,11 +155,11 @@ class CiscoLikeDevice(BaseDevice):
         """
         Sending configuration commands to cisco like devices
 
-        config_commands is an iterable containing all of the configuration commands.
         The commands will be executed one after the other.
         Automatically exits/enters configuration mode.
+
         :param list config_commands: iterable string list with commands for applying to network devices in conf mode
-        :param Bool exit_config_mode: If true it will quit from configuration mode automatically
+        :param bool exit_config_mode: If true it will quit from configuration mode automatically
         :return: The output of this commands
         """
 

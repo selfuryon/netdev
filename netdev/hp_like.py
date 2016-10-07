@@ -14,9 +14,10 @@ class HPLikeDevice(BaseDevice):
     """
     This Class for working with hp comware like devices
 
-    Cisco like devices having several concepts:
-        * user exec or user view. This mode is using for getting information from device
-        * system view. This mode is using for configuration system
+    HP Comware like devices having several concepts:
+
+    * user exec or user view. This mode is using for getting information from device
+    * system view. This mode is using for configuration system
     """
 
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
@@ -126,11 +127,11 @@ class HPLikeDevice(BaseDevice):
         """
         Sending configuration commands to device
 
-        config_commands is an iterable containing all of the configuration commands.
         The commands will be executed one after the other.
         Automatically exits/enters system-view.
+
         :param list config_commands: iterable string list with commands for applying to network devices in system view
-        :param Bool exit_sview_mode: If true it will quit from system-view mode automatically
+        :param bool exit_sview_mode: If true it will quit from system-view mode automatically
         :return: The output of this commands
         """
 

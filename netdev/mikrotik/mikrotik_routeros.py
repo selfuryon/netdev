@@ -34,8 +34,9 @@ class MikrotikRouterOS(BaseDevice):
         Async Connection method
 
         RouterOS using 2 functions:
-            establish_connection() for connecting to device
-            set_base_prompt() for finding and setting device prompt
+
+        * _establish_connection() for connecting to device
+        * _set_base_prompt() for finding and setting device prompt
         """
         logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
@@ -62,8 +63,8 @@ class MikrotikRouterOS(BaseDevice):
     async def _set_base_prompt(self):
         """
         Setting two important vars
-            base_prompt - textual prompt in CLI (usually hostname)
-            base_pattern - regexp for finding the end of command. IT's platform specific parameter
+        * base_prompt - textual prompt in CLI (usually hostname)
+        * base_pattern - regexp for finding the end of command. IT's platform specific parameter
 
         For Mikrotik devices base_pattern is "r"\[.*?\] (\/.*?)?\>"
         """

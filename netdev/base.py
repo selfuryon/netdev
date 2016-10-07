@@ -98,9 +98,9 @@ class BaseDevice(object):
         It connects to device and makes some preparation steps for working.
         Usual using 3 functions:
 
-            * establish_connection() for connecting to device
-            * set_base_prompt() for finding and setting device prompt
-            * disable_paging() for non interact output in commands
+        * _establish_connection() for connecting to device
+        * _set_base_prompt() for finding and setting device prompt
+        * _disable_paging() for non interact output in commands
         """
         logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
@@ -305,8 +305,8 @@ class BaseDevice(object):
         """
         Sending configuration commands to device
 
-        config_commands is an iterable containing all of the configuration commands.
         The commands will be executed one after the other.
+
         :param list config_commands: iterable string list with commands for applying to network device
         :return: The output of this commands
         """

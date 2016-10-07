@@ -49,11 +49,12 @@ class CiscoAsa(CiscoLikeDevice):
         Async Connection method
 
         Using 5 functions:
-            establish_connection() for connecting to device
-            set_base_prompt() for finding and setting device prompt
-            enable() for getting privilege exec mode
-            disable_paging() for non interact output in commands
-            _check_multiple_mode() for checking multiple mode in ASA
+
+        * _establish_connection() for connecting to device
+        * _set_base_prompt() for finding and setting device prompt
+        * _enable() for getting privilege exec mode
+        * _disable_paging() for non interact output in commands
+        *  _check_multiple_mode() for checking multiple mode in ASA
         """
         logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
