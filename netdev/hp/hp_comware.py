@@ -5,5 +5,5 @@ from ..hp_like import HPLikeDevice
 
 
 class HPComware(HPLikeDevice):
-    """HP Comware class"""
+    """Class for working with HP Comware"""
     pass
