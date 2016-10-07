@@ -21,40 +21,76 @@ Factory method
 Classes
 =======
 
-Base classes:
--------------
+Base classes
+------------
 These classes are abstract and used as parent by other classes:
+
+BaseDevice
+~~~~~~~~~~
 
 .. autoclass:: BaseDevice
    :members:
    :special-members: __init__
 
+CiscoLikeDevice
+~~~~~~~~~~~~~~~
+
 .. autoclass:: CiscoLikeDevice
    :members:
+   :inherited-members:
+
+HPLikeDevice
+~~~~~~~~~~~~
 
 .. autoclass:: HPLikeDevice
    :members:
+   :inherited-members:
 
 End classes
 -----------
+These classes are using for particular connection to end devices
 
-.. autoclass:: CiscoAsa
-   :members:
+CiscoIos
+~~~~~~~~
 
 .. autoclass:: CiscoIos
    :members:
+   :inherited-members:
+
+CiscoAsa
+~~~~~~~~
+
+.. autoclass:: CiscoAsa
+   :members:
+   :inherited-members:
+
+CiscoNxos
+~~~~~~~~~
 
 .. autoclass:: CiscoNxos
    :members:
+   :inherited-members:
+
+FujitsuSwitch
+~~~~~~~~~~~~~
 
 .. autoclass:: FujitsuSwitch
    :members:
+   :inherited-members:
+
+HPComware
+~~~~~~~~~
 
 .. autoclass:: HPComware
    :members:
+   :inherited-members:
+
+MikrotikRouterOS
+~~~~~~~~~~~~~~~~
 
 .. autoclass:: MikrotikRouterOS
    :members:
+   :inherited-members:
 
 
 
