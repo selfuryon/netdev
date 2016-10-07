@@ -76,9 +76,8 @@ Managing flow
 For working with network device firstly you need to connect to device and after working you need
 to disconnect from device. For this purpose are used these methods:
 
-.. automethod:: BaseDevice.connect
-
-.. automethod:: BaseDevice.disconnect
+- :func:`BaseDevice.connect`
+- :func:`BaseDevice.disconnect`
 
 Sending commands
 ----------------
@@ -86,12 +85,12 @@ Some devices using mode principle: exists exec mode and configuration mode. Exec
 information from device, configuration mode are used for configuration device. For this purpose netdev
 have 2 basic methods:
 
-.. automethod:: BaseDevice.send_command
+- :func:`BaseDevice.send_command`
 
 This method is used for sending specific command to device in exec mode. Basically for getting some information
 from device
 
-.. automethod:: BaseDevice.send_config_set
+- :func:`BaseDevice.send_config_set`
 
 This method are used for sending command list to device in configuration mode. Command list is the list of all commands
 which configure device.
@@ -100,8 +99,6 @@ which configure device.
 Some others
 -----------
 
-.. autoattribute:: BaseDevice.base_prompt
-
-.. autoattribute:: CiscoAsa.current_context
-
-.. autoattribute:: CiscoAsa.multiple_mode
+- :attr:`BaseDevice.base_prompt`
+- :attr:`CiscoAsa.current_context`
+- :attr:`CiscoAsa.multiple_mode`
