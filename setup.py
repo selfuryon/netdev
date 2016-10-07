@@ -21,8 +21,8 @@ setup(
     license='BSD License',
     author=__author__,
     author_email=__author_email__,
-    description='Asynchronous network devices interaction library',
-    install_requires=['asyncssh', 'pyyaml'],
+    description='Asynchronous multi-vendor library for interacting with network devices',
+    install_requires=['asyncssh>=1.6.2', 'pyyaml'],
     long_description=long_description,
     keywords='network automation',
     classifiers=[
