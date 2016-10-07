@@ -12,7 +12,7 @@ from .logger import logger
 
 class CiscoLikeDevice(BaseDevice):
     """
-    CiscoLikeDevice Class is abstract class for working with cisco like devices
+    This Class is abstract class for working with cisco like devices
 
     Cisco like devices having several concepts:
         * user exec or unprivilege exec. This mode allows you to connect to remote devices, change terminal
@@ -24,7 +24,7 @@ class CiscoLikeDevice(BaseDevice):
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
                  local_addr=None, client_keys=None, passphrase=None, loop=None):
         """
-        Initialize CiscoLikeDevice class for asynchronous working with network devices
+        Initialize class for asynchronous working with network devices
 
         :param str host: hostname or ip address for connection
         :param str username: username for logger to device
