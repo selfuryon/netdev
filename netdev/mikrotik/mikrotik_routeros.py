@@ -6,6 +6,8 @@ from ..logger import logger
 
 
 class MikrotikRouterOS(BaseDevice):
+    """Class for working with Mikrotik RouterOS"""
+
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
                  local_addr=None, client_keys=None, passphrase=None, loop=None):
         """
@@ -34,7 +36,6 @@ class MikrotikRouterOS(BaseDevice):
         RouterOS using 2 functions:
             establish_connection() for connecting to device
             set_base_prompt() for finding and setting device prompt
-            disable_paging() not needed for Mikrotik. without-paging is argument for show commands
         """
         logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
@@ -42,9 +43,7 @@ class MikrotikRouterOS(BaseDevice):
         logger.info("Host {}: Connected to device".format(self._host))
 
     async def _establish_connection(self):
-        """
-        Need change the read until prompt not pattern with priv or unpriv terminators
-        """
+        """Establish SSH connection to the network device"""
         logger.info('Host {}: Establishing connection to port {}'.format(self._host, self._port))
         output = ""
         # initiate SSH connection
@@ -66,7 +65,7 @@ class MikrotikRouterOS(BaseDevice):
             base_prompt - textual prompt in CLI (usually hostname)
             base_pattern - regexp for finding the end of command. IT's platform specific parameter
 
-        For Mikrotik devices base_pattern is "<
+        For Mikrotik devices base_pattern is "r"\[.*?\] (\/.*?)?\>"
         """
         logger.info("Host {}: Setting base prompt".format(self._host))
         self._base_pattern = self._get_default_command('pattern')
@@ -115,34 +114,3 @@ class MikrotikRouterOS(BaseDevice):
         }
         # @formatter:on
         return command_mapper[command]
-
-    async def _cleanup(self):
-        """ Don't need anything """
-        pass
-
-    async def send_config_set(self, config_commands=None, exit_config_mode=False):
-        """
-        Send configuration commands down the SSH channel.
-
-        config_commands is an iterable containing all of the configuration commands.
-        The commands will be executed one after the other.
-        Automatically exits/enters configuration mode.
-        :param list config_commands: piterable string list with commands for applying to network devices in conf mode
-        :param Bool exit_config_mode: If true it will quit from configuration mode automatically
-        :return: The output of this commands
-        """
-        logger.info("Host {}: Sending configuration settings".format(self._host))
-        if config_commands is None:
-            return ''
-        if not hasattr(config_commands, '__iter__'):
-            raise ValueError("Invalid argument passed into send_config_set")
-
-        # Send config commands
-        output = ''
-        logger.debug("Host {}: Config commands: {}".format(self._host, config_commands))
-        for cmd in config_commands:
-            output += await self.send_command(cmd, strip_command=False, strip_prompt=False)
-
-        output = self._normalize_linefeeds(output)
-        logger.debug("Host {}: Config commands output: {}".format(self._host, output))
-        return output
