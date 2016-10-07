@@ -323,6 +323,9 @@ class BaseDevice(object):
             self._stdin.write(self._normalize_cmd(cmd))
             output += await self._read_until_prompt()
 
+        if self._ansi_escape_codes:
+            output = self._strip_ansi_escape_codes(output)
+
         output = self._normalize_linefeeds(output)
         logger.debug("Host {}: Config commands output: {}".format(self._host, output))
         return output
