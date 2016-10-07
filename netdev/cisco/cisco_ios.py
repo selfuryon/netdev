@@ -1,6 +1,6 @@
 from ..cisco_like import CiscoLikeDevice
 
 
-class CiscoIos(CiscoLikeDevice):
+class CiscoIOS(CiscoLikeDevice):
     """Class for working with Cisco IOS/IOS XE"""
     pass

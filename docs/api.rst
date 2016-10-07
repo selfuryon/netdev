@@ -50,24 +50,24 @@ End classes
 -----------
 These classes are using for particular connection to end devices
 
-CiscoIos
+CiscoIOS
 ~~~~~~~~
 
-.. autoclass:: CiscoIos
+.. autoclass:: CiscoIOS
    :members:
    :inherited-members:
 
-CiscoAsa
+CiscoASA
 ~~~~~~~~
 
-.. autoclass:: CiscoAsa
+.. autoclass:: CiscoASA
    :members:
    :inherited-members:
 
-CiscoNxos
+CiscoNXOS
 ~~~~~~~~~
 
-.. autoclass:: CiscoNxos
+.. autoclass:: CiscoNXOS
    :members:
    :inherited-members:
 

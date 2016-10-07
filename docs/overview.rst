@@ -57,9 +57,9 @@ exec view and system view concepts.
 All other classes are the end classes which you can use for working with particular device:
 
 * :class:`MikrotikRouterOS`
-* :class:`CiscoIos`
-* :class:`CiscoAsa`
-* :class:`CiscoNxos`
+* :class:`CiscoIOS`
+* :class:`CiscoASA`
+* :class:`CiscoNXOS`
 * :class:`FujitsuSwitch`
 * :class:`HPComware`
 
@@ -114,5 +114,5 @@ Some others
 -----------
 
 - :attr:`BaseDevice.base_prompt`
-- :attr:`CiscoAsa.current_context`
-- :attr:`CiscoAsa.multiple_mode`
+- :attr:`CiscoASA.current_context`
+- :attr:`CiscoASA.multiple_mode`

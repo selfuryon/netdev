@@ -2,11 +2,11 @@
 
 import re
 
-from ..logger import logger
 from ..cisco_like import CiscoLikeDevice
+from ..logger import logger
 
 
-class CiscoAsa(CiscoLikeDevice):
+class CiscoASA(CiscoLikeDevice):
     """Class for working with Cisco ASA"""
 
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
@@ -70,7 +70,7 @@ class CiscoAsa(CiscoLikeDevice):
 
         If Cisco ASA in multi-context mode we need to change base prompt if context was changed
         """
-        output = await super(CiscoAsa, self).send_command(command_string=command_string, strip_prompt=strip_prompt,
+        output = await super(CiscoASA, self).send_command(command_string=command_string, strip_prompt=strip_prompt,
                                                           strip_command=strip_command)
         if "changet" in command_string:
             await self._set_base_prompt()
