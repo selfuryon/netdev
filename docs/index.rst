@@ -2,7 +2,7 @@
    :hidden:
    :maxdepth: 2
 
-       overview
+   overview
    api
    examples
 

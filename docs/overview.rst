@@ -10,7 +10,7 @@ Overview
 Netdev is asynchronous multi-vendor library for interacting with network devices. So you can create many
 simultaneous connection to network devices for parallel executing commands.
 
-For creating connection to network device you should use :func:`create` like this:
+For creating connection to network device you should use function :func:`create` like this:
 
 .. code-block:: python
 
@@ -40,39 +40,68 @@ or with using async context manager:
    loop = asyncio.get_event_loop()
    loop.run_until_complete(working_with_netdev())
 
-Public methods and properties
-=============================
 
-For interacting with specific device are used specific class: :func:`create` is a factory method for
-creating specific class object. Basically it has several methods and properties:
+Library structure
+=================
 
+Library consist from several base classes and end classes which using for communication.
+The main class is :class:`BaseDevice`. It provides some basic functionality regardless of device type.
+Library also have two common child classes: :class:`CiscoLikeDevice` and :class:`HPLikeDevice`.
+
+:class:`CiscoLikeDevice` class provides some basic methods for cisco like devices: devices which have user exec,
+privilege exec and conf mode concepts.
+
+:class:`HPLikeDevice` class provides some basic methods for hp (comware) like devices: these devices have only
+exec view and system view concepts.
+
+All other classes are the end classes which you can use for working with particular device:
+
+* :class:`MikrotikRouterOS`
+* :class:`CiscoIos`
+* :class:`CiscoAsa`
+* :class:`CiscoNxos`
+* :class:`FujitsuSwitch`
+* :class:`HPComware`
+
+The particular class selected by parameter *device_type* in :func:`create`
+
+
+Common public methods and properties
+====================================
+
+Base classes have several common public methods.
 
 Managing flow
 -------------
 For working with network device firstly you need to connect to device and after working you need
 to disconnect from device. For this purpose are used these methods:
 
-**Method :func:`connect`**
-.. autofunction:: base.connect
+.. automethod:: BaseDevice.connect
 
-**Method :func:`disconnect`**
-.. autofunction:: base.disconnect
-
+.. automethod:: BaseDevice.disconnect
 
 Sending commands
 ----------------
-Some devices using mode principles: exists exec mode and configuration mode. Exec mode are used for getting some
+Some devices using mode principle: exists exec mode and configuration mode. Exec mode are used for getting some
 information from device, configuration mode are used for configuration device. For this purpose netdev
 have 2 basic methods:
 
-**Method :func:`send_command`**
-.. autofunction:: base.send_command
+.. automethod:: BaseDevice.send_command
 
 This method is used for sending specific command to device in exec mode. Basically for getting some information
 from device
 
-**Method :func:`send_config_set`**
-.. autofunction:: base.send_config_set
+.. automethod:: BaseDevice.send_config_set
 
 This method are used for sending command list to device in configuration mode. Command list is the list of all commands
 which configure device.
+
+
+Some others
+-----------
+
+.. autoattribute:: BaseDevice.base_prompt
+
+.. autoattribute:: CiscoAsa.current_context
+
+.. autoattribute:: CiscoAsa.multiple_mode
