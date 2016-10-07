@@ -8,24 +8,10 @@ API Documentation
 Overview
 ========
 
-Asynchronous multi-vendor library for interacting with network devices. For each vendor you should use separate class for
-working. For this purpose are used Factory method :func:`create`. In params for this method you should specify
-device_type for correct working.
-Sample of working is:
+For each vendor you should use separate class for working.
+For this purpose are used Factory method :func:`create`. In params for this method you should specify device_type
+for taking right class
 
-.. code-block:: python
-
-   async def working_with_netdev():
-      dev = netdev.create(host='host', username='username', password='password', device_type='device_type')
-      await dev.connect() # Connecting and preparing session for working
-      output = await dev.send_command('command') # working with command in privilege/user mode
-      print(output)
-      output = await dev.send_config_set(['first_command','second_command'] #working with commands in config mode
-      print(output)
-      await dev.disconnect() #disconnecting from device
-
-   loop = asyncio.get_event_loop()
-   loop.run_until_complete(working_with_netdev())
 
 Factory method
 ==============
@@ -35,21 +21,40 @@ Factory method
 Classes
 =======
 
-.. autoclass:: netdev.netdev_base.NetDev
+Base classes:
+-------------
+These classes are abstract and used as parent by other classes:
+
+.. autoclass:: BaseDevice
    :members:
    :special-members: __init__
 
-.. autoclass:: netdev.cisco.cisco_asa.CiscoAsa
-   :members: current_context, multiple_mode
+.. autoclass:: CiscoLikeDevice
+   :members:
 
-.. autoclass:: netdev.cisco.cisco_ios.CiscoIos
+.. autoclass:: HPLikeDevice
+   :members:
 
-.. autoclass:: netdev.cisco.cisco_nxos.CiscoNxos
+End classes
+-----------
 
-.. autoclass:: netdev.fujitsu.fujitsu_switch.FujitsuSwitch
+.. autoclass:: CiscoAsa
+   :members:
 
-.. autoclass:: netdev.hp.hp_comware.HPComware
+.. autoclass:: CiscoIos
+   :members:
 
-.. autoclass:: netdev.mikrotik.mikrotik_routeros.MikrotikRouterOS
+.. autoclass:: CiscoNxos
+   :members:
+
+.. autoclass:: FujitsuSwitch
+   :members:
+
+.. autoclass:: HPComware
+   :members:
+
+.. autoclass:: MikrotikRouterOS
+   :members:
+
 
 
