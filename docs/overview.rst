@@ -65,6 +65,20 @@ All other classes are the end classes which you can use for working with particu
 
 The particular class selected by parameter *device_type* in :func:`create`
 
+Logging
+=======
+
+For debugging purpose library has :data:`logger` object. You can use it like this:
+
+.. code-block:: python
+
+    import netdev
+
+    netdev_logger = netdev.logger
+    netdev_logger.setLevel(logging.INFO)
+    netdev_logger.addHandler(logging.StreamHandler())
+
+    #Your own code
 
 Common public methods and properties
 ====================================
