@@ -1,6 +1,3 @@
-import re
-
-from ..logger import logger
 from ..hp_like import HPLikeDevice
 
 
