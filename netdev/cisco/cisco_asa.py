@@ -2,18 +2,35 @@
 
 import re
 
+from ..cisco_like import CiscoLikeDevice
 from ..logger import logger
-from ..netdev_base import NetDev
 
 
-class CiscoAsa(NetDev):
-    """Subclass specific to Cisco ASA."""
+class CiscoASA(CiscoLikeDevice):
+    """Class for working with Cisco ASA"""
 
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
-                 local_addr=None, client_keys=None, passphrase=None):
+                 local_addr=None, client_keys=None, passphrase=None, loop=None):
+        """
+        Initialize class for asynchronous working with network devices
+
+        :param str host: hostname or ip address for connection
+        :param str username: username for logger to device
+        :param str password: password for user for logger to device
+        :param str secret: secret password for privilege mode
+        :param int port: ssh port for connection. Default is 22
+        :param str device_type: network device type. This is subclasses of this class
+        :param known_hosts: file with known hosts. Default is None (no policy). with () it will use default file
+        :param str local_addr: local address for binding source of tcp connection
+        :param client_keys: path for client keys. With () it will use default file in OS.
+        :param str passphrase: password for encrypted client keys
+        :param loop: asyncio loop object
+        :returns: :class:`CiscoLikeDevice` class for working with devices like Cisco
+        """
         super().__init__(host=host, username=username, password=password, secret=secret, port=port,
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
-                         client_keys=client_keys, passphrase=passphrase)
+                         client_keys=client_keys, passphrase=passphrase, loop=loop)
+
         self._current_context = 'system'
         self._multiple_mode = False
 
@@ -31,26 +48,29 @@ class CiscoAsa(NetDev):
         """
         Async Connection method
 
-        Usual using 4 functions:
-            establish_connection() for connecting to device
-            set_base_prompt() for finding and setting device prompt
-            enable() for getting privilege exec mode
-            disable_paging() for non interact output in commands
+        Using 5 functions:
+
+        * _establish_connection() for connecting to device
+        * _set_base_prompt() for finding and setting device prompt
+        * _enable() for getting privilege exec mode
+        * _disable_paging() for non interact output in commands
+        *  _check_multiple_mode() for checking multiple mode in ASA
         """
-        logger.info("Connecting to device")
+        logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
         await self._set_base_prompt()
         await self._enable()
         await self._disable_paging()
         await self._check_multiple_mode()
-        logger.info("Connected to device")
+        logger.info("Host {}: Connected to device".format(self._host))
 
     async def send_command(self, command_string, strip_prompt=True, strip_command=True):
         """
-        If the ASA is in multi-context mode, then the base_prompt needs to be
-        updated after each context change.
+        Sending command to Cisco ASA
+
+        If Cisco ASA in multi-context mode we need to change base prompt if context was changed
         """
-        output = await super(CiscoAsa, self).send_command(command_string=command_string, strip_prompt=strip_prompt,
+        output = await super(CiscoASA, self).send_command(command_string=command_string, strip_prompt=strip_prompt,
                                                           strip_command=strip_command)
         if "changet" in command_string:
             await self._set_base_prompt()
@@ -65,7 +85,7 @@ class CiscoAsa(NetDev):
 
         For ASA devices base_pattern is "prompt(\/\w+)?(\(.*?\))?[#|>]
         """
-        logger.info("Setting base prompt")
+        logger.info("Host {}: Setting base prompt".format(self._host))
         prompt = await self._find_prompt()
         context = 'system'
         # Cut off prompt from "prompt/context"
@@ -75,25 +95,25 @@ class CiscoAsa(NetDev):
             prompt = prompt[:-1]
         self._base_prompt = prompt
         self._current_context = context
-        priv_prompt = self._get_default_command('priv_prompt')
-        unpriv_prompt = self._get_default_command('unpriv_prompt')
+        delimeter1 = self._get_default_command('delimeter1')
+        delimeter2 = self._get_default_command('delimeter2')
         self._base_pattern = r"{}.*(\/\w+)?(\(.*?\))?[{}|{}]".format(re.escape(self._base_prompt[:12]),
-                                                                     re.escape(priv_prompt), re.escape(unpriv_prompt))
-        logger.debug("Base Prompt: {}".format(self._base_prompt))
-        logger.debug("Base Pattern: {}".format(self._base_pattern))
-        logger.debug("Current Context: {}".format(self._current_context))
+                                                                     re.escape(delimeter1), re.escape(delimeter2))
+        logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
+        logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
+        logger.debug("Host {}: Current Context: {}".format(self._host, self._current_context))
         return self._base_prompt
 
     async def _check_multiple_mode(self):
         """
         Check mode multiple. If mode is multiple we adding info about contexts
         """
-        logger.info("Checking multiple mode")
+        logger.info("Host {}:Checking multiple mode".format(self._host))
         out = await self.send_command('show mode')
         if 'multiple' in out:
             self._multiple_mode = True
 
-        logger.debug("Multiple mode: {}".format(self._multiple_mode))
+        logger.debug("Host {}: Multiple mode: {}".format(self._host, self._multiple_mode))
 
     def _get_default_command(self, command):
         """
@@ -104,14 +124,16 @@ class CiscoAsa(NetDev):
         """
         # @formatter:off
         command_mapper = {
-            'priv_prompt': '#',
-            'unpriv_prompt': '>',
+            'delimeter1': '>',
+            'delimeter2': '#',
+            'pattern': r"{}.*?(\(.*?\))?[{}|{}]",
             'disable_paging': 'terminal pager 0',
             'priv_enter': 'enable',
-            'priv_exit': 'enable',
+            'priv_exit': 'disable',
             'config_enter': 'conf t',
             'config_exit': 'end',
-            'check_config_mode': ')#'
+            'config_check': ')#',
+            'check_config_mode': ')#',
         }
         # @formatter:on
         return command_mapper[command]

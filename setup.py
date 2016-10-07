@@ -2,31 +2,34 @@ from os import path
 
 from setuptools import setup, find_packages
 
-import netdev
+# from .netdev.version import __author__, __author_email__, __url__, __version__
 
-here = path.abspath(path.dirname(__file__))
+base_dir = path.abspath(path.dirname(__file__))
 
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+with open(path.join(base_dir, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
+
+with open(path.join(base_dir, 'netdev', 'version.py')) as version:
+    exec(version.read())
 
 # @formatter:off
 setup(
     name='netdev',
-    version=netdev.__version__,
+    version=__version__,
     packages=find_packages(),
-    url='https://github.com/selfuryon/netdev',
+    url=__url__,
     license='BSD License',
-    author='Yakovlev Sergey',
-    author_email='selfuryon@gmail.com',
-    description='Async network devices interaction library',
-    requires=['asyncssh', 'pyyaml'],
+    author=__author__,
+    author_email=__author_email__,
+    description='Asynchronous network devices interaction library',
+    install_requires=['asyncssh', 'pyyaml'],
     long_description=long_description,
     keywords='network automation',
     classifiers=[
         # 3 - Alpha
         # 4 - Beta
         # 5 - Production/Stable
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 3.5',
         'Intended Audience :: System Administrators',

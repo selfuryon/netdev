@@ -1,5 +1,5 @@
-from .cisco_asa import CiscoAsa
-from .cisco_ios import CiscoIos
-from .cisco_nxos import CiscoNxos
+from .cisco_asa import CiscoASA
+from .cisco_ios import CiscoIOS
+from .cisco_nxos import CiscoNXOS
 
-__all__ = ['CiscoIos', 'CiscoAsa', 'CiscoNxos']
+__all__ = ['CiscoIOS', 'CiscoASA', 'CiscoNXOS']

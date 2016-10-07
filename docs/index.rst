@@ -1,9 +1,11 @@
+.. module:: netdev
+
 .. toctree::
    :hidden:
    :maxdepth: 2
 
+   overview
    api
    examples
 
-.. currentmodule:: netdev
 .. include:: ../README.rst

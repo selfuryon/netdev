@@ -1,20 +1,20 @@
 """
 Factory function for creating netdev classes
 """
-from .cisco import CiscoAsa
-from .cisco import CiscoIos
-from .cisco import CiscoNxos
-from .hp import HPComware
+from .cisco import CiscoASA
+from .cisco import CiscoIOS
+from .cisco import CiscoNXOS
 from .fujitsu import FujitsuSwitch
+from .hp import HPComware
 from .mikrotik import MikrotikRouterOS
 
 # @formatter:off
 # The keys of this dictionary are the supported device_types
 CLASS_MAPPER = {
-    'cisco_ios': CiscoIos,
-    'cisco_xe': CiscoIos,
-    'cisco_asa': CiscoAsa,
-    'cisco_nxos': CiscoNxos,
+    'cisco_ios': CiscoIOS,
+    'cisco_xe': CiscoIOS,
+    'cisco_asa': CiscoASA,
+    'cisco_nxos': CiscoNXOS,
     'hp_comware': HPComware,
     'fujitsu_switch': FujitsuSwitch,
     'mikrotik_routeros': MikrotikRouterOS,
