@@ -31,47 +31,39 @@ class TestNXOS(unittest.TestCase):
     def test_show_run_hostname(self):
         async def task():
             for dev in self.devices:
-                nxos = netdev.create(**dev)
-                await nxos.connect()
-                out = await nxos.send_command('show run | i hostname')
-                self.assertIn("hostname", out)
-                await nxos.disconnect()
+                async with netdev.create(**dev) as nxos:
+                    out = await nxos.send_command('show run | i hostname')
+                    self.assertIn("hostname", out)
 
         self.loop.run_until_complete(task())
 
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:
-                nxos = netdev.create(**dev)
-                await nxos.connect()
-                commands = ["dir", "show ver", "show run", "show ssh"]
-                for cmd in commands:
-                    out = await nxos.send_command(cmd, strip_command=False)
-                    self.assertIn(cmd, out)
-                await nxos.disconnect()
+                async with netdev.create(**dev) as nxos:
+                    commands = ["dir", "show ver", "show run", "show ssh"]
+                    for cmd in commands:
+                        out = await nxos.send_command(cmd, strip_command=False)
+                        self.assertIn(cmd, out)
 
         self.loop.run_until_complete(task())
 
     def test_config_set(self):
         async def task():
             for dev in self.devices:
-                nxos = netdev.create(**dev)
-                await nxos.connect()
-                commands = ["line con", "exit"]
-                out = await nxos.send_config_set(commands)
-                self.assertIn("line con", out)
-                self.assertIn("exit", out)
-                await nxos.disconnect()
+                async with netdev.create(**dev) as nxos:
+                    commands = ["line con", "exit"]
+                    out = await nxos.send_config_set(commands)
+                    self.assertIn("line con", out)
+                    self.assertIn("exit", out)
 
         self.loop.run_until_complete(task())
 
     def test_base_prompt(self):
         async def task():
             for dev in self.devices:
-                nxos = netdev.create(**dev)
-                await nxos.connect()
-                out = await nxos.send_command('sh run | i hostname')
-                self.assertIn(nxos.base_prompt, out)
-                await nxos.disconnect()
+                async with netdev.create(**dev) as nxos:
+                    out = await nxos.send_command('sh run | i hostname')
+                    self.assertIn(nxos.base_prompt, out)
 
         self.loop.run_until_complete(task())

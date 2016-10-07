@@ -30,47 +30,39 @@ class TestFujitsu(unittest.TestCase):
     def test_show_run_hostname(self):
         async def task():
             for dev in self.devices:
-                fuj = netdev.create(**dev)
-                await fuj.connect()
-                out = await fuj.send_command('show run | i snmp')
-                self.assertIn("snmp", out)
-                await fuj.disconnect()
+                async with netdev.create(**dev) as fuj:
+                    out = await fuj.send_command('show run | i snmp')
+                    self.assertIn("snmp", out)
 
         self.loop.run_until_complete(task())
 
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:
-                fuj = netdev.create(**dev)
-                await fuj.connect()
-                commands = ["dir", "show ver", "show run", "show ssh"]
-                for cmd in commands:
-                    out = await fuj.send_command(cmd, strip_command=False)
-                    self.assertIn(cmd, out)
-                await fuj.disconnect()
+                async with netdev.create(**dev) as fuj:
+                    commands = ["dir", "show ver", "show run", "show ssh"]
+                    for cmd in commands:
+                        out = await fuj.send_command(cmd, strip_command=False)
+                        self.assertIn(cmd, out)
 
         self.loop.run_until_complete(task())
 
     def test_config_set(self):
         async def task():
             for dev in self.devices:
-                fuj = netdev.create(**dev)
-                await fuj.connect()
-                commands = ["vlan database", "exit"]
-                out = await fuj.send_config_set(commands)
-                self.assertIn("vlan database", out)
-                self.assertIn("exit", out)
-                await fuj.disconnect()
+                async with netdev.create(**dev) as fuj:
+                    commands = ["vlan database", "exit"]
+                    out = await fuj.send_config_set(commands)
+                    self.assertIn("vlan database", out)
+                    self.assertIn("exit", out)
 
         self.loop.run_until_complete(task())
 
     def test_base_prompt(self):
         async def task():
             for dev in self.devices:
-                fuj = netdev.create(**dev)
-                await fuj.connect()
-                out = await fuj.send_command("sh run | i 'switch '")
-                self.assertIn(fuj.base_prompt, out)
-                await fuj.disconnect()
+                async with netdev.create(**dev) as fuj:
+                    out = await fuj.send_command("sh run | i 'switch '")
+                    self.assertIn(fuj.base_prompt, out)
 
         self.loop.run_until_complete(task())

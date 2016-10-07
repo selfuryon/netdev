@@ -30,47 +30,39 @@ class TestIOS(unittest.TestCase):
     def test_show_run_hostname(self):
         async def task():
             for dev in self.devices:
-                ios = netdev.create(**dev)
-                await ios.connect()
-                out = await ios.send_command('show run | i hostname')
-                self.assertIn("hostname", out)
-                await ios.disconnect()
+                async with netdev.create(**dev) as ios:
+                    out = await ios.send_command('show run | i hostname')
+                    self.assertIn("hostname", out)
 
         self.loop.run_until_complete(task())
 
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:
-                ios = netdev.create(**dev)
-                await ios.connect()
-                commands = ["dir", "show ver", "show run", "show ssh"]
-                for cmd in commands:
-                    out = await ios.send_command(cmd, strip_command=False)
-                    self.assertIn(cmd, out)
-                await ios.disconnect()
+                async with netdev.create(**dev) as ios:
+                    commands = ["dir", "show ver", "show run", "show ssh"]
+                    for cmd in commands:
+                        out = await ios.send_command(cmd, strip_command=False)
+                        self.assertIn(cmd, out)
 
         self.loop.run_until_complete(task())
 
     def test_config_set(self):
         async def task():
             for dev in self.devices:
-                ios = netdev.create(**dev)
-                await ios.connect()
-                commands = ["line con 0", "exit"]
-                out = await ios.send_config_set(commands)
-                self.assertIn("line con 0", out)
-                self.assertIn("exit", out)
-                await ios.disconnect()
+                async with netdev.create(**dev) as ios:
+                    commands = ["line con 0", "exit"]
+                    out = await ios.send_config_set(commands)
+                    self.assertIn("line con 0", out)
+                    self.assertIn("exit", out)
 
         self.loop.run_until_complete(task())
 
     def test_base_prompt(self):
         async def task():
             for dev in self.devices:
-                ios = netdev.create(**dev)
-                await ios.connect()
-                out = await ios.send_command('sh run | i hostname')
-                self.assertIn(ios.base_prompt, out)
-                await ios.disconnect()
+                async with netdev.create(**dev) as ios:
+                    out = await ios.send_command('sh run | i hostname')
+                    self.assertIn(ios.base_prompt, out)
 
         self.loop.run_until_complete(task())
