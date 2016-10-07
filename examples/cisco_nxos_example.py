@@ -12,11 +12,9 @@ netdev.logger.setLevel(logging.DEBUG)
 
 
 async def task(param):
-    nxos = netdev.create(**param)
-    await nxos.connect()
-    out = await nxos.send_command('show run', strip_command=True)
-    print(out)
-    await nxos.disconnect()
+    async with netdev.create(**param) as nxos:
+        out = await nxos.send_command('show run', strip_command=True)
+        print(out)
 
 
 async def run():

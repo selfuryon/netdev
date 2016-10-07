@@ -12,14 +12,12 @@ netdev.logger.setLevel(logging.DEBUG)
 
 
 async def task(param):
-    routeros = netdev.create(**param)
-    await routeros.connect()
-    commands = ['/ip address', 'print', '/']
-    for cmd in commands:
-        print(await routeros.send_command(cmd))
-    out = await routeros.send_config_set(commands)
-    print(out)
-    await routeros.disconnect()
+    async with netdev.create(**param) as routeros:
+        commands = ['/ip address', 'print', '/']
+        for cmd in commands:
+            print(await routeros.send_command(cmd))
+        out = await routeros.send_config_set(commands)
+        print(out)
 
 
 async def run():
