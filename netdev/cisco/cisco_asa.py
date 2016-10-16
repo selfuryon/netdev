@@ -64,13 +64,14 @@ class CiscoASA(CiscoLikeDevice):
         await self._check_multiple_mode()
         logger.info("Host {}: Connected to device".format(self._host))
 
-    async def send_command(self, command_string, strip_prompt=True, strip_command=True):
+    async def send_command(self, command_string, pattern='', re_flags=0, strip_prompt=True, strip_command=True):
         """
         Sending command to Cisco ASA
 
         If Cisco ASA in multi-context mode we need to change base prompt if context was changed
         """
-        output = await super(CiscoASA, self).send_command(command_string=command_string, strip_prompt=strip_prompt,
+        output = await super(CiscoASA, self).send_command(command_string=command_string, pattern=pattern,
+                                                          re_flags=re_flags, strip_prompt=strip_prompt,
                                                           strip_command=strip_command)
         if "changet" in command_string:
             await self._set_base_prompt()

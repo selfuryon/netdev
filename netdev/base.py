@@ -193,11 +193,13 @@ class BaseDevice(object):
         logger.debug("Host {}: Prompt: {}".format(self._host, prompt))
         return prompt
 
-    async def send_command(self, command_string, strip_command=True, strip_prompt=True):
+    async def send_command(self, command_string, pattern='', re_flags=0, strip_command=True, strip_prompt=True):
         """
         Sending command to device
 
         :param str command_string: command for executing basically in privilege mode
+        :param str pattern: pattern for waiting in output (for interactive commands)
+        :param re.flags re_flags: re flags for pattern
         :param bool strip_command: True or False for stripping command from output
         :param bool strip_prompt: True or False for stripping ending device prompt
         :return: The output of the command
@@ -207,7 +209,7 @@ class BaseDevice(object):
         command_string = self._normalize_cmd(command_string)
         logger.debug("Host {}: Send command: {}".format(self._host, command_string))
         self._stdin.write(command_string)
-        output = await self._read_until_prompt()
+        output = await self._read_until_prompt_or_pattern(pattern, re_flags)
 
         # Some platforms have ansi_escape codes
         if self._ansi_escape_codes:
