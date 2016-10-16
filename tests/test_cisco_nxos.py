@@ -41,7 +41,7 @@ class TestNXOS(unittest.TestCase):
         async def task():
             for dev in self.devices:
                 async with netdev.create(**dev) as nxos:
-                    commands = ["dir", "show ver", "show run", "show ssh"]
+                    commands = ["dir", "show ver", "show run", "show ssh key"]
                     for cmd in commands:
                         out = await nxos.send_command(cmd, strip_command=False)
                         self.assertIn(cmd, out)
