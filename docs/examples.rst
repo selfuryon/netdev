@@ -24,7 +24,7 @@ credentials.yaml
      host: 2.2.2.2
      password: ****
      username: ****
-   - device_type: cisco_ios
+   - device_type: fujitsu_switch
      host: 3.3.3.3
      password: ****
      username: ****
@@ -32,6 +32,11 @@ credentials.yaml
      host: 4.4.4.4
      password: ****
      username: ****
+   - device_type: hp_comware_limited
+     host: 5.5.5.5
+     password: ****
+     username: ****
+     cmdline_password: '512900'
 
 ASA example
 -----------
@@ -52,6 +57,10 @@ Fujitsu example
 Comware example
 ---------------
 .. literalinclude:: ../examples/hp_comware_example.py
+
+Comware Limited example
+-----------------------
+.. literalinclude:: ../examples/hp_comware_limited_example.py
 
 Mikrotik example
 ----------------

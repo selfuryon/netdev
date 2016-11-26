@@ -30,56 +30,58 @@ class TestASA(unittest.TestCase):
     def test_show_run_hostname(self):
         async def task():
             for dev in self.devices:
-                asa = netdev.create(**dev)
-                await asa.connect()
-                out = await asa.send_command('show run | i hostname')
-                self.assertIn("hostname", out)
-                await asa.disconnect()
+                async with netdev.create(**dev) as asa:
+                    out = await asa.send_command('show run | i hostname')
+                    self.assertIn("hostname", out)
 
         self.loop.run_until_complete(task())
 
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:
-                asa = netdev.create(**dev)
-                await asa.connect()
-                commands = ["show ver", "show run", "show ssh"]
-                for cmd in commands:
-                    out = await asa.send_command(cmd, strip_command=False)
-                    self.assertIn(cmd, out)
-                await asa.disconnect()
+                async with netdev.create(**dev) as asa:
+                    commands = ["show ver", "show run", "show ssh"]
+                    for cmd in commands:
+                        out = await asa.send_command(cmd, strip_command=False)
+                        self.assertIn(cmd, out)
 
         self.loop.run_until_complete(task())
 
     def test_config_set(self):
         async def task():
             for dev in self.devices:
-                asa = netdev.create(**dev)
-                await asa.connect()
-                commands = ["interface Management0/0", "exit"]
-                out = await asa.send_config_set(commands)
-                self.assertIn("interface Management0/0", out)
-                self.assertIn("exit", out)
-                await asa.disconnect()
+                async with netdev.create(**dev) as asa:
+                    commands = ["interface Management0/0", "exit"]
+                    out = await asa.send_config_set(commands)
+                    self.assertIn("interface Management0/0", out)
+                    self.assertIn("exit", out)
 
         self.loop.run_until_complete(task())
 
     def test_current_context(self):
         async def task():
             for dev in self.devices:
-                asa = netdev.create(**dev)
-                await asa.connect()
-                if asa.multiple_mode:
-                    await asa.send_command('changeto system')
-                    self.assertIn('system', asa.current_context)
-                    out = await asa.send_command('sh run | i ^context')
-                    contexts = out.splitlines()
-                    for ctx in contexts:
-                        out = await asa.send_command('changeto {}'.format(ctx))
-                        self.assertIn(ctx.split()[1], asa.current_context)
-                else:
-                    self.assertIn('system', asa.current_context)
+                async with netdev.create(**dev) as asa:
+                    if asa.multiple_mode:
+                        await asa.send_command('changeto system')
+                        self.assertIn('system', asa.current_context)
+                        out = await asa.send_command('sh run | i ^context')
+                        contexts = out.splitlines()
+                        for ctx in contexts:
+                            out = await asa.send_command('changeto {}'.format(ctx))
+                            self.assertIn(ctx.split()[1], asa.current_context)
+                    else:
+                        self.assertIn('system', asa.current_context)
 
-                await asa.disconnect()
+        self.loop.run_until_complete(task())
+
+    def test_interactive_commands(self):
+        async def task():
+            for dev in self.devices:
+                async with netdev.create(**dev) as asa:
+                    out = await asa.send_command("copy r scp:", pattern=r'\[running-config\]\?', strip_command=False)
+                    out += await asa.send_command("\n", pattern=r'\[\]\?', strip_command=False)
+                    out += await asa.send_command("\n", strip_command=False)
+                    self.assertIn('Invalid argument', out)
 
         self.loop.run_until_complete(task())

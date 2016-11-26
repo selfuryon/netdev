@@ -8,8 +8,8 @@ API Documentation
 Overview
 ========
 
-For each vendor you should use separate class for working.
-For this purpose are used Factory method :func:`create`. In params for this method you should specify device_type
+You should use separate class for each device vendor.
+For this purpose are used Factory method :func:`create`. You should specify device_type in params
 for taking right class
 
 
@@ -82,6 +82,13 @@ HPComware
 ~~~~~~~~~
 
 .. autoclass:: HPComware
+   :members:
+   :inherited-members:
+
+HPComwareLimited
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: HPComwareLimited
    :members:
    :inherited-members:
 

@@ -11,13 +11,11 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 netdev.logger.setLevel(logging.DEBUG)
 
 async def task(param):
-    fuj = netdev.create(**param)
-    await fuj.connect()
-    out = await fuj.send_config_set(['vlan database', 'exit'])
-    print(out)
-    out = await fuj.send_command('show ver')
-    print(out)
-    await fuj.disconnect()
+    async with netdev.create(**param) as fuj:
+        out = await fuj.send_config_set(['vlan database', 'exit'])
+        print(out)
+        out = await fuj.send_command('show ver')
+        print(out)
 
 
 async def run():

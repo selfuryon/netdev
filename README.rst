@@ -19,7 +19,7 @@ Supports:
 * Cisco IOS-XE 
 * Cisco ASA
 * Cisco NX-OS 
-* HP Comware
+* HP Comware (like V1910 too)
 * Fujitsu Blade Switches
 * Mikrotik RouterOS
 
@@ -46,12 +46,12 @@ Example of interacting with cisco IOS devices:
     async def run():
         dev1 = { 'username' : 'user,
                  'password' : 'pass',
-                 'device_type': 'cisco_ios'
+                 'device_type': 'cisco_ios',
                  'host': 'ip address',
         }
         dev2 = { 'username' : 'user,
                  'password' : 'pass',
-                 'device_type': 'cisco_ios'
+                 'device_type': 'cisco_ios',
                  'host': 'ip address',
         }
         devices = [dev1, dev2]

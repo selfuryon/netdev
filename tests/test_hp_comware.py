@@ -30,47 +30,39 @@ class TestComware(unittest.TestCase):
     def test_show_sysname(self):
         async def task():
             for dev in self.devices:
-                hp = netdev.create(**dev)
-                await hp.connect()
-                out = await hp.send_command('display cur | i sysname')
-                self.assertIn("sysname", out)
-                await hp.disconnect()
+                async with netdev.create(**dev) as hp:
+                    out = await hp.send_command('display cur | i sysname')
+                    self.assertIn("sysname", out)
 
         self.loop.run_until_complete(task())
 
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:
-                hp = netdev.create(**dev)
-                await hp.connect()
-                commands = ["dir", "display ver", "display cur", "display ssh server status"]
-                for cmd in commands:
-                    out = await hp.send_command(cmd, strip_command=False)
-                    self.assertIn(cmd, out)
-                await hp.disconnect()
+                async with netdev.create(**dev) as hp:
+                    commands = ["dir", "display ver", "display cur", "display ssh server status"]
+                    for cmd in commands:
+                        out = await hp.send_command(cmd, strip_command=False)
+                        self.assertIn(cmd, out)
 
         self.loop.run_until_complete(task())
 
     def test_config_set(self):
         async def task():
             for dev in self.devices:
-                hp = netdev.create(**dev)
-                await hp.connect()
-                commands = ["vlan 1", "quit"]
-                out = await hp.send_config_set(commands)
-                self.assertIn("vlan 1", out)
-                self.assertIn("quit", out)
-                await hp.disconnect()
+                async with netdev.create(**dev) as hp:
+                    commands = ["vlan 1", "quit"]
+                    out = await hp.send_config_set(commands)
+                    self.assertIn("vlan 1", out)
+                    self.assertIn("quit", out)
 
         self.loop.run_until_complete(task())
 
     def test_base_prompt(self):
         async def task():
             for dev in self.devices:
-                hp = netdev.create(**dev)
-                await hp.connect()
-                out = await hp.send_command('display cur | i sysname')
-                self.assertIn(hp.base_prompt, out)
-                await hp.disconnect()
+                async with netdev.create(**dev) as hp:
+                    out = await hp.send_command('display cur | i sysname')
+                    self.assertIn(hp.base_prompt, out)
 
         self.loop.run_until_complete(task())

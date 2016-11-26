@@ -10,6 +10,7 @@ config_path = 'config.yaml'
 logging.basicConfig(level=logging.DEBUG)
 netdev.logger.setLevel(logging.DEBUG)
 
+
 async def task(param):
     async with netdev.create(**param) as ios:
         out = await ios.send_command("show ssh")
@@ -18,6 +19,11 @@ async def task(param):
         out = await ios.send_config_set(commands)
         print(out)
         out = await ios.send_command("show run")
+        print(out)
+        # Testing interactive dialog
+        out = await ios.send_command("conf", pattern=r'\[terminal\]\?', strip_command=False)
+        out += await ios.send_command("term", strip_command=False)
+        out += await ios.send_command("exit", strip_command=False)
         print(out)
 
 

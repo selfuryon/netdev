@@ -6,6 +6,7 @@ from .cisco import CiscoIOS
 from .cisco import CiscoNXOS
 from .fujitsu import FujitsuSwitch
 from .hp import HPComware
+from .hp import HPComwareLimited
 from .mikrotik import MikrotikRouterOS
 
 # @formatter:off
@@ -16,6 +17,7 @@ CLASS_MAPPER = {
     'cisco_asa': CiscoASA,
     'cisco_nxos': CiscoNXOS,
     'hp_comware': HPComware,
+    'hp_comware_limited': HPComwareLimited,
     'fujitsu_switch': FujitsuSwitch,
     'mikrotik_routeros': MikrotikRouterOS,
 }

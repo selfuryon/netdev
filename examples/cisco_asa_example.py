@@ -11,12 +11,15 @@ logging.basicConfig(level=logging.DEBUG)
 netdev.logger.setLevel(logging.DEBUG)
 
 async def task(param):
-    asa = netdev.create(**param)
-    await asa.connect()
-    # print(asa.current_context)
-    out = await asa.send_command('show run', strip_command=True)
-    print(out)
-    await asa.disconnect()
+    async with netdev.create(**param) as asa:
+        print(asa.current_context)
+        out = await asa.send_command('show run', strip_command=True)
+        print(out)
+        # Tests Interactive commands
+        out = await asa.send_command("copy r scp:", pattern=r'\[running-config\]\?', strip_command=False)
+        out += await asa.send_command("\n", pattern=r'\[\]\?', strip_command=False)
+        out += await asa.send_command("\n", strip_command=False)
+        print(out)
 
 
 async def run():

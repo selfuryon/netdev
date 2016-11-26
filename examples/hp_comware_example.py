@@ -11,16 +11,14 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 netdev.logger.setLevel(logging.DEBUG)
 
 async def task(param):
-    hp = netdev.create(**param)
-    await hp.connect()
-    out = await hp.send_command('display ver')
-    print(out)
-    commands = ["Vlan 1", "quit"]
-    out = await hp.send_config_set(commands)
-    print(out)
-    out = await hp.send_command('display cur')
-    print(out)
-    await hp.disconnect()
+    async with netdev.create(**param) as hp:
+        out = await hp.send_command('display ver')
+        print(out)
+        commands = ["Vlan 1", "quit"]
+        out = await hp.send_config_set(commands)
+        print(out)
+        out = await hp.send_command('display cur')
+        print(out)
 
 
 
