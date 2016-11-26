@@ -74,3 +74,14 @@ class TestASA(unittest.TestCase):
                         self.assertIn('system', asa.current_context)
 
         self.loop.run_until_complete(task())
+
+    def test_interactive_commands(self):
+        async def task():
+            for dev in self.devices:
+                async with netdev.create(**dev) as asa:
+                    out = await asa.send_command("copy r scp:", pattern=r'\[running-config\]\?', strip_command=False)
+                    out += await asa.send_command("\n", pattern=r'\[\]\?', strip_command=False)
+                    out += await asa.send_command("\n", strip_command=False)
+                    self.assertIn('Invalid argument', out)
+
+        self.loop.run_until_complete(task())
