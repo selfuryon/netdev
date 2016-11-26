@@ -66,3 +66,14 @@ class TestIOS(unittest.TestCase):
                     self.assertIn(ios.base_prompt, out)
 
         self.loop.run_until_complete(task())
+
+    def test_interactive_commands(self):
+        async def task():
+            for dev in self.devices:
+                async with netdev.create(**dev) as ios:
+                    out = await ios.send_command("conf", pattern=r'\[terminal\]\?', strip_command=False)
+                    out += await ios.send_command("term", strip_command=False)
+                    out += await ios.send_command("exit", strip_command=False)
+                    self.assertIn('Enter configuration commands', out)
+
+        self.loop.run_until_complete(task())
