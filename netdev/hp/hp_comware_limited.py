@@ -66,6 +66,7 @@ class HPComwareLimited(HPLikeDevice):
             'sview_exit': 'return',
             'sview_check': ']',
             'cmdline_mode_enter': '_cmdline-mode on',
+            'cmdline_mode_check': 'Invalid password',
         }
         # @formatter:on
         return command_mapper[command]
@@ -75,9 +76,15 @@ class HPComwareLimited(HPLikeDevice):
         logger.info('Host {}: Entering to cmdline mode'.format(self._host))
         output = ''
         cmdline_mode_enter = self._get_default_command('cmdline_mode_enter')
+        check_error_string = self._get_default_command('cmdline_mode_check')
+
         output = await self.send_command(cmdline_mode_enter, pattern='\[Y\/N\]')
         output += await self.send_command('Y', pattern='password\:')
         output += await self.send_command(self._cmdline_password)
 
         logger.debug("Host {}: cmdline mode output: {}".format(self._host, output))
+        logger.info('Host {}: Checking cmdline mode'.format(self._host))
+        if check_error_string in output:
+            raise ValueError('Failed to enter to cmdline mode')
+
         return output
