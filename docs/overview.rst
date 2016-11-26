@@ -26,7 +26,7 @@ For creating connection to network device you should use function :func:`create`
    loop = asyncio.get_event_loop()
    loop.run_until_complete(working_with_netdev())
 
-or with using async context manager:
+or the same with using async context manager:
 
 .. code-block:: python
 
@@ -62,6 +62,7 @@ All other classes are the end classes which you can use for working with particu
 * :class:`CiscoNXOS`
 * :class:`FujitsuSwitch`
 * :class:`HPComware`
+* :class:`HPComwareLimited`
 
 The particular class selected by parameter *device_type* in :func:`create`
 

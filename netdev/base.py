@@ -195,7 +195,7 @@ class BaseDevice(object):
 
     async def send_command(self, command_string, pattern='', re_flags=0, strip_command=True, strip_prompt=True):
         """
-        Sending command to device
+        Sending command to device (support interactive commands with pattern)
 
         :param str command_string: command for executing basically in privilege mode
         :param str pattern: pattern for waiting in output (for interactive commands)
