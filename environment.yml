@@ -1,9 +1,10 @@
 name: netdev
 dependencies:
-- python=3.5.2
+- python=3.5.2=0
 - pip
 - setuptools
 - wheel
+- sphinx_rtd_theme
 - pip:
   - pyyaml
   - asyncssh>=1.6.2
