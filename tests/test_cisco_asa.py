@@ -82,6 +82,6 @@ class TestASA(unittest.TestCase):
                     out = await asa.send_command("copy r scp:", pattern=r'\[running-config\]\?', strip_command=False)
                     out += await asa.send_command("\n", pattern=r'\[\]\?', strip_command=False)
                     out += await asa.send_command("\n", strip_command=False)
-                    self.assertIn('Invalid argument', out)
+                    self.assertIn('%Error', out)
 
         self.loop.run_until_complete(task())
