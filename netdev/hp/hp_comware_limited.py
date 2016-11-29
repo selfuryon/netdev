@@ -34,10 +34,11 @@ class HPComwareLimited(HPLikeDevice):
         Basic asynchronous connection method
 
         It connects to device and makes some preparation steps for working.
-        Usual using 3 functions:
+        Usual using 4 functions:
 
         * _establish_connection() for connecting to device
         * _set_base_prompt() for finding and setting device prompt
+        * _cmdline_mode_enter() for entering hidden full functional mode
         * _disable_paging() for non interact output in commands
         """
         logger.info("Host {}: Connecting to device".format(self._host))
