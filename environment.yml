@@ -1,9 +1,9 @@
 name: netdev
 dependencies:
-- pip=8.1.2=py35_0
-- python=3.5.2=0
-- setuptools=23.0.0=py35_0
-- wheel=0.29.0=py35_0
+- python=3.5.2
+- pip
+- setuptools
+- wheel
 - pip:
   - pyyaml
-  - asyncssh
+  - asyncssh>=1.6.2
