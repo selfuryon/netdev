@@ -1,3 +1,4 @@
+from .arista import AristaEOS
 from .base import BaseDevice
 from .cisco import CiscoASA
 from .cisco import CiscoIOS
@@ -16,4 +17,5 @@ from .version import __author__, __author_email__, __url__, __version__
 
 __all__ = (
     'create', 'platforms', 'DisconnectError', 'logger', 'CiscoASA', 'CiscoIOS', 'CiscoNXOS', 'HPComware',
-    'HPComwareLimited', 'FujitsuSwitch', 'MikrotikRouterOS', 'BaseDevice', 'CiscoLikeDevice', 'HPLikeDevice')
+    'HPComwareLimited', 'FujitsuSwitch', 'MikrotikRouterOS', 'AristaEOS', 'BaseDevice', 'CiscoLikeDevice',
+    'HPLikeDevice')

@@ -1,6 +1,7 @@
 """
 Factory function for creating netdev classes
 """
+from .arista import AristaEOS
 from .cisco import CiscoASA
 from .cisco import CiscoIOS
 from .cisco import CiscoNXOS
@@ -20,6 +21,7 @@ CLASS_MAPPER = {
     'hp_comware_limited': HPComwareLimited,
     'fujitsu_switch': FujitsuSwitch,
     'mikrotik_routeros': MikrotikRouterOS,
+    'arista_eos': AristaEOS,
 }
 
 # @formatter:on
