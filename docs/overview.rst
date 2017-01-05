@@ -63,6 +63,7 @@ All other classes are the end classes which you can use for working with particu
 * :class:`FujitsuSwitch`
 * :class:`HPComware`
 * :class:`HPComwareLimited`
+* :class:`AristaEOS`
 
 The particular class selected by parameter *device_type* in :func:`create`
 

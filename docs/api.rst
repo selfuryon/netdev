@@ -99,5 +99,11 @@ MikrotikRouterOS
    :members:
    :inherited-members:
 
+AristaEOS
+~~~~~~~~~~~~~~~~
+
+.. autoclass:: AristaEOS
+   :members:
+   :inherited-members:
 
 
