@@ -9,19 +9,20 @@ Requires:
 ---------
 * asyncio
 * AsyncSSH
-* Python 3.5
+* Python >=3.5
 * pyYAML
   
  
 Supports: 
 ---------
 * Cisco IOS 
-* Cisco IOS-XE 
+* Cisco IOS XE
 * Cisco ASA
 * Cisco NX-OS 
 * HP Comware (like V1910 too)
 * Fujitsu Blade Switches
 * Mikrotik RouterOS
+* Arista EOS
 
 Examples:
 ---------
