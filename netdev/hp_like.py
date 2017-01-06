@@ -96,17 +96,14 @@ class HPLikeDevice(BaseDevice):
         output = await self._read_until_prompt()
         return check_string in output
 
-    async def _sview(self, pattern='password', re_flags=re.IGNORECASE):
+    async def _sview(self):
         """Enter system-view mode"""
         logger.info('Host {}: Entering to system-view mode'.format(self._host))
         output = ""
         sview_enter = self._get_default_command('sview_enter')
         if not await self._check_sview():
             self._stdin.write(self._normalize_cmd(sview_enter))
-            output += await self._read_until_prompt_or_pattern(pattern=pattern, re_flags=re_flags)
-            if re.search(pattern, output, re_flags):
-                self._stdin.write(self._normalize_cmd(self._secret))
-                output += await self._read_until_prompt()
+            output += await self._read_until_prompt()
             if not await self._check_sview():
                 raise ValueError("Failed to enter to system-view mode")
         return output
