@@ -8,6 +8,7 @@ from .cisco import CiscoNXOS
 from .fujitsu import FujitsuSwitch
 from .hp import HPComware
 from .hp import HPComwareLimited
+from .juniper import JuniperJunOS
 from .mikrotik import MikrotikRouterOS
 
 # @formatter:off
@@ -22,6 +23,7 @@ CLASS_MAPPER = {
     'fujitsu_switch': FujitsuSwitch,
     'mikrotik_routeros': MikrotikRouterOS,
     'arista_eos': AristaEOS,
+    'juniper_junos': JuniperJunOS,
 }
 
 # @formatter:on
