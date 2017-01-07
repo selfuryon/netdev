@@ -25,6 +25,7 @@ async def task(param):
         out = await junos.send_config_set(commands, with_commit=False, exit_config_mode=False)
         out += await junos.send_command("exit", pattern=r'Exit with uncommitted changes\?', strip_command=False)
         out += await junos.send_command("no", strip_command=False)
+        out += await junos.send_command("rollback 0", strip_command=False)
         out += await junos.send_command("exit configuration-mode", strip_command=False)
         print(out)
 
