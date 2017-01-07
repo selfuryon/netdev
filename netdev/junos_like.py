@@ -4,6 +4,8 @@ JunOSLikeDevice Class is abstract class for using in Juniper JunOS like devices
 Connection Method are based upon AsyncSSH and should be running in asyncio loop
 """
 
+import re
+
 from .base import BaseDevice
 from .logger import logger
 
@@ -72,10 +74,15 @@ class JunOSLikeDevice(BaseDevice):
         """
         logger.info("Host {}: Setting base prompt".format(self._host))
         prompt = await self._find_prompt()
+        prompt = prompt[:-1]
         # Strip off trailing terminator
         if '@' in prompt:
             prompt = prompt.split('@')[1]
         self._base_prompt = prompt
+        pattern = self._get_default_command('pattern')
+        delimeter1 = self._get_default_command('delimeter1')
+        delimeter2 = self._get_default_command('delimeter2')
+        self._base_pattern = pattern.format(re.escape(delimeter1), re.escape(delimeter2))
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
