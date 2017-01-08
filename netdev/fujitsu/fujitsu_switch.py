@@ -23,9 +23,11 @@ class FujitsuSwitch(IOSLikeDevice):
         prompt = await self._find_prompt()
         # Strip off trailing terminator
         self._base_prompt = prompt[1:-3]
-        delimiters = r"|".join(type(self)._delimiter_list)
+        delimiters = map(re.escape, type(self)._delimiter_list)
+        delimiters = r"|".join(delimiters)
+        base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(self._base_prompt[:12], delimiters)
+        self._base_pattern = pattern.format(base_prompt, delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt

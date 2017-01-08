@@ -65,11 +65,11 @@ class IOSLikeDevice(BaseDevice):
         logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
         await self._set_base_prompt()
-        await self._enable()
+        await self.enable_mode()
         await self._disable_paging()
         logger.info("Host {}: Connected to device".format(self._host))
 
-    async def _check_enable_mode(self):
+    async def check_enable_mode(self):
         """Check if in enable mode. Return boolean"""
         logger.info('Host {}: Checking enable mode'.format(self._host))
         check_string = type(self)._priv_check
@@ -77,34 +77,34 @@ class IOSLikeDevice(BaseDevice):
         output = await self._read_until_prompt()
         return check_string in output
 
-    async def _enable(self, pattern='password', re_flags=re.IGNORECASE):
+    async def enable_mode(self, pattern='password', re_flags=re.IGNORECASE):
         """Enter enable mode"""
         logger.info('Host {}: Entering to enable mode'.format(self._host))
         output = ""
         enable_command = type(self)._priv_enter
-        if not await self._check_enable_mode():
+        if not await self.check_enable_mode():
             self._stdin.write(self._normalize_cmd(enable_command))
             output += await self._read_until_prompt_or_pattern(pattern=pattern, re_flags=re_flags)
             if re.search(pattern, output, re_flags):
                 self._stdin.write(self._normalize_cmd(self._secret))
                 output += await self._read_until_prompt()
-            if not await self._check_enable_mode():
+            if not await self.check_enable_mode():
                 raise ValueError("Failed to enter to enable mode")
         return output
 
-    async def _exit_enable_mode(self):
+    async def exit_enable_mode(self):
         """Exit enable mode"""
         logger.info('Host {}: Exiting from enable mode'.format(self._host))
         output = ""
         exit_enable = type(self)._priv_exit
-        if await self._check_enable_mode():
+        if await self.check_enable_mode():
             self._stdin.write(self._normalize_cmd(exit_enable))
             output += await self._read_until_prompt()
-            if await self._check_enable_mode():
+            if await self.check_enable_mode():
                 raise ValueError("Failed to exit from enable mode")
         return output
 
-    async def _check_config_mode(self):
+    async def check_config_mode(self):
         """Checks if the device is in configuration mode or not"""
         logger.info('Host {}: Checking config mode'.format(self._host))
         check_string = type(self)._config_check
@@ -112,27 +112,27 @@ class IOSLikeDevice(BaseDevice):
         output = await self._read_until_prompt()
         return check_string in output
 
-    async def _config_mode(self):
+    async def config_mode(self):
         """Enter into config_mode"""
         logger.info('Host {}: Entering to config mode'.format(self._host))
         output = ''
         config_command = type(self)._config_enter
-        if not await self._check_config_mode():
+        if not await self.check_config_mode():
             self._stdin.write(self._normalize_cmd(config_command))
             output = await self._read_until_prompt()
-            if not await self._check_config_mode():
+            if not await self.check_config_mode():
                 raise ValueError('Failed to enter to configuration mode')
         return output
 
-    async def _exit_config_mode(self):
+    async def exit_config_mode(self):
         """Exit from configuration mode"""
         logger.info('Host {}: Exiting from config mode'.format(self._host))
         output = ''
         exit_config = type(self)._config_exit
-        if await self._check_config_mode():
+        if await self.check_config_mode():
             self._stdin.write(self._normalize_cmd(exit_config))
             output = await self._read_until_prompt()
-            if await self._check_config_mode():
+            if await self.check_config_mode():
                 raise ValueError("Failed to exit from configuration mode")
         return output
 
@@ -152,11 +152,11 @@ class IOSLikeDevice(BaseDevice):
             return ''
 
         # Send config commands
-        output = await self._config_mode()
+        output = await self.config_mode()
         output += await super().send_config_set(config_commands=config_commands)
 
         if exit_config_mode:
-            output += await self._exit_config_mode()
+            output += await self.exit_config_mode()
 
         output = self._normalize_linefeeds(output)
         logger.debug("Host {}: Config commands output: {}".format(self._host, repr(output)))
@@ -165,4 +165,4 @@ class IOSLikeDevice(BaseDevice):
     async def _cleanup(self):
         """ Any needed cleanup before closing connection """
         logger.info("Host {}: Cleanup session".format(self._host))
-        await self._exit_config_mode()
+        await self.exit_config_mode()

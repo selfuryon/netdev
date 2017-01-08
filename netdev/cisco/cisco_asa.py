@@ -1,5 +1,7 @@
 """Subclass specific to Cisco ASA."""
 
+import re
+
 from ..ios_like import IOSLikeDevice
 from ..logger import logger
 
@@ -59,7 +61,7 @@ class CiscoASA(IOSLikeDevice):
         logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
         await self._set_base_prompt()
-        await self._enable()
+        await self.enable_mode()
         await self._disable_paging()
         await self._check_multiple_mode()
         logger.info("Host {}: Connected to device".format(self._host))
@@ -96,9 +98,11 @@ class CiscoASA(IOSLikeDevice):
             prompt = prompt[:-1]
         self._base_prompt = prompt
         self._current_context = context
-        delimiters = r"|".join(type(self)._delimiter_list)
+        delimiters = map(re.escape, type(self)._delimiter_list)
+        delimiters = r"|".join(delimiters)
+        base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(self._base_prompt[:12], delimiters)
+        self._base_pattern = pattern.format(base_prompt, delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         logger.debug("Host {}: Current Context: {}".format(self._host, self._current_context))

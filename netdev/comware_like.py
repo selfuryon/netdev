@@ -66,8 +66,9 @@ class ComwareLikeDevice(BaseDevice):
         delimiter_right = r"|".join(delimiter_right)
         delimiter_left = map(re.escape, type(self)._delimiter_left_list)
         delimiter_left = r"|".join(delimiter_left)
+        base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(delimiter_left, self._base_prompt[:12], delimiter_right)
+        self._base_pattern = pattern.format(delimiter_left, base_prompt, delimiter_right)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt

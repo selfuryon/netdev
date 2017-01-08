@@ -121,7 +121,8 @@ class BaseDevice(object):
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb', term_size=(200, 24))
         logger.info("Host {}: Connection is established".format(self._host))
         # Flush unnecessary data
-        delimiters = r"|".join(type(self)._delimiter_list)
+        delimiters = map(re.escape, type(self)._delimiter_list)
+        delimiters = r"|".join(delimiters)
         output = await self._read_until_pattern(delimiters)
         logger.debug("Host {}: Establish Connection Output: {}".format(self._host, repr(output)))
         return output
@@ -140,9 +141,11 @@ class BaseDevice(object):
 
         # Strip off trailing terminator
         self._base_prompt = prompt[:-1]
-        delimiters = r"|".join(type(self)._delimiter_list)
+        delimiters = map(re.escape, type(self)._delimiter_list)
+        delimiters = r"|".join(delimiters)
+        base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(self._base_prompt[:12], delimiters)
+        self._base_pattern = pattern.format(base_prompt, delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
@@ -165,7 +168,8 @@ class BaseDevice(object):
         logger.info("Host {}: Finding prompt".format(self._host))
         self._stdin.write(self._normalize_cmd("\n"))
         prompt = ''
-        delimiters = r"|".join(type(self)._delimiter_list)
+        delimiters = map(re.escape, type(self)._delimiter_list)
+        delimiters = r"|".join(delimiters)
         prompt = await self._read_until_pattern(delimiters)
         prompt = prompt.strip()
         if self._ansi_escape_codes:
