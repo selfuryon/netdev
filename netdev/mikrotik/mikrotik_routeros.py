@@ -18,7 +18,7 @@ class MikrotikRouterOS(BaseDevice):
         For disabling colors in CLI output we should user this username = username+c
         '+c' disables colors
         '+t' disable auto term capabilities detection
-        '+80w' set terminal width to 80 rows
+        '+200w' set terminal width to 200 rows
         """
         super(MikrotikRouterOS, self).__init__(host=host, username=username, password=password, secret=secret,
                                                port=port, device_type=device_type, known_hosts=known_hosts,
@@ -26,8 +26,10 @@ class MikrotikRouterOS(BaseDevice):
                                                loop=loop)
 
         self._base_pattern = r"\[.*?\] \>.*\[.*?\] \>"
-        self._username += '+ct80w'
+        self._username += '+ct200w'
         self._ansi_escape_codes = True
+
+    _pattern = r"\[.*?\] (\/.*?)?\>"
 
     async def connect(self):
         """
@@ -57,7 +59,7 @@ class MikrotikRouterOS(BaseDevice):
         logger.info("Host {}: Connection is established".format(self._host))
         # Flush unnecessary data
         output = await self._read_until_prompt()
-        logger.debug("Host {}: Establish Connection Output: {}".format(self._host, output))
+        logger.debug("Host {}: Establish Connection Output: {}".format(self._host, repr(output)))
         return output
 
     async def _set_base_prompt(self):
@@ -69,7 +71,7 @@ class MikrotikRouterOS(BaseDevice):
         For Mikrotik devices base_pattern is "r"\[.*?\] (\/.*?)?\>"
         """
         logger.info("Host {}: Setting base prompt".format(self._host))
-        self._base_pattern = self._get_default_command('pattern')
+        self._base_pattern = type(self)._pattern
         prompt = await self._find_prompt()
         user = ''
         # Strip off trailing terminator
@@ -102,16 +104,3 @@ class MikrotikRouterOS(BaseDevice):
         command += '\r'
         return command
 
-    def _get_default_command(self, command):
-        """
-        Returning default commands for device
-
-        :param command: command for returning
-        :return: real command for this network device
-        """
-        # @formatter:off
-        command_mapper = {
-            'pattern': r"\[.*?\] (\/.*?)?\>",
-        }
-        # @formatter:on
-        return command_mapper[command]
