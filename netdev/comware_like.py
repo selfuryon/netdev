@@ -10,7 +10,7 @@ from .base import BaseDevice
 from .logger import logger
 
 
-class HPLikeDevice(BaseDevice):
+class ComwareLikeDevice(BaseDevice):
     """
     This Class for working with hp comware like devices
 
@@ -36,33 +36,19 @@ class HPLikeDevice(BaseDevice):
         :param client_keys: path for client keys. With () it will use default file in OS.
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
-        :returns: :class:`HPLikeDevice` Base class for working with hp comware like devices
+        :returns: :class:`ComwareLikeDevice` Base class for working with hp comware like devices
         """
         super().__init__(host=host, username=username, password=password, secret=secret, port=port,
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
                          client_keys=client_keys, passphrase=passphrase, loop=loop)
 
-    def _get_default_command(self, command):
-        """
-        Returning default commands for device
-
-        :param str command: command for returning
-        :return: real command for this network device
-        """
-        # @formatter:off
-        command_mapper = {
-            'delimeter1': '>',
-            'delimeter2': ']',
-            'delimeter_left1': '<',
-            'delimeter_left2': '[',
-            'pattern': r"[{}|{}]{}[\-\w]*[{}|{}]",
-            'disable_paging': 'screen-length disable',
-            'sview_enter': 'system-view',
-            'sview_exit': 'return',
-            'sview_check': ']'
-        }
-        # @formatter:on
-        return command_mapper[command]
+    _delimiter_list = ['>', ']']
+    _delimiter_left_list = ['<', '[']
+    _pattern = r"[{}]{}[\-\w]*[{}]"
+    _disable_paging_command = 'screen-length disable'
+    _system_view_enter = 'system-view'
+    _system_view_exit = 'return'
+    _system_view_check = ']'
 
     async def _set_base_prompt(self):
         """
@@ -76,51 +62,49 @@ class HPLikeDevice(BaseDevice):
         prompt = await self._find_prompt()
         # Strip off trailing terminator
         self._base_prompt = prompt[1:-1]
-        delimeter1 = self._get_default_command('delimeter1')
-        delimeter2 = self._get_default_command('delimeter2')
-        delimeter_left1 = self._get_default_command('delimeter_left1')
-        delimeter_left2 = self._get_default_command('delimeter_left2')
-        pattern = self._get_default_command('pattern')
-        self._base_pattern = pattern.format(re.escape(delimeter_left1), re.escape(delimeter_left2),
-                                            re.escape(self._base_prompt[:12]), re.escape(delimeter1),
-                                            re.escape(delimeter2))
+        delimiter_right = map(re.escape, type(self)._delimiter_list)
+        delimiter_right = r"|".join(delimiter_right)
+        delimiter_left = map(re.escape, type(self)._delimiter_left_list)
+        delimiter_left = r"|".join(delimiter_left)
+        pattern = type(self)._pattern
+        self._base_pattern = pattern.format(delimiter_left, self._base_prompt[:12], delimiter_right)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
 
-    async def _check_sview(self):
+    async def _check_system_view(self):
         """Check if in system-view mode. Return boolean"""
         logger.info('Host {}: Checking system-view mode'.format(self._host))
-        check_string = self._get_default_command('sview_check')
+        check_string = type(self)._system_view_check
         self._stdin.write(self._normalize_cmd('\n'))
         output = await self._read_until_prompt()
         return check_string in output
 
-    async def _sview(self):
+    async def _system_view(self):
         """Enter system-view mode"""
         logger.info('Host {}: Entering to system-view mode'.format(self._host))
         output = ""
-        sview_enter = self._get_default_command('sview_enter')
-        if not await self._check_sview():
-            self._stdin.write(self._normalize_cmd(sview_enter))
+        system_view_enter = type(self)._system_view_enter
+        if not await self._check_system_view():
+            self._stdin.write(self._normalize_cmd(system_view_enter))
             output += await self._read_until_prompt()
-            if not await self._check_sview():
+            if not await self._check_system_view():
                 raise ValueError("Failed to enter to system-view mode")
         return output
 
-    async def _exit_sview(self):
+    async def _exit_system_view(self):
         """Exit system-view mode"""
         logger.info('Host {}: Exiting from system-view mode'.format(self._host))
         output = ""
-        sview_exit = self._get_default_command('sview_exit')
-        if await self._check_sview():
-            self._stdin.write(self._normalize_cmd(sview_exit))
+        system_view_exit = type(self)._system_view_exit
+        if await self._check_system_view():
+            self._stdin.write(self._normalize_cmd(system_view_exit))
             output += await self._read_until_prompt()
-            if await self._check_sview():
+            if await self._check_system_view():
                 raise ValueError("Failed to exit from system-view mode")
         return output
 
-    async def send_config_set(self, config_commands=None, exit_sview_mode=False):
+    async def send_config_set(self, config_commands=None, exit_system_view_mode=False):
         """
         Sending configuration commands to device
 
@@ -128,7 +112,7 @@ class HPLikeDevice(BaseDevice):
         Automatically exits/enters system-view.
 
         :param list config_commands: iterable string list with commands for applying to network devices in system view
-        :param bool exit_sview_mode: If true it will quit from system-view mode automatically
+        :param bool exit_system_view_mode: If true it will quit from system-view mode automatically
         :return: The output of this commands
         """
 
@@ -136,12 +120,12 @@ class HPLikeDevice(BaseDevice):
             return ''
 
         # Send config commands
-        output = await self._sview()
+        output = await self._system_view()
         output += await super().send_config_set(config_commands=config_commands)
 
-        if exit_sview_mode:
-            output += await self._exit_sview()
+        if exit_system_view_mode:
+            output += await self._exit_system_view()
 
         output = self._normalize_linefeeds(output)
-        logger.debug("Host {}: Config commands output: {}".format(self._host, output))
+        logger.debug("Host {}: Config commands output: {}".format(self._host, repr(output)))
         return output

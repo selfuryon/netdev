@@ -46,12 +46,12 @@ Library structure
 
 Library consist from several base classes and end classes which using for communication.
 The main class is :class:`BaseDevice`. It provides some basic functionality regardless of device type.
-Library also have two common child classes: :class:`IOSLikeDevice` and :class:`HPLikeDevice`.
+Library also have two common child classes: :class:`IOSLikeDevice` and :class:`ComwareLikeDevice`.
 
 :class:`IOSLikeDevice` class provides some basic methods for cisco like devices: devices which have user exec,
 privilege exec and conf mode concepts.
 
-:class:`HPLikeDevice` class provides some basic methods for hp (comware) like devices: these devices have only
+:class:`ComwareLikeDevice` class provides some basic methods for hp (comware) like devices: these devices have only
 exec view and system view concepts.
 
 All other classes are the end classes which you can use for working with particular device:

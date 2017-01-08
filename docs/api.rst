@@ -39,10 +39,10 @@ IOSLikeDevice
    :members:
    :inherited-members:
 
-HPLikeDevice
+ComwareLikeDevice
 ~~~~~~~~~~~~
 
-.. autoclass:: HPLikeDevice
+.. autoclass:: ComwareLikeDevice
    :members:
    :inherited-members:
 
