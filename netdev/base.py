@@ -60,7 +60,7 @@ class BaseDevice(object):
         self._MAX_BUFFER = 65535
         self._ansi_escape_codes = False
 
-    _delimeter_list = ['>', '#']
+    _delimiter_list = ['>', '#']
     _pattern = r"{}.*?(\(.*?\))?[{}]"
     _disable_paging_command = 'terminal length 0'
 
@@ -121,8 +121,8 @@ class BaseDevice(object):
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb', term_size=(200, 24))
         logger.info("Host {}: Connection is established".format(self._host))
         # Flush unnecessary data
-        delimeters = r"|".join(type(self)._delimeter_list)
-        output = await self._read_until_pattern(delimeters)
+        delimiters = r"|".join(type(self)._delimiter_list)
+        output = await self._read_until_pattern(delimiters)
         logger.debug("Host {}: Establish Connection Output: {}".format(self._host, repr(output)))
         return output
 
@@ -140,9 +140,9 @@ class BaseDevice(object):
 
         # Strip off trailing terminator
         self._base_prompt = prompt[:-1]
-        delimeters = r"|".join(type(self)._delimeter_list)
+        delimiters = r"|".join(type(self)._delimiter_list)
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(self._base_prompt[:12], delimeters)
+        self._base_pattern = pattern.format(self._base_prompt[:12], delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
@@ -165,8 +165,8 @@ class BaseDevice(object):
         logger.info("Host {}: Finding prompt".format(self._host))
         self._stdin.write(self._normalize_cmd("\n"))
         prompt = ''
-        delimeters = r"|".join(type(self)._delimeter_list)
-        prompt = await self._read_until_pattern(delimeters)
+        delimiters = r"|".join(type(self)._delimiter_list)
+        prompt = await self._read_until_pattern(delimiters)
         prompt = prompt.strip()
         if self._ansi_escape_codes:
             prompt = self._strip_ansi_escape_codes(prompt)

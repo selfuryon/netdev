@@ -1,7 +1,5 @@
 """Subclass specific to Cisco ASA."""
 
-import re
-
 from ..ios_like import IOSLikeDevice
 from ..logger import logger
 
@@ -33,6 +31,8 @@ class CiscoASA(IOSLikeDevice):
 
         self._current_context = 'system'
         self._multiple_mode = False
+
+    _disable_paging_command = 'terminal pager 0'
 
     @property
     def current_context(self):
@@ -96,10 +96,9 @@ class CiscoASA(IOSLikeDevice):
             prompt = prompt[:-1]
         self._base_prompt = prompt
         self._current_context = context
-        delimeter1 = self._get_default_command('delimeter1')
-        delimeter2 = self._get_default_command('delimeter2')
-        self._base_pattern = r"{}.*(\/\w+)?(\(.*?\))?[{}|{}]".format(re.escape(self._base_prompt[:12]),
-                                                                     re.escape(delimeter1), re.escape(delimeter2))
+        delimiters = r"|".join(type(self)._delimiter_list)
+        pattern = type(self)._pattern
+        self._base_pattern = pattern.format(self._base_prompt[:12], delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         logger.debug("Host {}: Current Context: {}".format(self._host, self._current_context))
@@ -115,26 +114,3 @@ class CiscoASA(IOSLikeDevice):
             self._multiple_mode = True
 
         logger.debug("Host {}: Multiple mode: {}".format(self._host, self._multiple_mode))
-
-    def _get_default_command(self, command):
-        """
-        Returning default commands for device
-
-        :param command: command for returning
-        :return: real command for this network device
-        """
-        # @formatter:off
-        command_mapper = {
-            'delimeter1': '>',
-            'delimeter2': '#',
-            'pattern': r"{}.*?(\(.*?\))?[{}|{}]",
-            'disable_paging': 'terminal pager 0',
-            'priv_enter': 'enable',
-            'priv_exit': 'disable',
-            'config_enter': 'conf t',
-            'config_exit': 'end',
-            'config_check': ')#',
-            'check_config_mode': ')#',
-        }
-        # @formatter:on
-        return command_mapper[command]
