@@ -10,7 +10,7 @@ from .base import BaseDevice
 from .logger import logger
 
 
-class CiscoLikeDevice(BaseDevice):
+class IOSLikeDevice(BaseDevice):
     """
     This Class is abstract class for working with cisco like devices
 
@@ -37,7 +37,7 @@ class CiscoLikeDevice(BaseDevice):
         :param client_keys: path for client keys. With () it will use default file in OS.
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
-        :returns: :class:`CiscoLikeDevice` class for working with devices like Cisco
+        :returns: :class:`IOSLikeDevice` class for working with devices like Cisco
         """
         super().__init__(host=host, username=username, password=password, secret=secret, port=port,
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,

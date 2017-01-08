@@ -1,10 +1,10 @@
 import re
 
-from ..cisco_like import CiscoLikeDevice
+from ..ios_like import IOSLikeDevice
 from ..logger import logger
 
 
-class FujitsuSwitch(CiscoLikeDevice):
+class FujitsuSwitch(IOSLikeDevice):
     """Class for working with Fujitsu Blade switch"""
     async def _set_base_prompt(self):
         """

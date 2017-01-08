@@ -32,10 +32,10 @@ BaseDevice
    :members:
    :special-members: __init__
 
-CiscoLikeDevice
+IOSLikeDevice
 ~~~~~~~~~~~~~~~
 
-.. autoclass:: CiscoLikeDevice
+.. autoclass:: IOSLikeDevice
    :members:
    :inherited-members:
 

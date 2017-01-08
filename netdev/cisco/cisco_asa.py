@@ -2,11 +2,11 @@
 
 import re
 
-from ..cisco_like import CiscoLikeDevice
+from ..ios_like import IOSLikeDevice
 from ..logger import logger
 
 
-class CiscoASA(CiscoLikeDevice):
+class CiscoASA(IOSLikeDevice):
     """Class for working with Cisco ASA"""
 
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
@@ -25,7 +25,7 @@ class CiscoASA(CiscoLikeDevice):
         :param client_keys: path for client keys. With () it will use default file in OS.
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
-        :returns: :class:`CiscoLikeDevice` class for working with devices like Cisco
+        :returns: :class:`IOSLikeDevice` class for working with devices like Cisco
         """
         super().__init__(host=host, username=username, password=password, secret=secret, port=port,
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
