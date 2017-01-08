@@ -60,27 +60,14 @@ class BaseDevice(object):
         self._MAX_BUFFER = 65535
         self._ansi_escape_codes = False
 
+    _delimeter_list = ['>', '#']
+    _pattern = r"{}.*?(\(.*?\))?[{}]"
+    _disable_paging_command = 'terminal length 0'
+
     @property
     def base_prompt(self):
         """Returning base prompt for this network device"""
         return self._base_prompt
-
-    def _get_default_command(self, command):
-        """
-        Returning default commands for device
-
-        :param str command: command for returning
-        :return: real command for this network device
-        """
-        # @formatter:off
-        command_mapper = {
-            'delimeter1': '#',
-            'delimeter2': '>',
-            'pattern': r"{}.*?(\(.*?\))?[{}|{}]",
-            'disable_paging': 'terminal length 0',
-        }
-        # @formatter:on
-        return command_mapper[command]
 
     async def __aenter__(self):
         """Async Context Manager"""
@@ -131,14 +118,12 @@ class BaseDevice(object):
             self._conn = await asyncssh.connect(**self._connect_params_dict)
         except asyncssh.DisconnectError as e:
             raise DisconnectError(self._host, e.code, e.reason)
-        self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb')
+        self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb', term_size=(200, 24))
         logger.info("Host {}: Connection is established".format(self._host))
-
         # Flush unnecessary data
-        delimeter1 = self._get_default_command('delimeter1')
-        delimeter2 = self._get_default_command('delimeter2')
-        output = await self._read_until_pattern(r"{}|{}".format(re.escape(delimeter1), re.escape(delimeter2)))
-        logger.debug("Host {}: Establish Connection Output: {}".format(self._host, output))
+        delimeters = r"|".join(type(self)._delimeter_list)
+        output = await self._read_until_pattern(delimeters)
+        logger.debug("Host {}: Establish Connection Output: {}".format(self._host, repr(output)))
         return output
 
     async def _set_base_prompt(self):
@@ -155,11 +140,9 @@ class BaseDevice(object):
 
         # Strip off trailing terminator
         self._base_prompt = prompt[:-1]
-        delimeter1 = self._get_default_command('delimeter1')
-        delimeter2 = self._get_default_command('delimeter2')
-        pattern = self._get_default_command('pattern')
-        self._base_pattern = pattern.format(re.escape(self._base_prompt[:12]), re.escape(delimeter1),
-                                            re.escape(delimeter2))
+        delimeters = r"|".join(type(self)._delimeter_list)
+        pattern = type(self)._pattern
+        self._base_pattern = pattern.format(self._base_prompt[:12], delimeters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
@@ -167,12 +150,12 @@ class BaseDevice(object):
     async def _disable_paging(self):
         """Disable paging method"""
         logger.info("Host {}: Trying to disable paging".format(self._host))
-        command = self._get_default_command('disable_paging')
+        command = type(self)._disable_paging_command
         command = self._normalize_cmd(command)
-        logger.debug("Host {}: Disable paging command: {}".format(self._host, command))
+        logger.debug("Host {}: Disable paging command: {}".format(self._host, repr(command)))
         self._stdin.write(command)
         output = await self._read_until_prompt()
-        logger.debug("Host {}: Disable paging output: {}".format(self._host, output))
+        logger.debug("Host {}: Disable paging output: {}".format(self._host, repr(output)))
         if self._ansi_escape_codes:
             output = self._strip_ansi_escape_codes(output)
         return output
@@ -182,15 +165,14 @@ class BaseDevice(object):
         logger.info("Host {}: Finding prompt".format(self._host))
         self._stdin.write(self._normalize_cmd("\n"))
         prompt = ''
-        delimeter1 = self._get_default_command('delimeter1')
-        delimeter2 = self._get_default_command('delimeter2')
-        prompt = await self._read_until_pattern(r"{}|{}".format(re.escape(delimeter1), re.escape(delimeter2)))
+        delimeters = r"|".join(type(self)._delimeter_list)
+        prompt = await self._read_until_pattern(delimeters)
         prompt = prompt.strip()
         if self._ansi_escape_codes:
             prompt = self._strip_ansi_escape_codes(prompt)
         if not prompt:
-            raise ValueError("Host {}: Unable to find prompt: {}".format(self._host, prompt))
-        logger.debug("Host {}: Prompt: {}".format(self._host, prompt))
+            raise ValueError("Host {}: Unable to find prompt: {}".format(self._host, repr(prompt)))
+        logger.debug("Host {}: Fund Prompt: {}".format(self._host, repr(prompt)))
         return prompt
 
     async def send_command(self, command_string, pattern='', re_flags=0, strip_command=True, strip_prompt=True):
@@ -207,7 +189,7 @@ class BaseDevice(object):
         logger.info('Host {}: Sending command'.format(self._host))
         output = ''
         command_string = self._normalize_cmd(command_string)
-        logger.debug("Host {}: Send command: {}".format(self._host, command_string))
+        logger.debug("Host {}: Send command: {}".format(self._host, repr(command_string)))
         self._stdin.write(command_string)
         output = await self._read_until_prompt_or_pattern(pattern, re_flags)
 
@@ -220,7 +202,7 @@ class BaseDevice(object):
         if strip_command:
             output = self._strip_command(command_string, output)
 
-        logger.debug("Host {}: Send command output: {}".format(self._host, output))
+        logger.debug("Host {}: Send command output: {}".format(self._host, repr(output)))
         return output
 
     def _strip_prompt(self, a_string):
@@ -247,7 +229,7 @@ class BaseDevice(object):
         while True:
             output += await self._stdout.read(self._MAX_BUFFER)
             if re.search(pattern, output, flags=re_flags):
-                logger.debug("Host {}: Reading pattern '{}' was found: {}".format(self._host, pattern, output))
+                logger.debug("Host {}: Reading pattern '{}' was found: {}".format(self._host, pattern, repr(output)))
                 return output
 
     async def _read_until_prompt_or_pattern(self, pattern='', re_flags=0):
@@ -261,7 +243,8 @@ class BaseDevice(object):
             output += await self._stdout.read(self._MAX_BUFFER)
             if re.search(pattern, output, flags=re_flags) or re.search(base_prompt_pattern, output, flags=re_flags):
                 logger.debug("Host {}: Reading pattern '{}' or '{}' was found: {}".format(self._host, pattern,
-                                                                                          base_prompt_pattern, output))
+                                                                                          base_prompt_pattern,
+                                                                                          repr(output)))
                 return output
 
     @staticmethod
@@ -329,7 +312,7 @@ class BaseDevice(object):
             output = self._strip_ansi_escape_codes(output)
 
         output = self._normalize_linefeeds(output)
-        logger.debug("Host {}: Config commands output: {}".format(self._host, output))
+        logger.debug("Host {}: Config commands output: {}".format(self._host, repr(output)))
         return output
 
     @staticmethod
@@ -362,7 +345,7 @@ class BaseDevice(object):
             Mikrotik
         """
         logger.info("Stripping ansi escape codes")
-        logger.debug("Old repr: {}".format(repr(string_buffer)))
+        logger.debug("Unstripped output: {}".format(repr(string_buffer)))
 
         code_save_cursor = chr(27) + r'7'
         code_scroll_screen = chr(27) + r'\[r'
@@ -386,8 +369,7 @@ class BaseDevice(object):
         # CODE_NEXT_LINE must substitute with '\n'
         output = re.sub(code_next_line, '\n', output)
 
-        logger.debug('New repr: {}'.format(repr(output)))
-        logger.debug('Stripped output: {}'.format(output))
+        logger.debug('Stripped output: {}'.format(repr(output)))
 
         return output
 

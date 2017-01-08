@@ -43,27 +43,12 @@ class CiscoLikeDevice(BaseDevice):
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
                          client_keys=client_keys, passphrase=passphrase, loop=loop)
 
-    def _get_default_command(self, command):
-        """
-        Returning default commands for device
-
-        :param str command: command for returning
-        :return: real command for this network device
-        """
-        # @formatter:off
-        command_mapper = {
-            'delimeter1': '>',
-            'delimeter2': '#',
-            'pattern': r"{}.*?(\(.*?\))?[{}|{}]",
-            'disable_paging': 'terminal length 0',
-            'priv_enter': 'enable',
-            'priv_exit': 'disable',
-            'config_enter': 'conf t',
-            'config_exit': 'end',
-            'config_check': ')#',
-        }
-        # @formatter:on
-        return command_mapper[command]
+    _priv_enter = 'enable'
+    _priv_exit = 'disable'
+    _priv_check = '#'
+    _config_enter = 'conf t'
+    _config_exit = 'end'
+    _config_check = ')#'
 
     async def connect(self):
         """
@@ -87,7 +72,7 @@ class CiscoLikeDevice(BaseDevice):
     async def _check_enable_mode(self):
         """Check if in enable mode. Return boolean"""
         logger.info('Host {}: Checking enable mode'.format(self._host))
-        check_string = self._get_default_command('delimeter2')
+        check_string = type(self)._priv_check
         self._stdin.write(self._normalize_cmd('\n'))
         output = await self._read_until_prompt()
         return check_string in output
@@ -96,7 +81,7 @@ class CiscoLikeDevice(BaseDevice):
         """Enter enable mode"""
         logger.info('Host {}: Entering to enable mode'.format(self._host))
         output = ""
-        enable_command = self._get_default_command('priv_enter')
+        enable_command = type(self)._priv_enter
         if not await self._check_enable_mode():
             self._stdin.write(self._normalize_cmd(enable_command))
             output += await self._read_until_prompt_or_pattern(pattern=pattern, re_flags=re_flags)
@@ -111,7 +96,7 @@ class CiscoLikeDevice(BaseDevice):
         """Exit enable mode"""
         logger.info('Host {}: Exiting from enable mode'.format(self._host))
         output = ""
-        exit_enable = self._get_default_command('priv_exit')
+        exit_enable = type(self)._priv_exit
         if await self._check_enable_mode():
             self._stdin.write(self._normalize_cmd(exit_enable))
             output += await self._read_until_prompt()
@@ -122,7 +107,7 @@ class CiscoLikeDevice(BaseDevice):
     async def _check_config_mode(self):
         """Checks if the device is in configuration mode or not"""
         logger.info('Host {}: Checking config mode'.format(self._host))
-        check_string = self._get_default_command('config_check')
+        check_string = type(self)._config_check
         self._stdin.write(self._normalize_cmd('\n'))
         output = await self._read_until_prompt()
         return check_string in output
@@ -131,7 +116,7 @@ class CiscoLikeDevice(BaseDevice):
         """Enter into config_mode"""
         logger.info('Host {}: Entering to config mode'.format(self._host))
         output = ''
-        config_command = self._get_default_command('config_enter')
+        config_command = type(self)._config_enter
         if not await self._check_config_mode():
             self._stdin.write(self._normalize_cmd(config_command))
             output = await self._read_until_prompt()
@@ -143,7 +128,7 @@ class CiscoLikeDevice(BaseDevice):
         """Exit from configuration mode"""
         logger.info('Host {}: Exiting from config mode'.format(self._host))
         output = ''
-        exit_config = self._get_default_command('config_exit')
+        exit_config = type(self)._config_exit
         if await self._check_config_mode():
             self._stdin.write(self._normalize_cmd(exit_config))
             output = await self._read_until_prompt()
@@ -174,7 +159,7 @@ class CiscoLikeDevice(BaseDevice):
             output += await self._exit_config_mode()
 
         output = self._normalize_linefeeds(output)
-        logger.debug("Host {}: Config commands output: {}".format(self._host, output))
+        logger.debug("Host {}: Config commands output: {}".format(self._host, repr(output)))
         return output
 
     async def _cleanup(self):
