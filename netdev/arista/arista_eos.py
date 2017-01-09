@@ -1,6 +1,6 @@
-from ..cisco_like import CiscoLikeDevice
+from ..ios_like import IOSLikeDevice
 
 
-class AristaEOS(CiscoLikeDevice):
+class AristaEOS(IOSLikeDevice):
     """Class for working with Arista EOS"""
     pass

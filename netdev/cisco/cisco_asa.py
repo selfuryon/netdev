@@ -2,11 +2,11 @@
 
 import re
 
-from ..cisco_like import CiscoLikeDevice
+from ..ios_like import IOSLikeDevice
 from ..logger import logger
 
 
-class CiscoASA(CiscoLikeDevice):
+class CiscoASA(IOSLikeDevice):
     """Class for working with Cisco ASA"""
 
     def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
@@ -25,7 +25,7 @@ class CiscoASA(CiscoLikeDevice):
         :param client_keys: path for client keys. With () it will use default file in OS.
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
-        :returns: :class:`CiscoLikeDevice` class for working with devices like Cisco
+        :returns: :class:`IOSLikeDevice` class for working with devices like Cisco
         """
         super().__init__(host=host, username=username, password=password, secret=secret, port=port,
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
@@ -33,6 +33,8 @@ class CiscoASA(CiscoLikeDevice):
 
         self._current_context = 'system'
         self._multiple_mode = False
+
+    _disable_paging_command = 'terminal pager 0'
 
     @property
     def current_context(self):
@@ -59,7 +61,7 @@ class CiscoASA(CiscoLikeDevice):
         logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
         await self._set_base_prompt()
-        await self._enable()
+        await self.enable_mode()
         await self._disable_paging()
         await self._check_multiple_mode()
         logger.info("Host {}: Connected to device".format(self._host))
@@ -96,10 +98,11 @@ class CiscoASA(CiscoLikeDevice):
             prompt = prompt[:-1]
         self._base_prompt = prompt
         self._current_context = context
-        delimeter1 = self._get_default_command('delimeter1')
-        delimeter2 = self._get_default_command('delimeter2')
-        self._base_pattern = r"{}.*(\/\w+)?(\(.*?\))?[{}|{}]".format(re.escape(self._base_prompt[:12]),
-                                                                     re.escape(delimeter1), re.escape(delimeter2))
+        delimiters = map(re.escape, type(self)._delimiter_list)
+        delimiters = r"|".join(delimiters)
+        base_prompt = re.escape(self._base_prompt[:12])
+        pattern = type(self)._pattern
+        self._base_pattern = pattern.format(base_prompt, delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         logger.debug("Host {}: Current Context: {}".format(self._host, self._current_context))
@@ -115,26 +118,3 @@ class CiscoASA(CiscoLikeDevice):
             self._multiple_mode = True
 
         logger.debug("Host {}: Multiple mode: {}".format(self._host, self._multiple_mode))
-
-    def _get_default_command(self, command):
-        """
-        Returning default commands for device
-
-        :param command: command for returning
-        :return: real command for this network device
-        """
-        # @formatter:off
-        command_mapper = {
-            'delimeter1': '>',
-            'delimeter2': '#',
-            'pattern': r"{}.*?(\(.*?\))?[{}|{}]",
-            'disable_paging': 'terminal pager 0',
-            'priv_enter': 'enable',
-            'priv_exit': 'disable',
-            'config_enter': 'conf t',
-            'config_exit': 'end',
-            'config_check': ')#',
-            'check_config_mode': ')#',
-        }
-        # @formatter:on
-        return command_mapper[command]

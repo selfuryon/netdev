@@ -37,7 +37,7 @@ class JunOSLikeDevice(BaseDevice):
         :param client_keys: path for client keys. With () it will use default file in OS.
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
-        :returns: :class:`HPLikeDevice` Base class for working with hp comware like devices
+        :returns: :class:`ComwareLikeDevice` Base class for working with hp comware like devices
         """
         super().__init__(host=host, username=username, password=password, secret=secret, port=port,
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,

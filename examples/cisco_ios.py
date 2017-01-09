@@ -7,7 +7,7 @@ import netdev
 
 config_path = 'config.yaml'
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 netdev.logger.setLevel(logging.DEBUG)
 
 
@@ -23,7 +23,7 @@ async def task(param):
         # Testing interactive dialog
         out = await ios.send_command("conf", pattern=r'\[terminal\]\?', strip_command=False)
         out += await ios.send_command("term", strip_command=False)
-        out += await ios.send_command("exit", strip_command=False)
+        out += await ios.send_command("exit", strip_command=False, strip_prompt=False)
         print(out)
 
 
