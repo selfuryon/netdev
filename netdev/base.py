@@ -176,7 +176,7 @@ class BaseDevice(object):
             prompt = self._strip_ansi_escape_codes(prompt)
         if not prompt:
             raise ValueError("Host {}: Unable to find prompt: {}".format(self._host, repr(prompt)))
-        logger.debug("Host {}: Fund Prompt: {}".format(self._host, repr(prompt)))
+        logger.debug("Host {}: Found Prompt: {}".format(self._host, repr(prompt)))
         return prompt
 
     async def send_command(self, command_string, pattern='', re_flags=0, strip_command=True, strip_prompt=True):

@@ -1,11 +1,12 @@
-import re
-
 from ..junos_like import JunOSLikeDevice
 from ..logger import logger
 
 
 class JuniperJunOS(JunOSLikeDevice):
     """Class for working with Juniper JunOS"""
+
+    _shell_check = '%'
+    _cli_command = 'cli'
 
     async def connect(self):
         """
@@ -20,27 +21,21 @@ class JuniperJunOS(JunOSLikeDevice):
         """
         logger.info("Host {}: Connecting to device".format(self._host))
         await self._establish_connection()
-        await self._check_shell_mode()
         await self._set_base_prompt()
+        await self._check_shell_mode()
         await self._disable_paging()
         logger.info("Host {}: Connected to device".format(self._host))
 
     async def _check_shell_mode(self):
         """Checking shell mode. If we are in shell - we automatically enter to cli"""
-        logger.info("Host {}: checking shell mode".format(self._host))
-        self._stdin.write(self._normalize_cmd("\n"))
-        delimeter0 = self._get_default_command('delimeter0')
-        delimeter1 = self._get_default_command('delimeter1')
-        delimeter2 = self._get_default_command('delimeter2')
-        prompt = await self._read_until_pattern(
-            r"{}|{}|{}".format(re.escape(delimeter0), re.escape(delimeter1), re.escape(delimeter2)))
-        prompt = prompt.strip()
-        if self._ansi_escape_codes:
-            prompt = self._strip_ansi_escape_codes(prompt)
-        if not prompt:
-            raise ValueError("Host {}: Unable to find prompt: {}".format(self._host, prompt))
-        if '%' in prompt:
+        logger.info("Host {}: Checking shell mode".format(self._host))
+        output = ''
+        prompt = await self._find_prompt()
+        shell_check = type(self)._shell_check
+        if shell_check in prompt:
+            cli_command = type(self)._cli_command
             logger.debug("Host {}: Entering to cli".format(self._host))
-            self._stdin.write(self._normalize_cmd("cli"))
+            self._stdin.write(self._normalize_cmd(cli_command))
+            output = await self._read_until_prompt()
 
-        return prompt
+        return output

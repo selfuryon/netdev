@@ -37,32 +37,20 @@ class JunOSLikeDevice(BaseDevice):
         :param client_keys: path for client keys. With () it will use default file in OS.
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
-        :returns: :class:`ComwareLikeDevice` Base class for working with hp comware like devices
+        :returns: :class:`JunOSLikeDevice` Base class for working with hp comware like devices
         """
         super().__init__(host=host, username=username, password=password, secret=secret, port=port,
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
                          client_keys=client_keys, passphrase=passphrase, loop=loop)
 
-    def _get_default_command(self, command):
-        """
-        Returning default commands for device
-
-        :param str command: command for returning
-        :return: real command for this network device
-        """
-        # @formatter:off
-        command_mapper = {
-            'delimeter0': '%',
-            'delimeter1': '>',
-            'delimeter2': '#',
-            'pattern': r"\w+(\@[\-\w]*)?[{}|{}]",
-            'disable_paging': 'set cli screen-length 0',
-            'config_enter': 'configure',
-            'config_exit': 'exit configuration-mode',
-            'config_check': '#'
-        }
-        # @formatter:on
-        return command_mapper[command]
+    _delimiter_list = ['%', '>', '#']
+    _pattern = r"\w+(\@[\-\w]*)?[{}]"
+    _disable_paging_command = 'set cli screen-length 0'
+    _config_enter = 'configure'
+    _config_exit = 'exit configuration-mode'
+    _config_check = '#'
+    _commit_command = 'commit'
+    _commit_comment_command = 'commit comment {}'
 
     async def _set_base_prompt(self):
         """
@@ -79,43 +67,44 @@ class JunOSLikeDevice(BaseDevice):
         if '@' in prompt:
             prompt = prompt.split('@')[1]
         self._base_prompt = prompt
-        pattern = self._get_default_command('pattern')
-        delimeter1 = self._get_default_command('delimeter1')
-        delimeter2 = self._get_default_command('delimeter2')
-        self._base_pattern = pattern.format(re.escape(delimeter1), re.escape(delimeter2))
+        delimiters = map(re.escape, type(self)._delimiter_list)
+        delimiters = r"|".join(delimiters)
+        base_prompt = re.escape(self._base_prompt[:12])
+        pattern = type(self)._pattern
+        self._base_pattern = pattern.format(delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
 
-    async def _check_config_mode(self):
+    async def config_mode_check(self):
         """Check if in configuration mode. Return boolean"""
         logger.info('Host {}: Checking configuration mode'.format(self._host))
-        check_string = self._get_default_command('config_check')
+        check_string = type(self)._config_check
         self._stdin.write(self._normalize_cmd('\n'))
         output = await self._read_until_prompt()
         return check_string in output
 
-    async def _config(self):
+    async def config_mode(self):
         """Enter configuration mode"""
         logger.info('Host {}: Entering to configuration mode'.format(self._host))
         output = ""
-        config_enter = self._get_default_command('config_enter')
-        if not await self._check_config_mode():
+        config_enter = type(self)._config_enter
+        if not await self.config_mode_check():
             self._stdin.write(self._normalize_cmd(config_enter))
             output += await self._read_until_prompt()
-            if not await self._check_config_mode():
+            if not await self.config_mode_check():
                 raise ValueError("Failed to enter to configuration mode")
         return output
 
-    async def _exit_config_mode(self):
+    async def config_mode_exit(self):
         """Exit system-view mode. It doesn't exit from configuration mode if system has uncommitted changes"""
         logger.info('Host {}: Exiting from configuration mode'.format(self._host))
         output = ""
-        config_exit = self._get_default_command('config_exit')
-        if await self._check_config_mode():
+        config_exit = type(self)._config_exit
+        if await self.config_mode_check():
             self._stdin.write(self._normalize_cmd(config_exit))
             output += await self._read_until_prompt()
-            if await self._check_config_mode():
+            if await self.config_mode_check():
                 raise ValueError("Failed to exit from configuration mode")
         return output
 
@@ -137,21 +126,20 @@ class JunOSLikeDevice(BaseDevice):
             return ''
 
         # Send config commands
-        output = await self._config()
+        output = await self.config_mode()
         output += await super().send_config_set(config_commands=config_commands)
 
         if with_commit:
+            commit = type(self)._commit_command
             if commit_comment:
-                commit = "commit comment {}".format(commit_comment)
-                self._stdin.write(self._normalize_cmd(commit))
-            else:
-                self._stdin.write(self._normalize_cmd("commit"))
+                commit = type(self)._commit_comment_command.format(commit_comment)
 
+            self._stdin.write(self._normalize_cmd(commit))
             output += await self._read_until_prompt()
 
         if exit_config_mode:
-            output += await self._exit_config_mode()
+            output += await self.config_mode_exit()
 
         output = self._normalize_linefeeds(output)
-        logger.debug("Host {}: Config commands output: {}".format(self._host, output))
+        logger.debug("Host {}: Config commands output: {}".format(self._host, repr(output)))
         return output
