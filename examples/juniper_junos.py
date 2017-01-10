@@ -13,11 +13,14 @@ netdev.logger.setLevel(logging.DEBUG)
 
 async def task(param):
     async with netdev.create(**param) as junos:
+        # Testing sending simple command
         out = await junos.send_command("show version")
         print(out)
+        # Testing sending configuration set
         commands = ["edit system", "edit login"]
         out = await junos.send_config_set(commands, with_commit=True)
         print(out)
+        # Testing sending simple command with long output
         out = await junos.send_command("show config")
         print(out)
         # Testing interactive dialog
@@ -33,10 +36,7 @@ async def task(param):
 async def run():
     config = yaml.load(open(config_path, 'r'))
     devices = yaml.load(open(config['device_list'], 'r'))
-    params = [p for p in devices if p['device_type'] == 'juniper_junos']
-    tasks = []
-    for param in params:
-        tasks.append(task(param))
+    tasks = [task(dev) for dev in devices if dev['device_type'] == 'juniper_junos']
     await asyncio.wait(tasks)
 
 

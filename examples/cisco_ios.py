@@ -13,11 +13,14 @@ netdev.logger.setLevel(logging.DEBUG)
 
 async def task(param):
     async with netdev.create(**param) as ios:
-        out = await ios.send_command("show ssh")
+        # Testing sending simple command
+        out = await ios.send_command("show ver")
         print(out)
+        # Testing sending configuration set
         commands = ["line console 0", "exit"]
         out = await ios.send_config_set(commands)
         print(out)
+        # Testing sending simple command with long output
         out = await ios.send_command("show run")
         print(out)
         # Testing interactive dialog
@@ -30,10 +33,7 @@ async def task(param):
 async def run():
     config = yaml.load(open(config_path, 'r'))
     devices = yaml.load(open(config['device_list'], 'r'))
-    params = [p for p in devices if p['device_type'] == 'cisco_ios']
-    tasks = []
-    for param in params:
-        tasks.append(task(param))
+    tasks = [task(dev) for dev in devices if dev['device_type'] == 'cisco_ios']
     await asyncio.wait(tasks)
 
 

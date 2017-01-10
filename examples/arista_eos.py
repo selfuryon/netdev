@@ -13,8 +13,10 @@ netdev.logger.setLevel(logging.DEBUG)
 
 async def task(param):
     async with netdev.create(**param) as arista:
+        # Testing sending simple command
         out = await arista.send_command('show run', strip_command=True)
         print(out)
+        # Testing sending configuration set
         commands = ["vlan 1", "exit"]
         out = await arista.send_config_set(commands)
         print(out)
@@ -23,10 +25,7 @@ async def task(param):
 async def run():
     config = yaml.load(open(config_path, 'r'))
     devices = yaml.load(open(config['device_list'], 'r'))
-    params = [p for p in devices if p['device_type'] == 'arista_eos']
-    tasks = []
-    for param in params:
-        tasks.append(task(param))
+    tasks = [task(dev) for dev in devices if dev['device_type'] == 'arista_eos']
     await asyncio.wait(tasks)
 
 
