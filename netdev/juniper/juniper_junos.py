@@ -6,7 +6,10 @@ class JuniperJunOS(JunOSLikeDevice):
     """Class for working with Juniper JunOS"""
 
     _shell_check = '%'
+    """Checking string for shell mode"""
+
     _cli_command = 'cli'
+    """Command for entering to cli mode"""
 
     async def connect(self):
         """
@@ -15,27 +18,34 @@ class JuniperJunOS(JunOSLikeDevice):
         It connects to device and makes some preparation steps for working:
 
         * _establish_connection() for connecting to device
-        * _check_shell_mode() for checking shell mode. If we are in shell - we automatically enter to cli
+        * cli_mode() for checking shell mode. If we are in shell - we automatically enter to cli
         * _set_base_prompt() for finding and setting device prompt
         * _disable_paging() for non interact output in commands
         """
-        logger.info("Host {}: Connecting to device".format(self._host))
+        logger.info("Host {}: Trying to connect to the device".format(self._host))
         await self._establish_connection()
         await self._set_base_prompt()
-        await self._check_shell_mode()
+        await self.cli_mode()
         await self._disable_paging()
-        logger.info("Host {}: Connected to device".format(self._host))
+        logger.info("Host {}: Entering to cmdline mode".format(self._host))
 
-    async def _check_shell_mode(self):
-        """Checking shell mode. If we are in shell - we automatically enter to cli"""
-        logger.info("Host {}: Checking shell mode".format(self._host))
-        output = ''
-        prompt = await self._find_prompt()
+    async def check_cli_mode(self):
+        """Check if we are in cli mode. Return boolean"""
+        logger.info('Host {}: Checking shell mode'.format(self._host))
         shell_check = type(self)._shell_check
-        if shell_check in prompt:
-            cli_command = type(self)._cli_command
-            logger.debug("Host {}: Entering to cli".format(self._host))
-            self._stdin.write(self._normalize_cmd(cli_command))
-            output = await self._read_until_prompt()
+        self._stdin.write(self._normalize_cmd('\n'))
+        output = await self._read_until_prompt()
+        return shell_check in output
 
+    async def cli_mode(self):
+        """Enter to cli mode"""
+        logger.info("Host {}: Entering to cli mode".format(self._host))
+        output = ""
+        cli_command = type(self)._cli_command
+        if not await self.check_cli_mode():
+            self._stdin.write(self._normalize_cmd(cli_command))
+            output += await self._read_until_prompt()
+            if not await self.check_cli_mode():
+                raise ValueError("Failed to enter to cli mode")
         return output
+

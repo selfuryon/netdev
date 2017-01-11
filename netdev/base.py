@@ -18,8 +18,8 @@ class BaseDevice(object):
     Base Abstract Class for working with network devices
     """
 
-    def __init__(self, host=u'', username=u'', password=u'', port=22, known_hosts=None, local_addr=None,
-                 client_keys=None, passphrase=None, loop=None):
+    def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,
+                 local_addr=None, client_keys=None, passphrase=None, loop=None):
         """
         Initialize base class for asynchronous working with network devices
 
@@ -27,9 +27,10 @@ class BaseDevice(object):
         :param str username: username for logging to device
         :param str password: user password for logging to device
         :param int port: ssh port for connection. Default is 22
+        :param str device_type: network device type
         :param known_hosts: file with known hosts. Default is None (no policy). With () it will use default file
         :param str local_addr: local address for binding source of tcp connection
-        :param client_keys: path for client keys. Default in None. With () it will use default file in OS.
+        :param client_keys: path for client keys. Default in None. With () it will use default file in OS
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
         """
@@ -44,6 +45,7 @@ class BaseDevice(object):
         self._local_addr = local_addr
         self._client_keys = client_keys
         self._passphrase = passphrase
+        self._device_type = device_type
         if loop is None:
             self._loop = asyncio.get_event_loop()
         else:

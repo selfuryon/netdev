@@ -20,8 +20,8 @@ class ComwareLikeDevice(BaseDevice):
     * system view. This mode is using for configuration system
     """
 
-    def __init__(self, host=u'', username=u'', password=u'', port=22, known_hosts=None, local_addr=None,
-                 client_keys=None, passphrase=None, loop=None):
+    def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,
+                 local_addr=None, client_keys=None, passphrase=None, loop=None):
         """
         Initialize  class for asynchronous working with network devices
 
@@ -29,14 +29,16 @@ class ComwareLikeDevice(BaseDevice):
         :param str username: username for logger to device
         :param str password: password for user for logger to device
         :param int port: ssh port for connection. Default is 22
+        :param str device_type: network device type
         :param known_hosts: file with known hosts. Default is None (no policy). with () it will use default file
         :param str local_addr: local address for binding source of tcp connection
         :param client_keys: path for client keys. With () it will use default file in OS.
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
         """
-        super().__init__(host=host, username=username, password=password, port=port, known_hosts=known_hosts,
-                         local_addr=local_addr, client_keys=client_keys, passphrase=passphrase, loop=loop)
+        super().__init__(host=host, username=username, password=password, port=port, device_type=device_type,
+                         known_hosts=known_hosts, local_addr=local_addr, client_keys=client_keys, passphrase=passphrase,
+                         loop=loop)
 
     _delimiter_list = ['>', ']']
     """All this characters will stop reading from buffer. It mean the end of device prompt"""

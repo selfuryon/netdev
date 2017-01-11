@@ -21,8 +21,8 @@ class IOSLikeDevice(BaseDevice):
     * configuration mode or config mode. This mode are used for configuration whole system.
     """
 
-    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, known_hosts=None, local_addr=None,
-                 client_keys=None, passphrase=None, loop=None):
+    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
+                 local_addr=None, client_keys=None, passphrase=None, loop=None):
         """
         Initialize class for asynchronous working with network devices
 
@@ -31,16 +31,18 @@ class IOSLikeDevice(BaseDevice):
         :param str password: password for user for logger to device
         :param str secret: secret password for privilege mode
         :param int port: ssh port for connection. Default is 22
+        :param str device_type: network device type
         :param known_hosts: file with known hosts. Default is None (no policy). with () it will use default file
         :param str local_addr: local address for binding source of tcp connection
-        :param client_keys: path for client keys. With () it will use default file in OS.
+        :param client_keys: path for client keys. With () it will use default file in OS
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
         """
         self._secret = secret
 
-        super().__init__(host=host, username=username, password=password, port=port, known_hosts=known_hosts,
-                         local_addr=local_addr, client_keys=client_keys, passphrase=passphrase, loop=loop)
+        super().__init__(host=host, username=username, password=password, port=port, device_type=device_type,
+                         known_hosts=known_hosts, local_addr=local_addr, client_keys=client_keys, passphrase=passphrase,
+                         loop=loop)
 
     _priv_enter = 'enable'
     """Command for entering to privilege exec"""

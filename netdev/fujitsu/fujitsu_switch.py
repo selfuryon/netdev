@@ -1,3 +1,5 @@
+"""Subclass specific to Fujitsu Blade Switch"""
+
 import re
 
 from ..ios_like import IOSLikeDevice
@@ -8,8 +10,13 @@ class FujitsuSwitch(IOSLikeDevice):
     """Class for working with Fujitsu Blade switch"""
 
     _pattern = r"\({}.*?\) (\(.*?\))?[{}]"
+    """Pattern for using in reading buffer. When it found processing ends"""
+
     _disable_paging_command = 'no pager'
+    """Command for disabling paging"""
+
     _config_enter = 'conf'
+    """Command for entering to configuration mode"""
 
     async def _set_base_prompt(self):
         """

@@ -1,4 +1,4 @@
-"""Subclass specific to Cisco ASA."""
+"""Subclass specific to Cisco ASA"""
 
 import re
 
@@ -19,13 +19,13 @@ class CiscoASA(IOSLikeDevice):
         :param str password: password for user for logger to device
         :param str secret: secret password for privilege mode
         :param int port: ssh port for connection. Default is 22
+        :param str device_type: network device type
         :param str device_type: network device type. This is subclasses of this class
         :param known_hosts: file with known hosts. Default is None (no policy). with () it will use default file
         :param str local_addr: local address for binding source of tcp connection
         :param client_keys: path for client keys. With () it will use default file in OS.
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
-        :returns: :class:`IOSLikeDevice` class for working with devices like Cisco
         """
         super().__init__(host=host, username=username, password=password, secret=secret, port=port,
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
@@ -58,13 +58,13 @@ class CiscoASA(IOSLikeDevice):
         * _disable_paging() for non interact output in commands
         *  _check_multiple_mode() for checking multiple mode in ASA
         """
-        logger.info("Host {}: Connecting to device".format(self._host))
+        logger.info("Host {}: rying to connect to the device".format(self._host))
         await self._establish_connection()
         await self._set_base_prompt()
         await self.enable_mode()
         await self._disable_paging()
         await self._check_multiple_mode()
-        logger.info("Host {}: Connected to device".format(self._host))
+        logger.info("Host {}: Has connected to the device".format(self._host))
 
     async def send_command(self, command_string, pattern='', re_flags=0, strip_prompt=True, strip_command=True):
         """
@@ -109,9 +109,7 @@ class CiscoASA(IOSLikeDevice):
         return self._base_prompt
 
     async def _check_multiple_mode(self):
-        """
-        Check mode multiple. If mode is multiple we adding info about contexts
-        """
+        """Check mode multiple. If mode is multiple we adding info about contexts"""
         logger.info("Host {}:Checking multiple mode".format(self._host))
         out = await self.send_command('show mode')
         if 'multiple' in out:

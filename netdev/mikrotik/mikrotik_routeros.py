@@ -8,10 +8,22 @@ from ..logger import logger
 class MikrotikRouterOS(BaseDevice):
     """Class for working with Mikrotik RouterOS"""
 
-    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
+    def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,
                  local_addr=None, client_keys=None, passphrase=None, loop=None):
         """
+        Initialize class for asynchronous working with network devices
         Invoke init with some special params (base_pattern and username)
+
+        :param str host: device hostname or ip address for connection
+        :param str username: username for logging to device
+        :param str password: user password for logging to device
+        :param int port: ssh port for connection. Default is 22
+        :param str device_type: network device type
+        :param known_hosts: file with known hosts. Default is None (no policy). With () it will use default file
+        :param str local_addr: local address for binding source of tcp connection
+        :param client_keys: path for client keys. Default in None. With () it will use default file in OS
+        :param str passphrase: password for encrypted client keys
+        :param loop: asyncio loop object
 
         Mikrotik duplicate prompt in connection, so we should use pattern like
         prompt .* prompt.
@@ -20,10 +32,9 @@ class MikrotikRouterOS(BaseDevice):
         '+t' disable auto term capabilities detection
         '+200w' set terminal width to 200 rows
         """
-        super(MikrotikRouterOS, self).__init__(host=host, username=username, password=password, secret=secret,
-                                               port=port, device_type=device_type, known_hosts=known_hosts,
-                                               local_addr=local_addr, client_keys=client_keys, passphrase=passphrase,
-                                               loop=loop)
+        super(MikrotikRouterOS, self).__init__(host=host, username=username, password=password, port=port,
+                                               device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
+                                               client_keys=client_keys, passphrase=passphrase, loop=loop)
 
         self._base_pattern = r"\[.*?\] \>.*\[.*?\] \>"
         self._username += '+ct200w'
@@ -103,4 +114,3 @@ class MikrotikRouterOS(BaseDevice):
         command = command.rstrip("\n")
         command += '\r'
         return command
-
