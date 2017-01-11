@@ -1,11 +1,23 @@
+"""Subclass specific to Fujitsu Blade Switch"""
+
 import re
 
-from ..cisco_like import CiscoLikeDevice
+from ..ios_like import IOSLikeDevice
 from ..logger import logger
 
 
-class FujitsuSwitch(CiscoLikeDevice):
+class FujitsuSwitch(IOSLikeDevice):
     """Class for working with Fujitsu Blade switch"""
+
+    _pattern = r"\({}.*?\) (\(.*?\))?[{}]"
+    """Pattern for using in reading buffer. When it found processing ends"""
+
+    _disable_paging_command = 'no pager'
+    """Command for disabling paging"""
+
+    _config_enter = 'conf'
+    """Command for entering to configuration mode"""
+
     async def _set_base_prompt(self):
         """
         Setting two important vars
@@ -18,11 +30,11 @@ class FujitsuSwitch(CiscoLikeDevice):
         prompt = await self._find_prompt()
         # Strip off trailing terminator
         self._base_prompt = prompt[1:-3]
-        delimeter1 = self._get_default_command('delimeter1')
-        delimeter2 = self._get_default_command('delimeter2')
-        pattern = self._get_default_command('pattern')
-        self._base_pattern = pattern.format(re.escape(self._base_prompt[:12]), re.escape(delimeter1),
-                                            re.escape(delimeter2))
+        delimiters = map(re.escape, type(self)._delimiter_list)
+        delimiters = r"|".join(delimiters)
+        base_prompt = re.escape(self._base_prompt[:12])
+        pattern = type(self)._pattern
+        self._base_pattern = pattern.format(base_prompt, delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
@@ -34,25 +46,3 @@ class FujitsuSwitch(CiscoLikeDevice):
         """
         newline = re.compile(r'(\r\r\n|\r\n|\n\r)')
         return newline.sub('\n', a_string).replace('\n\n', '\n')
-
-    def _get_default_command(self, command):
-        """
-        Returning default commands for device
-
-        :param command: command for returning
-        :return: real command for this network device
-        """
-        # @formatter:off
-        command_mapper = {
-            'delimeter1': '>',
-            'delimeter2': '#',
-            'pattern': r"\({}.*?\) (\(.*?\))?[{}|{}]",
-            'disable_paging': 'no pager',
-            'priv_enter': 'enable',
-            'priv_exit': 'disable',
-            'config_enter': 'conf',
-            'config_exit': 'end',
-            'config_check': ')#',
-        }
-        # @formatter:on
-        return command_mapper[command]

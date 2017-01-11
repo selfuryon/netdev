@@ -1,6 +1,6 @@
-from ..hp_like import HPLikeDevice
+from ..comware_like import ComwareLikeDevice
 
 
-class HPComware(HPLikeDevice):
+class HPComware(ComwareLikeDevice):
     """Class for working with HP Comware"""
     pass

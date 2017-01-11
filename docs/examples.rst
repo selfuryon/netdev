@@ -37,31 +37,47 @@ credentials.yaml
      password: ****
      username: ****
      cmdline_password: '512900'
+   - device_type: arista_eos
+     host: 6.6.6.6
+     password: ****
+     username: ****
+   - device_type: juniper_junos
+     host: 7.7.7.7
+     password: ****
+     username: ****
 
 ASA example
 -----------
-.. literalinclude:: ../examples/cisco_asa_example.py
+.. literalinclude:: ../examples/cisco_asa.py
 
 NX-OS example
 -------------
-.. literalinclude:: ../examples/cisco_nxos_example.py
+.. literalinclude:: ../examples/cisco_nxos.py
 
 IOS example
 -----------
-.. literalinclude:: ../examples/cisco_ios_example.py
+.. literalinclude:: ../examples/cisco_ios.py
 
 Fujitsu example
 ---------------
-.. literalinclude:: ../examples/fujitsu_switch_example.py
+.. literalinclude:: ../examples/fujitsu_switch.py
 
 Comware example
 ---------------
-.. literalinclude:: ../examples/hp_comware_example.py
+.. literalinclude:: ../examples/hp_comware.py
 
 Comware Limited example
 -----------------------
-.. literalinclude:: ../examples/hp_comware_limited_example.py
+.. literalinclude:: ../examples/hp_comware_limited.py
 
-Mikrotik example
-----------------
-.. literalinclude:: ../examples/mikrotik_routeros_example.py
+Mikrotik RouterOS example
+-------------------------
+.. literalinclude:: ../examples/mikrotik_routeros.py
+
+Arista EOS example
+------------------
+.. literalinclude:: ../examples/arista_eos.py
+
+Juniper JunOS example
+---------------------
+.. literalinclude:: ../examples/juniper_junos.py

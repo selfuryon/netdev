@@ -8,26 +8,39 @@ from ..logger import logger
 class MikrotikRouterOS(BaseDevice):
     """Class for working with Mikrotik RouterOS"""
 
-    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
+    def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,
                  local_addr=None, client_keys=None, passphrase=None, loop=None):
         """
+        Initialize class for asynchronous working with network devices
         Invoke init with some special params (base_pattern and username)
+
+        :param str host: device hostname or ip address for connection
+        :param str username: username for logging to device
+        :param str password: user password for logging to device
+        :param int port: ssh port for connection. Default is 22
+        :param str device_type: network device type
+        :param known_hosts: file with known hosts. Default is None (no policy). With () it will use default file
+        :param str local_addr: local address for binding source of tcp connection
+        :param client_keys: path for client keys. Default in None. With () it will use default file in OS
+        :param str passphrase: password for encrypted client keys
+        :param loop: asyncio loop object
 
         Mikrotik duplicate prompt in connection, so we should use pattern like
         prompt .* prompt.
         For disabling colors in CLI output we should user this username = username+c
         '+c' disables colors
         '+t' disable auto term capabilities detection
-        '+80w' set terminal width to 80 rows
+        '+200w' set terminal width to 200 rows
         """
-        super(MikrotikRouterOS, self).__init__(host=host, username=username, password=password, secret=secret,
-                                               port=port, device_type=device_type, known_hosts=known_hosts,
-                                               local_addr=local_addr, client_keys=client_keys, passphrase=passphrase,
-                                               loop=loop)
+        super(MikrotikRouterOS, self).__init__(host=host, username=username, password=password, port=port,
+                                               device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
+                                               client_keys=client_keys, passphrase=passphrase, loop=loop)
 
         self._base_pattern = r"\[.*?\] \>.*\[.*?\] \>"
-        self._username += '+ct80w'
+        self._username += '+ct200w'
         self._ansi_escape_codes = True
+
+    _pattern = r"\[.*?\] (\/.*?)?\>"
 
     async def connect(self):
         """
@@ -57,7 +70,7 @@ class MikrotikRouterOS(BaseDevice):
         logger.info("Host {}: Connection is established".format(self._host))
         # Flush unnecessary data
         output = await self._read_until_prompt()
-        logger.debug("Host {}: Establish Connection Output: {}".format(self._host, output))
+        logger.debug("Host {}: Establish Connection Output: {}".format(self._host, repr(output)))
         return output
 
     async def _set_base_prompt(self):
@@ -69,7 +82,7 @@ class MikrotikRouterOS(BaseDevice):
         For Mikrotik devices base_pattern is "r"\[.*?\] (\/.*?)?\>"
         """
         logger.info("Host {}: Setting base prompt".format(self._host))
-        self._base_pattern = self._get_default_command('pattern')
+        self._base_pattern = type(self)._pattern
         prompt = await self._find_prompt()
         user = ''
         # Strip off trailing terminator
@@ -101,17 +114,3 @@ class MikrotikRouterOS(BaseDevice):
         command = command.rstrip("\n")
         command += '\r'
         return command
-
-    def _get_default_command(self, command):
-        """
-        Returning default commands for device
-
-        :param command: command for returning
-        :return: real command for this network device
-        """
-        # @formatter:off
-        command_mapper = {
-            'pattern': r"\[.*?\] (\/.*?)?\>",
-        }
-        # @formatter:on
-        return command_mapper[command]

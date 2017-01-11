@@ -9,23 +9,25 @@ Requires:
 ---------
 * asyncio
 * AsyncSSH
-* Python 3.5
+* Python >=3.5
 * pyYAML
   
  
 Supports: 
 ---------
 * Cisco IOS 
-* Cisco IOS-XE 
+* Cisco IOS XE
 * Cisco ASA
 * Cisco NX-OS 
 * HP Comware (like V1910 too)
 * Fujitsu Blade Switches
 * Mikrotik RouterOS
+* Arista EOS
+* Juniper JunOS
 
 Examples:
 ---------
-Example of interacting with cisco IOS devices:
+Example of interacting with Cisco IOS devices:
 
 .. code-block:: python
 
@@ -34,12 +36,20 @@ Example of interacting with cisco IOS devices:
 
     async def task(param):
         async with netdev.create(**param) as ios:
-            out = await ios.send_command("show ssh")
+            # Testing sending simple command
+            out = await ios.send_command("show ver")
             print(out)
+            # Testing sending configuration set
             commands = ["line console 0", "exit"]
             out = await ios.send_config_set(commands)
             print(out)
+            # Testing sending simple command with long output
             out = await ios.send_command("show run")
+            print(out)
+            # Testing interactive dialog
+            out = await ios.send_command("conf", pattern=r'\[terminal\]\?', strip_command=False)
+            out += await ios.send_command("term", strip_command=False)
+            out += await ios.send_command("exit", strip_command=False, strip_prompt=False)
             print(out)
 
 
@@ -55,8 +65,7 @@ Example of interacting with cisco IOS devices:
                  'host': 'ip address',
         }
         devices = [dev1, dev2]
-        for dev in devices:
-            tasks.append(task(dev))
+        tasks = [task(dev) for dev in devices]
         await asyncio.wait(tasks)
 
 

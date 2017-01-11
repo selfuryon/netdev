@@ -1,12 +1,14 @@
 """
 Factory function for creating netdev classes
 """
+from .arista import AristaEOS
 from .cisco import CiscoASA
 from .cisco import CiscoIOS
 from .cisco import CiscoNXOS
 from .fujitsu import FujitsuSwitch
 from .hp import HPComware
 from .hp import HPComwareLimited
+from .juniper import JuniperJunOS
 from .mikrotik import MikrotikRouterOS
 
 # @formatter:off
@@ -20,6 +22,8 @@ CLASS_MAPPER = {
     'hp_comware_limited': HPComwareLimited,
     'fujitsu_switch': FujitsuSwitch,
     'mikrotik_routeros': MikrotikRouterOS,
+    'arista_eos': AristaEOS,
+    'juniper_junos': JuniperJunOS,
 }
 
 # @formatter:on

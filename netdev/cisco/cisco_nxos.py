@@ -1,9 +1,9 @@
 import re
 
-from ..cisco_like import CiscoLikeDevice
+from ..ios_like import IOSLikeDevice
 
 
-class CiscoNXOS(CiscoLikeDevice):
+class CiscoNXOS(IOSLikeDevice):
     """Class for working with Cisco Nexus/NX-OS"""
     @staticmethod
     def _normalize_linefeeds(a_string):

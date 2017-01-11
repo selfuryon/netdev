@@ -1,7 +1,7 @@
 """
 Base Class for using in connection to network devices
 
-Connection Method are based upon AsyncSSH and should be running in asyncio loop
+Connections Method are based upon AsyncSSH and should be running in asyncio loop
 """
 
 import asyncio
@@ -18,23 +18,21 @@ class BaseDevice(object):
     Base Abstract Class for working with network devices
     """
 
-    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
+    def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,
                  local_addr=None, client_keys=None, passphrase=None, loop=None):
         """
         Initialize base class for asynchronous working with network devices
 
-        :param str host: hostname or ip address for connection
-        :param str username: username for logger to device
-        :param str password: password for user for logger to device
-        :param str secret: secret password for privilege mode
+        :param str host: device hostname or ip address for connection
+        :param str username: username for logging to device
+        :param str password: user password for logging to device
         :param int port: ssh port for connection. Default is 22
-        :param str device_type: network device type. This is subclasses of this class
-        :param known_hosts: file with known hosts. Default is None (no policy). with () it will use default file
+        :param str device_type: network device type
+        :param known_hosts: file with known hosts. Default is None (no policy). With () it will use default file
         :param str local_addr: local address for binding source of tcp connection
-        :param client_keys: path for client keys. With () it will use default file in OS.
+        :param client_keys: path for client keys. Default in None. With () it will use default file in OS
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
-        :returns: :class:`BaseDevice` Base class
         """
         if host:
             self._host = host
@@ -43,12 +41,11 @@ class BaseDevice(object):
         self._port = int(port)
         self._username = username
         self._password = password
-        self._secret = secret
-        self._device_type = device_type
         self._known_hosts = known_hosts
         self._local_addr = local_addr
         self._client_keys = client_keys
         self._passphrase = passphrase
+        self._device_type = device_type
         if loop is None:
             self._loop = asyncio.get_event_loop()
         else:
@@ -60,27 +57,19 @@ class BaseDevice(object):
         self._MAX_BUFFER = 65535
         self._ansi_escape_codes = False
 
+    _delimiter_list = ['>', '#']
+    """All this characters will stop reading from buffer. It mean the end of device prompt"""
+
+    _pattern = r"{}.*?(\(.*?\))?[{}]"
+    """Pattern for using in reading buffer. When it found processing ends"""
+
+    _disable_paging_command = 'terminal length 0'
+    """Command for disabling paging"""
+
     @property
     def base_prompt(self):
         """Returning base prompt for this network device"""
         return self._base_prompt
-
-    def _get_default_command(self, command):
-        """
-        Returning default commands for device
-
-        :param str command: command for returning
-        :return: real command for this network device
-        """
-        # @formatter:off
-        command_mapper = {
-            'delimeter1': '#',
-            'delimeter2': '>',
-            'pattern': r"{}.*?(\(.*?\))?[{}|{}]",
-            'disable_paging': 'terminal length 0',
-        }
-        # @formatter:on
-        return command_mapper[command]
 
     async def __aenter__(self):
         """Async Context Manager"""
@@ -100,13 +89,13 @@ class BaseDevice(object):
 
         * _establish_connection() for connecting to device
         * _set_base_prompt() for finding and setting device prompt
-        * _disable_paging() for non interact output in commands
+        * _disable_paging() for non interactive output in commands
         """
-        logger.info("Host {}: Connecting to device".format(self._host))
+        logger.info("Host {}: Trying to connect to the device".format(self._host))
         await self._establish_connection()
         await self._set_base_prompt()
         await self._disable_paging()
-        logger.info("Host {}: Connected to device".format(self._host))
+        logger.info("Host {}: Has connected to the device".format(self._host))
 
     @property
     def _connect_params_dict(self):
@@ -123,7 +112,7 @@ class BaseDevice(object):
         # @formatter:on
 
     async def _establish_connection(self):
-        """Establish SSH connection to the network device"""
+        """Establishing SSH connection to the network device"""
         logger.info('Host {}: Establishing connection to port {}'.format(self._host, self._port))
         output = ""
         # initiate SSH connection
@@ -131,14 +120,13 @@ class BaseDevice(object):
             self._conn = await asyncssh.connect(**self._connect_params_dict)
         except asyncssh.DisconnectError as e:
             raise DisconnectError(self._host, e.code, e.reason)
-        self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb')
+        self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb', term_size=(200, 24))
         logger.info("Host {}: Connection is established".format(self._host))
-
         # Flush unnecessary data
-        delimeter1 = self._get_default_command('delimeter1')
-        delimeter2 = self._get_default_command('delimeter2')
-        output = await self._read_until_pattern(r"{}|{}".format(re.escape(delimeter1), re.escape(delimeter2)))
-        logger.debug("Host {}: Establish Connection Output: {}".format(self._host, output))
+        delimiters = map(re.escape, type(self)._delimiter_list)
+        delimiters = r"|".join(delimiters)
+        output = await self._read_until_pattern(delimiters)
+        logger.debug("Host {}: Establish Connection Output: {}".format(self._host, repr(output)))
         return output
 
     async def _set_base_prompt(self):
@@ -155,11 +143,11 @@ class BaseDevice(object):
 
         # Strip off trailing terminator
         self._base_prompt = prompt[:-1]
-        delimeter1 = self._get_default_command('delimeter1')
-        delimeter2 = self._get_default_command('delimeter2')
-        pattern = self._get_default_command('pattern')
-        self._base_pattern = pattern.format(re.escape(self._base_prompt[:12]), re.escape(delimeter1),
-                                            re.escape(delimeter2))
+        delimiters = map(re.escape, type(self)._delimiter_list)
+        delimiters = r"|".join(delimiters)
+        base_prompt = re.escape(self._base_prompt[:12])
+        pattern = type(self)._pattern
+        self._base_pattern = pattern.format(base_prompt, delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
@@ -167,12 +155,12 @@ class BaseDevice(object):
     async def _disable_paging(self):
         """Disable paging method"""
         logger.info("Host {}: Trying to disable paging".format(self._host))
-        command = self._get_default_command('disable_paging')
+        command = type(self)._disable_paging_command
         command = self._normalize_cmd(command)
-        logger.debug("Host {}: Disable paging command: {}".format(self._host, command))
+        logger.debug("Host {}: Disable paging command: {}".format(self._host, repr(command)))
         self._stdin.write(command)
         output = await self._read_until_prompt()
-        logger.debug("Host {}: Disable paging output: {}".format(self._host, output))
+        logger.debug("Host {}: Disable paging output: {}".format(self._host, repr(output)))
         if self._ansi_escape_codes:
             output = self._strip_ansi_escape_codes(output)
         return output
@@ -182,15 +170,15 @@ class BaseDevice(object):
         logger.info("Host {}: Finding prompt".format(self._host))
         self._stdin.write(self._normalize_cmd("\n"))
         prompt = ''
-        delimeter1 = self._get_default_command('delimeter1')
-        delimeter2 = self._get_default_command('delimeter2')
-        prompt = await self._read_until_pattern(r"{}|{}".format(re.escape(delimeter1), re.escape(delimeter2)))
+        delimiters = map(re.escape, type(self)._delimiter_list)
+        delimiters = r"|".join(delimiters)
+        prompt = await self._read_until_pattern(delimiters)
         prompt = prompt.strip()
         if self._ansi_escape_codes:
             prompt = self._strip_ansi_escape_codes(prompt)
         if not prompt:
-            raise ValueError("Host {}: Unable to find prompt: {}".format(self._host, prompt))
-        logger.debug("Host {}: Prompt: {}".format(self._host, prompt))
+            raise ValueError("Host {}: Unable to find prompt: {}".format(self._host, repr(prompt)))
+        logger.debug("Host {}: Found Prompt: {}".format(self._host, repr(prompt)))
         return prompt
 
     async def send_command(self, command_string, pattern='', re_flags=0, strip_command=True, strip_prompt=True):
@@ -207,7 +195,7 @@ class BaseDevice(object):
         logger.info('Host {}: Sending command'.format(self._host))
         output = ''
         command_string = self._normalize_cmd(command_string)
-        logger.debug("Host {}: Send command: {}".format(self._host, command_string))
+        logger.debug("Host {}: Send command: {}".format(self._host, repr(command_string)))
         self._stdin.write(command_string)
         output = await self._read_until_prompt_or_pattern(pattern, re_flags)
 
@@ -220,7 +208,7 @@ class BaseDevice(object):
         if strip_command:
             output = self._strip_command(command_string, output)
 
-        logger.debug("Host {}: Send command output: {}".format(self._host, output))
+        logger.debug("Host {}: Send command output: {}".format(self._host, repr(output)))
         return output
 
     def _strip_prompt(self, a_string):
@@ -247,7 +235,7 @@ class BaseDevice(object):
         while True:
             output += await self._stdout.read(self._MAX_BUFFER)
             if re.search(pattern, output, flags=re_flags):
-                logger.debug("Host {}: Reading pattern '{}' was found: {}".format(self._host, pattern, output))
+                logger.debug("Host {}: Reading pattern '{}' was found: {}".format(self._host, pattern, repr(output)))
                 return output
 
     async def _read_until_prompt_or_pattern(self, pattern='', re_flags=0):
@@ -261,7 +249,8 @@ class BaseDevice(object):
             output += await self._stdout.read(self._MAX_BUFFER)
             if re.search(pattern, output, flags=re_flags) or re.search(base_prompt_pattern, output, flags=re_flags):
                 logger.debug("Host {}: Reading pattern '{}' or '{}' was found: {}".format(self._host, pattern,
-                                                                                          base_prompt_pattern, output))
+                                                                                          base_prompt_pattern,
+                                                                                          repr(output)))
                 return output
 
     @staticmethod
@@ -329,7 +318,7 @@ class BaseDevice(object):
             output = self._strip_ansi_escape_codes(output)
 
         output = self._normalize_linefeeds(output)
-        logger.debug("Host {}: Config commands output: {}".format(self._host, output))
+        logger.debug("Host {}: Config commands output: {}".format(self._host, repr(output)))
         return output
 
     @staticmethod
@@ -362,7 +351,7 @@ class BaseDevice(object):
             Mikrotik
         """
         logger.info("Stripping ansi escape codes")
-        logger.debug("Old repr: {}".format(repr(string_buffer)))
+        logger.debug("Unstripped output: {}".format(repr(string_buffer)))
 
         code_save_cursor = chr(27) + r'7'
         code_scroll_screen = chr(27) + r'\[r'
@@ -386,8 +375,7 @@ class BaseDevice(object):
         # CODE_NEXT_LINE must substitute with '\n'
         output = re.sub(code_next_line, '\n', output)
 
-        logger.debug('New repr: {}'.format(repr(output)))
-        logger.debug('Stripped output: {}'.format(output))
+        logger.debug('Stripped output: {}'.format(repr(output)))
 
         return output
 

@@ -7,13 +7,15 @@ import netdev
 
 config_path = 'config.yaml'
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO)
 netdev.logger.setLevel(logging.DEBUG)
 
 async def task(param):
     async with netdev.create(**param) as fuj:
+        # Testing sending configuration set
         out = await fuj.send_config_set(['vlan database', 'exit'])
         print(out)
+        # Testing sending simple command
         out = await fuj.send_command('show ver')
         print(out)
 
@@ -21,10 +23,7 @@ async def task(param):
 async def run():
     config = yaml.load(open(config_path, 'r'))
     devices = yaml.load(open(config['device_list'], 'r'))
-    params = [p for p in devices if p['device_type'] == 'fujitsu_switch']
-    tasks = []
-    for param in params:
-        tasks.append(task(param))
+    tasks = [task(dev) for dev in devices if dev['device_type'] == 'fujitsu_switch']
     await asyncio.wait(tasks)
 
 

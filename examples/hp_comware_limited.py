@@ -7,17 +7,20 @@ import netdev
 
 config_path = 'config.yaml'
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO)
 netdev.logger.setLevel(logging.DEBUG)
 
 
 async def task(param):
     async with netdev.create(**param) as hp:
+        # Testing sending simple command
         out = await hp.send_command('display ver')
         print(out)
+        # Testing sending configuration set
         commands = ["Vlan 1", "quit"]
         out = await hp.send_config_set(commands)
         print(out)
+        # Testing sending simple command with long output
         out = await hp.send_command('display cur')
         print(out)
 
@@ -25,10 +28,7 @@ async def task(param):
 async def run():
     config = yaml.load(open(config_path, 'r'))
     devices = yaml.load(open(config['device_list'], 'r'))
-    params = [p for p in devices if p['device_type'] == 'hp_comware_limited']
-    tasks = []
-    for param in params:
-        tasks.append(task(param))
+    tasks = [task(dev) for dev in devices if dev['device_type'] == 'hp_comware_limited']
     await asyncio.wait(tasks)
 
 
