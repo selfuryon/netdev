@@ -17,8 +17,9 @@ class JunOSLikeDevice(BaseDevice):
     Juniper JunOS like devices having several concepts:
 
     * shell mode (csh). This is csh shell for FreeBSD. This mode is not covered by this Class.
-    * operation mode. This mode is using for getting information from device
-    * configuration mode. This mode is using for configuration system
+    * cli mode (specific shell). The entire configuration is usual configured in this shell.
+    ** operation mode. This mode is using for getting information from device
+    ** configuration mode. This mode is using for configuration system
     """
 
     def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,

@@ -5,7 +5,7 @@ from ..logger import logger
 class JuniperJunOS(JunOSLikeDevice):
     """Class for working with Juniper JunOS"""
 
-    _shell_check = '%'
+    _cli_check = '>'
     """Checking string for shell mode"""
 
     _cli_command = 'cli'
@@ -32,10 +32,10 @@ class JuniperJunOS(JunOSLikeDevice):
     async def check_cli_mode(self):
         """Check if we are in cli mode. Return boolean"""
         logger.info('Host {}: Checking shell mode'.format(self._host))
-        shell_check = type(self)._shell_check
+        cli_check = type(self)._cli_check
         self._stdin.write(self._normalize_cmd('\n'))
         output = await self._read_until_prompt()
-        return shell_check in output
+        return cli_check in output
 
     async def cli_mode(self):
         """Enter to cli mode"""
