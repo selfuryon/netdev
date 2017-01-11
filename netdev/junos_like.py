@@ -17,9 +17,10 @@ class JunOSLikeDevice(BaseDevice):
     Juniper JunOS like devices having several concepts:
 
     * shell mode (csh). This is csh shell for FreeBSD. This mode is not covered by this Class.
-    * cli mode (specific shell). The entire configuration is usual configured in this shell.
-    ** operation mode. This mode is using for getting information from device
-    ** configuration mode. This mode is using for configuration system
+    * cli mode (specific shell). The entire configuration is usual configured in this shell:
+
+      * operation mode. This mode is using for getting information from device
+      * configuration mode. This mode is using for configuration system
     """
 
     def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,
@@ -90,7 +91,7 @@ class JunOSLikeDevice(BaseDevice):
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
 
-    async def config_mode_check(self):
+    async def check_config_mode(self):
         """Check if are in configuration mode. Return boolean"""
         logger.info('Host {}: Checking configuration mode'.format(self._host))
         check_string = type(self)._config_check
@@ -103,22 +104,22 @@ class JunOSLikeDevice(BaseDevice):
         logger.info('Host {}: Entering to configuration mode'.format(self._host))
         output = ""
         config_enter = type(self)._config_enter
-        if not await self.config_mode_check():
+        if not await self.check_config_mode():
             self._stdin.write(self._normalize_cmd(config_enter))
             output += await self._read_until_prompt()
-            if not await self.config_mode_check():
+            if not await self.check_config_mode():
                 raise ValueError("Failed to enter to configuration mode")
         return output
 
-    async def config_mode_exit(self):
+    async def exit_config_mode(self):
         """Exit from configuration mode"""
         logger.info('Host {}: Exiting from configuration mode'.format(self._host))
         output = ""
         config_exit = type(self)._config_exit
-        if await self.config_mode_check():
+        if await self.check_config_mode():
             self._stdin.write(self._normalize_cmd(config_exit))
             output += await self._read_until_prompt()
-            if await self.config_mode_check():
+            if await self.check_config_mode():
                 raise ValueError("Failed to exit from configuration mode")
         return output
 
@@ -149,7 +150,7 @@ class JunOSLikeDevice(BaseDevice):
             output += await self._read_until_prompt()
 
         if exit_config_mode:
-            output += await self.config_mode_exit()
+            output += await self.exit_config_mode()
 
         output = self._normalize_linefeeds(output)
         logger.debug("Host {}: Config commands output: {}".format(self._host, repr(output)))

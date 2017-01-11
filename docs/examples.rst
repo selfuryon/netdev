@@ -37,6 +37,14 @@ credentials.yaml
      password: ****
      username: ****
      cmdline_password: '512900'
+   - device_type: arista_eos
+     host: 6.6.6.6
+     password: ****
+     username: ****
+   - device_type: juniper_junos
+     host: 7.7.7.7
+     password: ****
+     username: ****
 
 ASA example
 -----------
@@ -69,3 +77,7 @@ Mikrotik RouterOS example
 Arista EOS example
 ------------------
 .. literalinclude:: ../examples/arista_eos.py
+
+Juniper JunOS example
+---------------------
+.. literalinclude:: ../examples/juniper_junos.py

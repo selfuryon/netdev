@@ -46,13 +46,17 @@ Library structure
 
 Library consist from several base classes and end classes which using for communication.
 The main class is :class:`BaseDevice`. It provides some basic functionality regardless of device type.
-Library also have two common child classes: :class:`IOSLikeDevice` and :class:`ComwareLikeDevice`.
+Library also have three common child classes: :class:`IOSLikeDevice`, :class:`ComwareLikeDevice`
+and :class:`JunOSLikeDevice`.
 
-:class:`IOSLikeDevice` class provides some basic methods for cisco like devices: devices which have user exec,
+:class:`IOSLikeDevice` class provides basic methods for Cisco IOS like devices: devices which have user exec,
 privilege exec and conf mode concepts.
 
-:class:`ComwareLikeDevice` class provides some basic methods for hp (comware) like devices: these devices have only
+:class:`ComwareLikeDevice` class provides basic methods for HP Comware like devices: these devices have only
 exec view and system view concepts.
+
+:class:`JunOSLikeDevice` class provides basic methods for Juniper JunOS like devices: they have operation mode and
+configuration mode concepts with committing changes.
 
 All other classes are the end classes which you can use for working with particular device:
 
@@ -64,6 +68,7 @@ All other classes are the end classes which you can use for working with particu
 * :class:`HPComware`
 * :class:`HPComwareLimited`
 * :class:`AristaEOS`
+* :class:`JunOS`
 
 The particular class selected by parameter *device_type* in :func:`create`
 

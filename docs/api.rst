@@ -33,18 +33,26 @@ BaseDevice
    :special-members: __init__
 
 IOSLikeDevice
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 .. autoclass:: IOSLikeDevice
    :members:
    :inherited-members:
 
 ComwareLikeDevice
-~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. autoclass:: ComwareLikeDevice
    :members:
    :inherited-members:
+
+
+JunOSLikeDevice
+~~~~~~~~~~~~~~~
+
+.. autoclass:: JunOSLikeDevice
+:members:
+      :inherited-members:
 
 End classes
 -----------
@@ -100,10 +108,15 @@ MikrotikRouterOS
    :inherited-members:
 
 AristaEOS
-~~~~~~~~~~~~~~~~
+~~~~~~~~~
 
 .. autoclass:: AristaEOS
    :members:
    :inherited-members:
 
+JuniperJunOS
+~~~~~~~~~~~~
 
+.. autoclass:: JuniperJunOS
+:members:
+      :inherited-members:
