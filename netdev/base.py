@@ -1,7 +1,7 @@
 """
 Base Class for using in connection to network devices
 
-Connection Method are based upon AsyncSSH and should be running in asyncio loop
+Connections Method are based upon AsyncSSH and should be running in asyncio loop
 """
 
 import asyncio
@@ -18,23 +18,20 @@ class BaseDevice(object):
     Base Abstract Class for working with network devices
     """
 
-    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
-                 local_addr=None, client_keys=None, passphrase=None, loop=None):
+    def __init__(self, host=u'', username=u'', password=u'', port=22, known_hosts=None, local_addr=None,
+                 client_keys=None, passphrase=None, loop=None):
         """
         Initialize base class for asynchronous working with network devices
 
-        :param str host: hostname or ip address for connection
-        :param str username: username for logger to device
-        :param str password: password for user for logger to device
-        :param str secret: secret password for privilege mode
+        :param str host: device hostname or ip address for connection
+        :param str username: username for logging to device
+        :param str password: user password for logging to device
         :param int port: ssh port for connection. Default is 22
-        :param str device_type: network device type. This is subclasses of this class
-        :param known_hosts: file with known hosts. Default is None (no policy). with () it will use default file
+        :param known_hosts: file with known hosts. Default is None (no policy). With () it will use default file
         :param str local_addr: local address for binding source of tcp connection
-        :param client_keys: path for client keys. With () it will use default file in OS.
+        :param client_keys: path for client keys. Default in None. With () it will use default file in OS.
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
-        :returns: :class:`BaseDevice` Base class
         """
         if host:
             self._host = host
@@ -43,8 +40,6 @@ class BaseDevice(object):
         self._port = int(port)
         self._username = username
         self._password = password
-        self._secret = secret
-        self._device_type = device_type
         self._known_hosts = known_hosts
         self._local_addr = local_addr
         self._client_keys = client_keys
@@ -61,8 +56,13 @@ class BaseDevice(object):
         self._ansi_escape_codes = False
 
     _delimiter_list = ['>', '#']
+    """All this characters will stop reading from buffer. It mean the end of device prompt"""
+
     _pattern = r"{}.*?(\(.*?\))?[{}]"
+    """Pattern for using in reading buffer. When it found processing ends"""
+
     _disable_paging_command = 'terminal length 0'
+    """Command for disabling paging"""
 
     @property
     def base_prompt(self):
@@ -87,13 +87,13 @@ class BaseDevice(object):
 
         * _establish_connection() for connecting to device
         * _set_base_prompt() for finding and setting device prompt
-        * _disable_paging() for non interact output in commands
+        * _disable_paging() for non interactive output in commands
         """
-        logger.info("Host {}: Connecting to device".format(self._host))
+        logger.info("Host {}: Trying to connect to the device".format(self._host))
         await self._establish_connection()
         await self._set_base_prompt()
         await self._disable_paging()
-        logger.info("Host {}: Connected to device".format(self._host))
+        logger.info("Host {}: Has connected to the device".format(self._host))
 
     @property
     def _connect_params_dict(self):
@@ -110,7 +110,7 @@ class BaseDevice(object):
         # @formatter:on
 
     async def _establish_connection(self):
-        """Establish SSH connection to the network device"""
+        """Establishing SSH connection to the network device"""
         logger.info('Host {}: Establishing connection to port {}'.format(self._host, self._port))
         output = ""
         # initiate SSH connection

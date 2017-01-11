@@ -12,7 +12,7 @@ from .logger import logger
 
 class JunOSLikeDevice(BaseDevice):
     """
-    This Class for working with Juniper JunOS like devices
+    JunOSLikeDevice Class for working with Juniper JunOS like devices
 
     Juniper JunOS like devices having several concepts:
 
@@ -21,36 +21,47 @@ class JunOSLikeDevice(BaseDevice):
     * configuration mode. This mode is using for configuration system
     """
 
-    def __init__(self, host=u'', username=u'', password=u'', secret=u'', port=22, device_type=u'', known_hosts=None,
-                 local_addr=None, client_keys=None, passphrase=None, loop=None):
+    def __init__(self, host=u'', username=u'', password=u'', port=22, known_hosts=None, local_addr=None,
+                 client_keys=None, passphrase=None, loop=None):
         """
         Initialize  class for asynchronous working with network devices
 
         :param str host: hostname or ip address for connection
         :param str username: username for logger to device
         :param str password: password for user for logger to device
-        :param str secret: secret password for privilege mode
         :param int port: ssh port for connection. Default is 22
-        :param str device_type: network device type. This is subclasses of this class
         :param known_hosts: file with known hosts. Default is None (no policy). with () it will use default file
         :param str local_addr: local address for binding source of tcp connection
         :param client_keys: path for client keys. With () it will use default file in OS.
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
-        :returns: :class:`JunOSLikeDevice` Base class for working with hp comware like devices
         """
-        super().__init__(host=host, username=username, password=password, secret=secret, port=port,
-                         device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
-                         client_keys=client_keys, passphrase=passphrase, loop=loop)
+        super().__init__(host=host, username=username, password=password, port=port, known_hosts=known_hosts,
+                         local_addr=local_addr, client_keys=client_keys, passphrase=passphrase, loop=loop)
 
     _delimiter_list = ['%', '>', '#']
+    """All this characters will stop reading from buffer. It mean the end of device prompt"""
+
     _pattern = r"\w+(\@[\-\w]*)?[{}]"
+    """Pattern for using in reading buffer. When it found processing ends"""
+
     _disable_paging_command = 'set cli screen-length 0'
+    """Command for disabling paging"""
+
     _config_enter = 'configure'
+    """Command for entering to configuration mode"""
+
     _config_exit = 'exit configuration-mode'
+    """Command for existing from configuration mode to privilege exec"""
+
     _config_check = '#'
+    """Checking string in prompt. If it's exist im prompt - we are in configuration mode"""
+
     _commit_command = 'commit'
+    """Command for committing changes"""
+
     _commit_comment_command = 'commit comment {}'
+    """Command for committing changes with comment"""
 
     async def _set_base_prompt(self):
         """
@@ -77,7 +88,7 @@ class JunOSLikeDevice(BaseDevice):
         return self._base_prompt
 
     async def config_mode_check(self):
-        """Check if in configuration mode. Return boolean"""
+        """Check if are in configuration mode. Return boolean"""
         logger.info('Host {}: Checking configuration mode'.format(self._host))
         check_string = type(self)._config_check
         self._stdin.write(self._normalize_cmd('\n'))
@@ -85,7 +96,7 @@ class JunOSLikeDevice(BaseDevice):
         return check_string in output
 
     async def config_mode(self):
-        """Enter configuration mode"""
+        """Enter to configuration mode"""
         logger.info('Host {}: Entering to configuration mode'.format(self._host))
         output = ""
         config_enter = type(self)._config_enter
@@ -97,7 +108,7 @@ class JunOSLikeDevice(BaseDevice):
         return output
 
     async def config_mode_exit(self):
-        """Exit system-view mode. It doesn't exit from configuration mode if system has uncommitted changes"""
+        """Exit from configuration mode"""
         logger.info('Host {}: Exiting from configuration mode'.format(self._host))
         output = ""
         config_exit = type(self)._config_exit
@@ -111,9 +122,7 @@ class JunOSLikeDevice(BaseDevice):
     async def send_config_set(self, config_commands=None, with_commit=True, commit_comment='', exit_config_mode=True):
         """
         Sending configuration commands to device
-
-        The commands will be executed one after the other.
-        Automatically exits/enters configuration mode.
+        By default automatically exits/enters configuration mode.
 
         :param list config_commands: iterable string list with commands for applying to network devices in system view
         :param bool with_commit: if true it commit all changes after applying all config_commands
@@ -128,7 +137,6 @@ class JunOSLikeDevice(BaseDevice):
         # Send config commands
         output = await self.config_mode()
         output += await super().send_config_set(config_commands=config_commands)
-
         if with_commit:
             commit = type(self)._commit_command
             if commit_comment:
