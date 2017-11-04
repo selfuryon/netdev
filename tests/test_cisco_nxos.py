@@ -6,7 +6,7 @@ import yaml
 
 import netdev
 
-logging.basicConfig(filename='tests/unittest.log', level=logging.DEBUG)
+logging.basicConfig(filename='unittest.log', level=logging.DEBUG)
 netdev.logger.setLevel(logging.DEBUG)
 config_path = 'config.yaml'
 
