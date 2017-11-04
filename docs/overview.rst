@@ -62,6 +62,7 @@ All other classes are the end classes which you can use for working with particu
 
 * :class:`MikrotikRouterOS`
 * :class:`CiscoIOS`
+* :class:`CiscoIOSXR`
 * :class:`CiscoASA`
 * :class:`CiscoNXOS`
 * :class:`FujitsuSwitch`

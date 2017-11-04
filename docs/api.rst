@@ -51,8 +51,8 @@ JunOSLikeDevice
 ~~~~~~~~~~~~~~~
 
 .. autoclass:: JunOSLikeDevice
-:members:
-      :inherited-members:
+   :members:
+   :inherited-members:
 
 End classes
 -----------
@@ -62,6 +62,13 @@ CiscoIOS
 ~~~~~~~~
 
 .. autoclass:: CiscoIOS
+   :members:
+   :inherited-members:
+
+CiscoIOSXR
+~~~~~~~~~~
+
+.. autoclass:: CiscoIOSXR
    :members:
    :inherited-members:
 
@@ -118,5 +125,5 @@ JuniperJunOS
 ~~~~~~~~~~~~
 
 .. autoclass:: JuniperJunOS
-:members:
-      :inherited-members:
+   :members:
+   :inherited-members:
