@@ -17,6 +17,7 @@ Supports:
 ---------
 * Cisco IOS 
 * Cisco IOS XE
+* Cisco IOS XR
 * Cisco ASA
 * Cisco NX-OS 
 * HP Comware (like V1910 too)

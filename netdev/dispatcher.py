@@ -4,6 +4,7 @@ Factory function for creating netdev classes
 from .arista import AristaEOS
 from .cisco import CiscoASA
 from .cisco import CiscoIOS
+from .cisco import CiscoIOSXR
 from .cisco import CiscoNXOS
 from .fujitsu import FujitsuSwitch
 from .hp import HPComware
@@ -15,7 +16,8 @@ from .mikrotik import MikrotikRouterOS
 # The keys of this dictionary are the supported device_types
 CLASS_MAPPER = {
     'cisco_ios': CiscoIOS,
-    'cisco_xe': CiscoIOS,
+    'cisco_ios_xe': CiscoIOS,
+    'cisco_ios_xr': CiscoIOSXR,
     'cisco_asa': CiscoASA,
     'cisco_nxos': CiscoNXOS,
     'hp_comware': HPComware,
