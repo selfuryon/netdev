@@ -82,6 +82,10 @@ Arista EOS example
 ------------------
 .. literalinclude:: ../examples/arista_eos.py
 
+Aruba AOS 6.X example
+---------------------
+.. literalinclude:: ../examples/aruba_aos_6.py
+
 Juniper JunOS example
 ---------------------
 .. literalinclude:: ../examples/juniper_junos.py
