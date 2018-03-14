@@ -58,23 +58,6 @@ class TestASA(unittest.TestCase):
 
         self.loop.run_until_complete(task())
 
-    def test_current_context(self):
-        async def task():
-            for dev in self.devices:
-                async with netdev.create(**dev) as asa:
-                    if asa.multiple_mode:
-                        await asa.send_command('changeto system')
-                        self.assertIn('system', asa.current_context)
-                        out = await asa.send_command('sh run | i ^context')
-                        contexts = out.splitlines()
-                        for ctx in contexts:
-                            out = await asa.send_command('changeto {}'.format(ctx))
-                            self.assertIn(ctx.split()[1], asa.current_context)
-                    else:
-                        self.assertIn('system', asa.current_context)
-
-        self.loop.run_until_complete(task())
-
     def test_interactive_commands(self):
         async def task():
             for dev in self.devices:

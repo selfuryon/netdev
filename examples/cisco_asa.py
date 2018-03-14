@@ -10,10 +10,9 @@ config_path = 'config.yaml'
 logging.basicConfig(level=logging.INFO)
 netdev.logger.setLevel(logging.DEBUG)
 
+
 async def task(param):
     async with netdev.create(**param) as asa:
-        # Showing current context
-        print(asa.current_context)
         # Testing sending simple command
         out = await asa.send_command('show run')
         print(out)
