@@ -10,14 +10,14 @@ logging.basicConfig(filename='unittest.log', level=logging.DEBUG)
 config_path = 'config.yaml'
 
 
-class TestAOS6(unittest.TestCase):
+class TestAOS8(unittest.TestCase):
     @staticmethod
     def load_credits():
         with open(config_path, 'r') as conf:
             config = yaml.load(conf)
             with open(config['device_list'], 'r') as devs:
                 devices = yaml.load(devs)
-                params = [p for p in devices if p['device_type'] == 'aruba_aos_6']
+                params = [p for p in devices if p['device_type'] == 'aruba_aos_8']
                 return params
 
     def setUp(self):
@@ -53,7 +53,7 @@ class TestAOS6(unittest.TestCase):
                 async with netdev.create(**dev) as aos:
                     commands = ["interface loopback", "exit"]
                     out = await aos.send_config_set(commands)
-                    self.assertIn("interface loopback", out)
+                    self.assertIn("loopback", out)
                     self.assertIn("exit", out)
 
         self.loop.run_until_complete(task())
