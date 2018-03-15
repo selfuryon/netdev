@@ -12,7 +12,7 @@ class ArubaAOS6(IOSLikeDevice):
     _disable_paging_command = 'no paging'
     """Command for disabling paging"""
 
-    _config_exit = 'exit'
+    _config_exit = 'end'
     """Command for existing from configuration mode to privilege exec"""
 
     _config_check = ') (config'
@@ -44,20 +44,3 @@ class ArubaAOS6(IOSLikeDevice):
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
 
-    async def exit_config_mode(self):
-        """Exit from configuration mode"""
-        logger.info('Host {}: Exiting from configuration mode'.format(self._host))
-        output = ''
-        exit_config = type(self)._config_exit
-        # Considering max 3 level of submode in config mode
-        for i in range(3):
-            if await self.check_config_mode():
-                self._stdin.write(self._normalize_cmd(exit_config))
-                output += await self._read_until_prompt()
-            else:
-                return output
-
-        if await self.check_config_mode():
-            raise ValueError("Failed to exit from configuration mode")
-
-        return output
