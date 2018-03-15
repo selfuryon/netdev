@@ -1,18 +1,18 @@
 """
 Factory function for creating netdev classes
 """
-from .arista import AristaEOS
-from .aruba import ArubaAOS6
-from .aruba import ArubaAOS8
-from .cisco import CiscoASA
-from .cisco import CiscoIOS
-from .cisco import CiscoIOSXR
-from .cisco import CiscoNXOS
-from .fujitsu import FujitsuSwitch
-from .hp import HPComware
-from .hp import HPComwareLimited
-from .juniper import JuniperJunOS
-from .mikrotik import MikrotikRouterOS
+from .vendors import AristaEOS
+from .vendors import ArubaAOS6
+from .vendors import ArubaAOS8
+from .vendors import CiscoASA
+from .vendors import CiscoIOS
+from .vendors import CiscoIOSXR
+from .vendors import CiscoNXOS
+from .vendors import FujitsuSwitch
+from .vendors import HPComware
+from .vendors import HPComwareLimited
+from .vendors import JuniperJunOS
+from .vendors import MikrotikRouterOS
 
 # @formatter:off
 # The keys of this dictionary are the supported device_types
