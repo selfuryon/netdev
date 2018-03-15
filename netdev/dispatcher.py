@@ -3,6 +3,7 @@ Factory function for creating netdev classes
 """
 from .arista import AristaEOS
 from .aruba import ArubaAOS6
+from .aruba import ArubaAOS8
 from .cisco import CiscoASA
 from .cisco import CiscoIOS
 from .cisco import CiscoIOSXR
@@ -28,6 +29,7 @@ CLASS_MAPPER = {
     'arista_eos': AristaEOS,
     'juniper_junos': JuniperJunOS,
     'aruba_aos_6': ArubaAOS6,
+    'aruba_aos_8': ArubaAOS8,
 }
 
 # @formatter:on
