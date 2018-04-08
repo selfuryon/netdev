@@ -33,6 +33,14 @@ class CiscoIOSXR(IOSLikeDevice):
             self._stdin.write(self._normalize_cmd(commit))
             output += await self._read_until_prompt()
 
+        if "Please issue 'show configuration failed" in output:
+            reason = await self.send_command('show configuration failed')
+            logger.error('Errors applying config: %s', reason)
+            output += reason
+            if exit_config_mode:
+                logger.debug('Aborting uncommitted changes.')
+                output += await self.send_command('abort')
+
         if exit_config_mode:
             output += await self.exit_config_mode()
 
