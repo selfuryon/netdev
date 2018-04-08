@@ -1,25 +1,22 @@
-from .arista import AristaEOS
-from .base import BaseDevice
-from .cisco import CiscoASA
-from .cisco import CiscoIOS
-from .cisco import CiscoIOSXR
-from .cisco import CiscoNXOS
-from .comware_like import ComwareLikeDevice
 from .dispatcher import create
 from .dispatcher import platforms
-from .exceptions import DisconnectError
-from .fujitsu import FujitsuSwitch
-from .hp import HPComware
-from .hp import HPComwareLimited
-from .ios_like import IOSLikeDevice
-from .juniper import JuniperJunOS
-from .junos_like import JunOSLikeDevice
-from .logger import logger
-from .mikrotik import MikrotikRouterOS
+from .vendors import AristaEOS
+from .vendors import ArubaAOS8, ArubaAOS6
+from .vendors import BaseDevice
+from .vendors import CiscoNXOS, CiscoIOSXR, CiscoASA, CiscoIOS
+from .vendors import ComwareLikeDevice
+from .vendors import FujitsuSwitch
+from .vendors import HPComware, HPComwareLimited
+from .vendors import IOSLikeDevice
+from .vendors import JunOSLikeDevice
+from .vendors import JuniperJunOS
+from .vendors import MikrotikRouterOS
+from .vendors import Terminal
+from .vendors import logger
+from .vendors.exceptions import DisconnectError
 from .version import __author__, __author_email__, __url__, __version__
 
 __all__ = (
     'create', 'platforms', 'DisconnectError', 'logger', 'CiscoASA', 'CiscoIOS', 'CiscoIOSXR', 'CiscoNXOS', 'HPComware',
-    'HPComwareLimited', 'FujitsuSwitch', 'MikrotikRouterOS', 'JuniperJunOS', 'JunOSLikeDevice' 'AristaEOS',
-    'BaseDevice', 'IOSLikeDevice',
-    'ComwareLikeDevice')
+    'HPComwareLimited', 'FujitsuSwitch', 'MikrotikRouterOS', 'JuniperJunOS', 'JunOSLikeDevice', 'AristaEOS',
+    'ArubaAOS6', 'ArubaAOS8', 'BaseDevice', 'IOSLikeDevice', 'ComwareLikeDevice', 'Terminal')

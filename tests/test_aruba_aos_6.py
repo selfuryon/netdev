@@ -10,14 +10,14 @@ logging.basicConfig(filename='unittest.log', level=logging.DEBUG)
 config_path = 'config.yaml'
 
 
-class TestASA(unittest.TestCase):
+class TestAOS6(unittest.TestCase):
     @staticmethod
     def load_credits():
         with open(config_path, 'r') as conf:
             config = yaml.load(conf)
             with open(config['device_list'], 'r') as devs:
                 devices = yaml.load(devs)
-                params = [p for p in devices if p['device_type'] == 'cisco_asa']
+                params = [p for p in devices if p['device_type'] == 'aruba_aos_6']
                 return params
 
     def setUp(self):
@@ -30,8 +30,8 @@ class TestASA(unittest.TestCase):
     def test_show_run_hostname(self):
         async def task():
             for dev in self.devices:
-                async with netdev.create(**dev) as asa:
-                    out = await asa.send_command('show run | i hostname')
+                async with netdev.create(**dev) as aos:
+                    out = await aos.send_command('show run | i hostname')
                     self.assertIn("hostname", out)
 
         self.loop.run_until_complete(task())
@@ -39,10 +39,10 @@ class TestASA(unittest.TestCase):
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:
-                async with netdev.create(**dev) as asa:
-                    commands = ["show ver", "show run", "show ssh"]
+                async with netdev.create(**dev) as aos:
+                    commands = ["dir", "show ver", "show run", "show ssh"]
                     for cmd in commands:
-                        out = await asa.send_command(cmd, strip_command=False)
+                        out = await aos.send_command(cmd, strip_command=False)
                         self.assertIn(cmd, out)
 
         self.loop.run_until_complete(task())
@@ -50,21 +50,19 @@ class TestASA(unittest.TestCase):
     def test_config_set(self):
         async def task():
             for dev in self.devices:
-                async with netdev.create(**dev) as asa:
-                    commands = ["interface Management0/0", "exit"]
-                    out = await asa.send_config_set(commands)
-                    self.assertIn("interface Management0/0", out)
+                async with netdev.create(**dev) as aos:
+                    commands = ["interface loopback", "exit"]
+                    out = await aos.send_config_set(commands)
+                    self.assertIn("interface loopback", out)
                     self.assertIn("exit", out)
 
         self.loop.run_until_complete(task())
 
-    def test_interactive_commands(self):
+    def test_base_prompt(self):
         async def task():
             for dev in self.devices:
-                async with netdev.create(**dev) as asa:
-                    out = await asa.send_command("copy r scp:", pattern=r'\[running-config\]\?', strip_command=False)
-                    out += await asa.send_command("\n", pattern=r'\[\]\?', strip_command=False)
-                    out += await asa.send_command("\n", strip_command=False)
-                    self.assertIn('%Error', out)
+                async with netdev.create(**dev) as ios:
+                    out = await ios.send_command('sh run | i hostname')
+                    self.assertIn(ios.base_prompt, out)
 
         self.loop.run_until_complete(task())
