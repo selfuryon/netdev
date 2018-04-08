@@ -121,9 +121,23 @@ AristaEOS
    :members:
    :inherited-members:
 
+ArubaAOS6
+~~~~~~~~~
+
+.. autoclass:: ArubaAOS6
+   :members:
+   :inherited-members:
+
 JuniperJunOS
 ~~~~~~~~~~~~
 
 .. autoclass:: JuniperJunOS
+   :members:
+   :inherited-members:
+
+Terminal
+~~~~~~~~
+
+.. autoclass:: Terminal
    :members:
    :inherited-members:

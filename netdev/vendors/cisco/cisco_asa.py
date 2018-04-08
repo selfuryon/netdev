@@ -31,15 +31,9 @@ class CiscoASA(IOSLikeDevice):
                          device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
                          client_keys=client_keys, passphrase=passphrase, loop=loop)
 
-        self._current_context = 'system'
         self._multiple_mode = False
 
     _disable_paging_command = 'terminal pager 0'
-
-    @property
-    def current_context(self):
-        """ Returning current context for ASA"""
-        return self._current_context
 
     @property
     def multiple_mode(self):
@@ -58,7 +52,7 @@ class CiscoASA(IOSLikeDevice):
         * _disable_paging() for non interact output in commands
         *  _check_multiple_mode() for checking multiple mode in ASA
         """
-        logger.info("Host {}: rying to connect to the device".format(self._host))
+        logger.info("Host {}: trying to connect to the device".format(self._host))
         await self._establish_connection()
         await self._set_base_prompt()
         await self.enable_mode()
@@ -66,38 +60,21 @@ class CiscoASA(IOSLikeDevice):
         await self._check_multiple_mode()
         logger.info("Host {}: Has connected to the device".format(self._host))
 
-    async def send_command(self, command_string, pattern='', re_flags=0, strip_prompt=True, strip_command=True):
-        """
-        Sending command to Cisco ASA
-
-        If Cisco ASA in multi-context mode we need to change base prompt if context was changed
-        """
-        output = await super(CiscoASA, self).send_command(command_string=command_string, pattern=pattern,
-                                                          re_flags=re_flags, strip_prompt=strip_prompt,
-                                                          strip_command=strip_command)
-        if "changet" in command_string:
-            await self._set_base_prompt()
-        return output
-
     async def _set_base_prompt(self):
         """
-        Setting three important vars for ASA
+        Setting two important vars for ASA
             base_prompt - textual prompt in CLI (usually hostname)
             base_pattern - regexp for finding the end of command. IT's platform specific parameter
-            context - current context for ASA. If ASA in single mode, context = system
 
-        For ASA devices base_pattern is "prompt(\/\w+)?(\(.*?\))?[#|>]
+        For ASA devices base_pattern is "prompt([\/\w]+)?(\(.*?\))?[#|>]
         """
         logger.info("Host {}: Setting base prompt".format(self._host))
         prompt = await self._find_prompt()
-        context = 'system'
-        # Cut off prompt from "prompt/context"
-        if '/' in prompt:
-            prompt, context = prompt[:-1].split('/')
-        else:
-            prompt = prompt[:-1]
+        # Cut off prompt from "prompt/context/other" if it exists
+        # If not we get all prompt
+        prompt = prompt[:-1].split('/')
+        prompt = prompt[0]
         self._base_prompt = prompt
-        self._current_context = context
         delimiters = map(re.escape, type(self)._delimiter_list)
         delimiters = r"|".join(delimiters)
         base_prompt = re.escape(self._base_prompt[:12])
@@ -105,7 +82,6 @@ class CiscoASA(IOSLikeDevice):
         self._base_pattern = pattern.format(base_prompt, delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
-        logger.debug("Host {}: Current Context: {}".format(self._host, self._current_context))
         return self._base_prompt
 
     async def _check_multiple_mode(self):
