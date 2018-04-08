@@ -10,8 +10,9 @@ from .juniper import JuniperJunOS
 from .junos_like import JunOSLikeDevice
 from .logger import logger
 from .mikrotik import MikrotikRouterOS
+from .terminal import Terminal
 
 __all__ = (
     'logger', 'CiscoASA', 'CiscoIOS', 'CiscoIOSXR', 'CiscoNXOS', 'HPComware', 'HPComwareLimited', 'FujitsuSwitch',
     'MikrotikRouterOS', 'JuniperJunOS', 'JunOSLikeDevice', 'AristaEOS', 'ArubaAOS6', 'ArubaAOS8', 'BaseDevice',
-    'IOSLikeDevice', 'ComwareLikeDevice')
+    'IOSLikeDevice', 'ComwareLikeDevice', 'Terminal')

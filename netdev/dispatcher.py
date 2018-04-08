@@ -13,6 +13,7 @@ from .vendors import HPComware
 from .vendors import HPComwareLimited
 from .vendors import JuniperJunOS
 from .vendors import MikrotikRouterOS
+from .vendors import Terminal
 
 # @formatter:off
 # The keys of this dictionary are the supported device_types
@@ -30,6 +31,7 @@ CLASS_MAPPER = {
     'juniper_junos': JuniperJunOS,
     'aruba_aos_6': ArubaAOS6,
     'aruba_aos_8': ArubaAOS8,
+    'terminal': Terminal,
 }
 
 # @formatter:on
