@@ -134,3 +134,10 @@ JuniperJunOS
 .. autoclass:: JuniperJunOS
    :members:
    :inherited-members:
+
+Terminal
+~~~~~~~~
+
+.. autoclass:: Terminal
+   :members:
+   :inherited-members:

@@ -89,3 +89,7 @@ Aruba AOS 6.X example
 Juniper JunOS example
 ---------------------
 .. literalinclude:: ../examples/juniper_junos.py
+
+Terminal example
+----------------
+.. literalinclude:: ../examples/terminal.py
