@@ -7,8 +7,7 @@ from ..logger import logger
 class Terminal(BaseDevice):
     """Class for working with General Terminal"""
 
-    def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,
-                 delimeter_list=None, local_addr=None, client_keys=None, passphrase=None, loop=None):
+    def __init__(self, delimeter_list=None, *args, **kwargs):
         """
         Initialize class for asynchronous working with network devices
         Invoke init with some special params (base_pattern and username)
@@ -23,11 +22,10 @@ class Terminal(BaseDevice):
         :param str local_addr: local address for binding source of tcp connection
         :param client_keys: path for client keys. Default in None. With () it will use default file in OS
         :param str passphrase: password for encrypted client keys
+        :param float timeout: timeout in second for getting information from channel
         :param loop: asyncio loop object
         """
-        super(Terminal, self).__init__(host=host, username=username, password=password, port=port,
-                                       device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
-                                       client_keys=client_keys, passphrase=passphrase, loop=loop)
+        super(Terminal, self).__init__(*args, **kwargs)
         if delimeter_list is not None:
             self._delimiter_list = delimeter_list
 
