@@ -9,8 +9,8 @@ import re
 
 import asyncssh
 
-from .exceptions import TimeoutError, DisconnectError
-from .logger import logger
+from netdev.exceptions import TimeoutError, DisconnectError
+from netdev.logger import logger
 
 
 class BaseDevice(object):

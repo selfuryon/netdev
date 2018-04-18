@@ -1,5 +1,5 @@
-from ..junos_like import JunOSLikeDevice
-from ..logger import logger
+from netdev.logger import logger
+from netdev.vendors.junos_like import JunOSLikeDevice
 
 
 class JuniperJunOS(JunOSLikeDevice):
@@ -48,4 +48,3 @@ class JuniperJunOS(JunOSLikeDevice):
             if not await self.check_cli_mode():
                 raise ValueError("Failed to enter to cli mode")
         return output
-

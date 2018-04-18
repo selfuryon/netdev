@@ -2,8 +2,8 @@
 
 import re
 
-from ..ios_like import IOSLikeDevice
-from ..logger import logger
+from netdev.logger import logger
+from netdev.vendors.ios_like import IOSLikeDevice
 
 
 class ArubaAOS6(IOSLikeDevice):
@@ -43,4 +43,3 @@ class ArubaAOS6(IOSLikeDevice):
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
-

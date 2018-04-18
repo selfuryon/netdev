@@ -1,4 +1,4 @@
-from ..ios_like import IOSLikeDevice
+from netdev.vendors.ios_like import IOSLikeDevice
 
 
 class AristaEOS(IOSLikeDevice):

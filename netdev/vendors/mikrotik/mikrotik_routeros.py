@@ -1,8 +1,8 @@
 import asyncssh
 
-from ..base import BaseDevice
-from ..exceptions import DisconnectError
-from ..logger import logger
+from netdev.exceptions import DisconnectError
+from netdev.logger import logger
+from netdev.vendors.base import BaseDevice
 
 
 class MikrotikRouterOS(BaseDevice):

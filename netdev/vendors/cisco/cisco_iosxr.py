@@ -1,5 +1,5 @@
-from ..ios_like import IOSLikeDevice
-from ..logger import logger
+from netdev.logger import logger
+from netdev.vendors.ios_like import IOSLikeDevice
 
 
 class CiscoIOSXR(IOSLikeDevice):

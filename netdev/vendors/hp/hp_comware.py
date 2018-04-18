@@ -1,4 +1,4 @@
-from ..comware_like import ComwareLikeDevice
+from netdev.vendors.comware_like import ComwareLikeDevice
 
 
 class HPComware(ComwareLikeDevice):

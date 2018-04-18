@@ -6,8 +6,8 @@ Connection Method are based upon AsyncSSH and should be running in asyncio loop
 
 import re
 
-from .base import BaseDevice
-from .logger import logger
+from netdev.logger import logger
+from netdev.vendors.base import BaseDevice
 
 
 class IOSLikeDevice(BaseDevice):
