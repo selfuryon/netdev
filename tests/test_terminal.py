@@ -37,3 +37,12 @@ class TestTerminal(unittest.TestCase):
                         self.assertIn(cmd, out)
 
         self.loop.run_until_complete(task())
+
+    def test_timeout(self):
+        async def task():
+            for dev in self.devices:
+                with self.assertRaises(netdev.TimeoutError):
+                    async with netdev.create(**dev, timeout=0.1) as terminal:
+                        out = await terminal.send_command("uname -a")
+
+        self.loop.run_until_complete(task())

@@ -67,6 +67,15 @@ class TestArista(unittest.TestCase):
 
         self.loop.run_until_complete(task())
 
+    def test_timeout(self):
+        async def task():
+            for dev in self.devices:
+                with self.assertRaises(netdev.TimeoutError):
+                    async with netdev.create(**dev, timeout=0.1) as arista:
+                        await arista.send_command('sh run | i hostname')
+
+        self.loop.run_until_complete(task())
+
     def test_interactive_commands(self):
         async def task():
             for dev in self.devices:

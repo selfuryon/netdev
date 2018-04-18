@@ -61,8 +61,17 @@ class TestAOS6(unittest.TestCase):
     def test_base_prompt(self):
         async def task():
             for dev in self.devices:
-                async with netdev.create(**dev) as ios:
-                    out = await ios.send_command('sh run | i hostname')
-                    self.assertIn(ios.base_prompt, out)
+                async with netdev.create(**dev) as aos:
+                    out = await aos.send_command('sh run | i hostname')
+                    self.assertIn(aos.base_prompt, out)
+
+        self.loop.run_until_complete(task())
+
+    def test_timeout(self):
+        async def task():
+            for dev in self.devices:
+                with self.assertRaises(netdev.TimeoutError):
+                    async with netdev.create(**dev, timeout=0.1) as aos:
+                        await aos.send_command('sh run | i hostname')
 
         self.loop.run_until_complete(task())

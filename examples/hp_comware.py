@@ -10,6 +10,7 @@ config_path = 'config.yaml'
 logging.basicConfig(level=logging.INFO)
 netdev.logger.setLevel(logging.DEBUG)
 
+
 async def task(param):
     async with netdev.create(**param) as hp:
         # Testing sending simple command
