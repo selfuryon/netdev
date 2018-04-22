@@ -78,3 +78,23 @@ class TestIOSXR(unittest.TestCase):
                     self.assertIn('commit them before exiting', out)
 
         self.loop.run_until_complete(task())
+
+    def test_exit_without_commit(self):
+        async def task():
+            for dev in self.devices:
+                async with netdev.create(**dev) as ios:
+                    commands = ["interface GigabitEthernet 0/0/0/0", "service-policy input 1"]
+                    out = await ios.send_config_set(commands, with_commit=False)
+                    self.assertIn('Uncommitted changes found', out)
+
+        self.loop.run_until_complete(task())
+
+    def test_errors_in_commit(self):
+        async def task():
+            for dev in self.devices:
+                with self.assertRaises(netdev.CommitError):
+                    async with netdev.create(**dev) as ios:
+                        commands = ["interface GigabitEthernet 0/0/0/0", "service-policy input 1"]
+                        await ios.send_config_set(commands)
+
+        self.loop.run_until_complete(task())
