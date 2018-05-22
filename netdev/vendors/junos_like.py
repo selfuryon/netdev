@@ -6,8 +6,8 @@ Connection Method are based upon AsyncSSH and should be running in asyncio loop
 
 import re
 
-from .base import BaseDevice
-from .logger import logger
+from netdev.logger import logger
+from netdev.vendors.base import BaseDevice
 
 
 class JunOSLikeDevice(BaseDevice):
@@ -23,8 +23,7 @@ class JunOSLikeDevice(BaseDevice):
       * configuration mode. This mode is using for configuration system
     """
 
-    def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,
-                 local_addr=None, client_keys=None, passphrase=None, loop=None):
+    def __init__(self, *args, **kwargs):
         """
         Initialize  class for asynchronous working with network devices
 
@@ -39,9 +38,7 @@ class JunOSLikeDevice(BaseDevice):
         :param str passphrase: password for encrypted client keys
         :param loop: asyncio loop object
         """
-        super().__init__(host=host, username=username, password=password, port=port, device_type=device_type,
-                         known_hosts=known_hosts, local_addr=local_addr, client_keys=client_keys, passphrase=passphrase,
-                         loop=loop)
+        super().__init__(*args, **kwargs)
 
     _delimiter_list = ['%', '>', '#']
     """All this characters will stop reading from buffer. It mean the end of device prompt"""

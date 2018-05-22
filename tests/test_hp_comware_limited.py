@@ -66,3 +66,12 @@ class TestComwareLimited(unittest.TestCase):
                     self.assertIn(hp.base_prompt, out)
 
         self.loop.run_until_complete(task())
+
+    def test_timeout(self):
+        async def task():
+            for dev in self.devices:
+                with self.assertRaises(netdev.TimeoutError):
+                    async with netdev.create(**dev, timeout=0.1) as hp:
+                        await hp.send_command('display cur | i sysname')
+
+        self.loop.run_until_complete(task())

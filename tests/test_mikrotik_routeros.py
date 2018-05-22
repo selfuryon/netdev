@@ -36,6 +36,15 @@ class TestRouterOS(unittest.TestCase):
 
         self.loop.run_until_complete(task())
 
+    def test_timeout(self):
+        async def task():
+            for dev in self.devices:
+                with self.assertRaises(netdev.TimeoutError):
+                    async with netdev.create(**dev, timeout=0.1) as mik:
+                        await mik.send_command('/system identity print')
+
+        self.loop.run_until_complete(task())
+
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:

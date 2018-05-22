@@ -36,6 +36,15 @@ class TestIOSXR(unittest.TestCase):
 
         self.loop.run_until_complete(task())
 
+    def test_timeout(self):
+        async def task():
+            for dev in self.devices:
+                with self.assertRaises(netdev.TimeoutError):
+                    async with netdev.create(**dev, timeout=0.1) as iosxr:
+                        await iosxr.send_command('show run | i hostname')
+
+        self.loop.run_until_complete(task())
+
     def test_show_several_commands(self):
         async def task():
             for dev in self.devices:
@@ -67,5 +76,25 @@ class TestIOSXR(unittest.TestCase):
                     out += await ios.send_command("exit", pattern=r'Uncommitted changes found', strip_command=False)
                     out += await ios.send_command("no", strip_command=False)
                     self.assertIn('commit them before exiting', out)
+
+        self.loop.run_until_complete(task())
+
+    def test_exit_without_commit(self):
+        async def task():
+            for dev in self.devices:
+                async with netdev.create(**dev) as ios:
+                    commands = ["interface GigabitEthernet 0/0/0/0", "service-policy input 1"]
+                    out = await ios.send_config_set(commands, with_commit=False)
+                    self.assertIn('Uncommitted changes found', out)
+
+        self.loop.run_until_complete(task())
+
+    def test_errors_in_commit(self):
+        async def task():
+            for dev in self.devices:
+                with self.assertRaises(netdev.CommitError):
+                    async with netdev.create(**dev) as ios:
+                        commands = ["interface GigabitEthernet 0/0/0/0", "service-policy input 1"]
+                        await ios.send_config_set(commands)
 
         self.loop.run_until_complete(task())

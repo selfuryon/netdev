@@ -9,8 +9,8 @@ import re
 
 import asyncssh
 
-from .exceptions import DisconnectError
-from .logger import logger
+from netdev.exceptions import TimeoutError, DisconnectError
+from netdev.logger import logger
 
 
 class BaseDevice(object):
@@ -19,7 +19,7 @@ class BaseDevice(object):
     """
 
     def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,
-                 local_addr=None, client_keys=None, passphrase=None, loop=None):
+                 local_addr=None, client_keys=None, passphrase=None, timeout=15, loop=None):
         """
         Initialize base class for asynchronous working with network devices
 
@@ -32,6 +32,7 @@ class BaseDevice(object):
         :param str local_addr: local address for binding source of tcp connection
         :param client_keys: path for client keys. Default in None. With () it will use default file in OS
         :param str passphrase: password for encrypted client keys
+        :param float timeout: timeout in second for getting information from channel
         :param loop: asyncio loop object
         """
         if host:
@@ -46,6 +47,7 @@ class BaseDevice(object):
         self._client_keys = client_keys
         self._passphrase = passphrase
         self._device_type = device_type
+        self._timeout = timeout
         if loop is None:
             self._loop = asyncio.get_event_loop()
         else:
@@ -116,10 +118,13 @@ class BaseDevice(object):
         logger.info('Host {}: Establishing connection to port {}'.format(self._host, self._port))
         output = ""
         # initiate SSH connection
+        fut = asyncssh.connect(**self._connect_params_dict)
         try:
-            self._conn = await asyncssh.connect(**self._connect_params_dict)
+            self._conn = await asyncio.wait_for(fut, self._timeout)
         except asyncssh.DisconnectError as e:
             raise DisconnectError(self._host, e.code, e.reason)
+        except asyncio.TimeoutError:
+            raise TimeoutError(self._host)
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb', term_size=(200, 24))
         logger.info("Host {}: Connection is established".format(self._host))
         # Flush unnecessary data
@@ -233,7 +238,11 @@ class BaseDevice(object):
             pattern = self._base_pattern
         logger.debug("Host {}: Reading pattern: {}".format(self._host, pattern))
         while True:
-            output += await self._stdout.read(self._MAX_BUFFER)
+            fut = self._stdout.read(self._MAX_BUFFER)
+            try:
+                output += await asyncio.wait_for(fut, self._timeout)
+            except asyncio.TimeoutError:
+                raise TimeoutError(self._host)
             if re.search(pattern, output, flags=re_flags):
                 logger.debug("Host {}: Reading pattern '{}' was found: {}".format(self._host, pattern, repr(output)))
                 return output
@@ -246,7 +255,11 @@ class BaseDevice(object):
             pattern = self._base_pattern
         base_prompt_pattern = self._base_pattern
         while True:
-            output += await self._stdout.read(self._MAX_BUFFER)
+            fut = self._stdout.read(self._MAX_BUFFER)
+            try:
+                output += await asyncio.wait_for(fut, self._timeout)
+            except asyncio.TimeoutError:
+                raise TimeoutError(self._host)
             if re.search(pattern, output, flags=re_flags) or re.search(base_prompt_pattern, output, flags=re_flags):
                 logger.debug("Host {}: Reading pattern '{}' or '{}' was found: {}".format(self._host, pattern,
                                                                                           base_prompt_pattern,

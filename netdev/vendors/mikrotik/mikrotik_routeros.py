@@ -1,15 +1,14 @@
 import asyncssh
 
-from ..base import BaseDevice
-from ..exceptions import DisconnectError
-from ..logger import logger
+from netdev.exceptions import DisconnectError
+from netdev.logger import logger
+from netdev.vendors.base import BaseDevice
 
 
 class MikrotikRouterOS(BaseDevice):
     """Class for working with Mikrotik RouterOS"""
 
-    def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,
-                 local_addr=None, client_keys=None, passphrase=None, loop=None):
+    def __init__(self, *args, **kwargs):
         """
         Initialize class for asynchronous working with network devices
         Invoke init with some special params (base_pattern and username)
@@ -23,6 +22,7 @@ class MikrotikRouterOS(BaseDevice):
         :param str local_addr: local address for binding source of tcp connection
         :param client_keys: path for client keys. Default in None. With () it will use default file in OS
         :param str passphrase: password for encrypted client keys
+        :param float timeout: timeout in second for getting information from channel
         :param loop: asyncio loop object
 
         Mikrotik duplicate prompt in connection, so we should use pattern like
@@ -32,10 +32,7 @@ class MikrotikRouterOS(BaseDevice):
         '+t' disable auto term capabilities detection
         '+200w' set terminal width to 200 rows
         """
-        super(MikrotikRouterOS, self).__init__(host=host, username=username, password=password, port=port,
-                                               device_type=device_type, known_hosts=known_hosts, local_addr=local_addr,
-                                               client_keys=client_keys, passphrase=passphrase, loop=loop)
-
+        super(MikrotikRouterOS, self).__init__(*args, **kwargs)
         self._base_pattern = r"\[.*?\] \>.*\[.*?\] \>"
         self._username += '+ct200w'
         self._ansi_escape_codes = True
