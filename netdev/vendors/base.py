@@ -1,6 +1,5 @@
 """
 Base Class for using in connection to network devices
-
 Connections Method are based upon AsyncSSH and should be running in asyncio loop
 """
 
@@ -19,10 +18,9 @@ class BaseDevice(object):
     """
 
     def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,
-                 local_addr=None, client_keys=None, passphrase=None, timeout=15, loop=None):
+                 local_addr=None, client_keys=None, passphrase=None, timeout=15, loop=None, proxy_dict=None):
         """
         Initialize base class for asynchronous working with network devices
-
         :param str host: device hostname or ip address for connection
         :param str username: username for logging to device
         :param str password: user password for logging to device
@@ -34,6 +32,7 @@ class BaseDevice(object):
         :param str passphrase: password for encrypted client keys
         :param float timeout: timeout in second for getting information from channel
         :param loop: asyncio loop object
+        :param proxy_dict: dictionary to specify a proxy/tunnel server for the connection.
         """
         if host:
             self._host = host
@@ -48,6 +47,7 @@ class BaseDevice(object):
         self._passphrase = passphrase
         self._device_type = device_type
         self._timeout = timeout
+        self._proxy_dict = proxy_dict
         if loop is None:
             self._loop = asyncio.get_event_loop()
         else:
@@ -85,10 +85,8 @@ class BaseDevice(object):
     async def connect(self):
         """
         Basic asynchronous connection method
-
         It connects to device and makes some preparation steps for working.
         Usual using 3 functions:
-
         * _establish_connection() for connecting to device
         * _set_base_prompt() for finding and setting device prompt
         * _disable_paging() for non interactive output in commands
@@ -118,13 +116,20 @@ class BaseDevice(object):
         logger.info('Host {}: Establishing connection to port {}'.format(self._host, self._port))
         output = ""
         # initiate SSH connection
-        fut = asyncssh.connect(**self._connect_params_dict)
+        if self._proxy_dict is None:
+            fut = asyncssh.connect(**self._connect_params_dict)
+        else:
+            proxy_conn = await asyncio.wait_for(asyncssh.connect(**self._proxy_dict, agent_forwarding=True),
+                                                self._timeout)
+            fut = asyncssh.connect(**self._connect_params_dict, tunnel=proxy_conn)
         try:
             self._conn = await asyncio.wait_for(fut, self._timeout)
         except asyncssh.DisconnectError as e:
             raise DisconnectError(self._host, e.code, e.reason)
         except asyncio.TimeoutError:
             raise TimeoutError(self._host)
+        except Exception as e:
+            print(e)
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb', term_size=(200, 24))
         logger.info("Host {}: Connection is established".format(self._host))
         # Flush unnecessary data
@@ -137,10 +142,8 @@ class BaseDevice(object):
     async def _set_base_prompt(self):
         """
         Setting two important vars:
-
             base_prompt - textual prompt in CLI (usually hostname)
             base_pattern - regexp for finding the end of command. It's platform specific parameter
-
         For Cisco devices base_pattern is "prompt(\(.*?\))?[#|>]
         """
         logger.info("Host {}: Setting base prompt".format(self._host))
@@ -189,7 +192,6 @@ class BaseDevice(object):
     async def send_command(self, command_string, pattern='', re_flags=0, strip_command=True, strip_prompt=True):
         """
         Sending command to device (support interactive commands with pattern)
-
         :param str command_string: command for executing basically in privilege mode
         :param str pattern: pattern for waiting in output (for interactive commands)
         :param re.flags re_flags: re flags for pattern
@@ -276,7 +278,6 @@ class BaseDevice(object):
     def _strip_command(command_string, output):
         """
         Strip command_string from output string
-
         Cisco IOS adds backspaces into output for long commands (i.e. for commands that line wrap)
         """
         logger.info('Stripping command')
@@ -308,9 +309,7 @@ class BaseDevice(object):
     async def send_config_set(self, config_commands=None):
         """
         Sending configuration commands to device
-
         The commands will be executed one after the other.
-
         :param list config_commands: iterable string list with commands for applying to network device
         :return: The output of this commands
         """
@@ -338,12 +337,9 @@ class BaseDevice(object):
     def _strip_ansi_escape_codes(string_buffer):
         """
         Remove some ANSI ESC codes from the output
-
         http://en.wikipedia.org/wiki/ANSI_escape_code
-
         Note: this does not capture ALL possible ANSI Escape Codes only the ones
         I have encountered
-
         Current codes that are filtered:
         ESC = '\x1b' or chr(27)
         ESC = is the escape character [^ in hex ('\x1b')
@@ -357,7 +353,6 @@ class BaseDevice(object):
         ESC8         Restore cursor position
         ESC[nA       Move cursor up to n cells
         ESC[nB       Move cursor down to n cells
-
         require:
             HP ProCurve
             F5 LTM's
