@@ -18,6 +18,8 @@ Factory method
 
 .. autofunction:: create
 
+.. module:: netdev.vendors
+
 Classes
 =======
 

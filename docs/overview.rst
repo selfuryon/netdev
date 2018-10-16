@@ -44,6 +44,8 @@ or the same with using async context manager:
 Library structure
 =================
 
+.. module:: netdev.vendors
+
 Library consist from several base classes and end classes which using for communication.
 The main class is :class:`BaseDevice`. It provides some basic functionality regardless of device type.
 Library also have three common child classes: :class:`IOSLikeDevice`, :class:`ComwareLikeDevice`
