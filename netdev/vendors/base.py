@@ -18,7 +18,11 @@ class BaseDevice(object):
     """
 
     def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,
-                 local_addr=None, client_keys=None, passphrase=None, timeout=15, loop=None, proxy_dict=None):
+                 local_addr=None, client_keys=None, passphrase=None, timeout=15, loop=None, tunnel=None,
+                 agent_forwarding=False, x509_trusted_certs=None, x509_trusted_cert_paths=None,
+                 client_host_keysign=False, client_host_keys=None, client_host=None, client_username=None,
+                 gss_host=None, gss_delegate_creds=False, agent_path=(), client_version=(), kex_algs=(),
+                 encryption_algs=(), mac_algs=(), compression_algs=(), signature_algs=(), ):
         """
         Initialize base class for asynchronous working with network devices
         :param str host: device hostname or ip address for connection
@@ -32,7 +36,74 @@ class BaseDevice(object):
         :param str passphrase: password for encrypted client keys
         :param float timeout: timeout in second for getting information from channel
         :param loop: asyncio loop object
-        :param proxy_dict: dictionary to specify a proxy/tunnel server for the connection.
+        :param tunnel:
+           An existing SSH client connection that this new connection should
+           be tunneled over. If set, a direct TCP/IP tunnel will be opened
+           over this connection to the requested host and port rather than
+           connecting directly via TCP.
+        :param agent_forwarding:
+           Whether or not to allow forwarding of ssh-agent requests from
+           processes running on the server. By default, ssh-agent forwarding
+           requests from the server are not allowed.
+        :param client_host_keysign: (optional)
+           Whether or not to use `ssh-keysign` to sign host-based
+           authentication requests. If set to `True`, an attempt will be
+           made to find `ssh-keysign` in its typical locations. If set to
+           a string, that will be used as the `ssh-keysign` path. When set,
+           client_host_keys should be a list of public keys. Otherwise,
+           client_host_keys should be a list of private keys with optional
+           paired certificates.
+       :param client_host_keys: (optional)
+           A list of keys to use to authenticate this client via host-based
+           authentication. If `client_host_keysign` is set and no host keys
+           or certificates are specified, an attempt will be made to find
+           them in their typical locations. If `client_host_keysign` is
+           not set, host private keys must be specified explicitly or
+           host-based authentication will not be performed.
+       :param client_host: (optional)
+           The local hostname to use when performing host-based
+           authentication. If not specified, the hostname associated with
+           the local IP address of the SSH connection will be used.
+       :param client_username: (optional)
+           The local username to use when performing host-based
+           authentication. If not specified, the username of the currently
+           logged in user will be used.
+       :param gss_host: (optional)
+           The principal name to use for the host in GSS key exchange and
+           authentication. If not specified, this value will be the same
+           as the `host` argument. If this argument is explicitly set to
+           `None`, GSS key exchange and authentication will not be performed.
+       :param gss_delegate_creds: (optional)
+           Whether or not to forward GSS credentials to the server being
+           accessed. By default, GSS credential delegation is disabled.
+       :param agent_path: (optional)
+           The path of a UNIX domain socket to use to contact an ssh-agent
+           process which will perform the operations needed for client
+           public key authentication, or the :class:`SSHServerConnection`
+           to use to forward ssh-agent requests over. If this is not
+           specified and the environment variable `SSH_AUTH_SOCK` is
+           set, its value will be used as the path.  If `client_keys`
+           is specified or this argument is explicitly set to `None`,
+           an ssh-agent will not be used.
+       :param client_version: (optional)
+           An ASCII string to advertise to the SSH server as the version of
+           this client, defaulting to `'AsyncSSH'` and its version number.
+       :param kex_algs: (optional)
+           A list of allowed key exchange algorithms in the SSH handshake,
+           taken from :ref:`key exchange algorithms <KexAlgs>`
+       :param encryption_algs: (optional)
+           A list of encryption algorithms to use during the SSH handshake,
+           taken from :ref:`encryption algorithms <EncryptionAlgs>`
+       :param mac_algs: (optional)
+           A list of MAC algorithms to use during the SSH handshake, taken
+           from :ref:`MAC algorithms <MACAlgs>`
+       :param compression_algs: (optional)
+           A list of compression algorithms to use during the SSH handshake,
+           taken from :ref:`compression algorithms <CompressionAlgs>`, or
+           `None` to disable compression
+       :param signature_algs: (optional)
+           A list of public key signature algorithms to use during the SSH
+           handshake, taken from :ref:`signature algorithms <SignatureAlgs>`
         """
         if host:
             self._host = host
@@ -47,7 +118,24 @@ class BaseDevice(object):
         self._passphrase = passphrase
         self._device_type = device_type
         self._timeout = timeout
-        self._proxy_dict = proxy_dict
+        self._tunnel = tunnel
+        self._agent_forwarding = agent_forwarding
+        self._x509_trusted_certs = x509_trusted_certs
+        self._x509_trusted_cert_paths = x509_trusted_cert_paths
+        self._client_host_keysign = client_host_keysign
+        self._client_host_keys = client_host_keys
+        self._client_host = client_host
+        self._client_username = client_username
+        self._gss_host = gss_host
+        self._gss_delegate_creds = gss_delegate_creds
+        self._agent_path = agent_path
+        self._client_version = client_version
+        self._kex_algs = kex_algs
+        self._encryption_algs = encryption_algs
+        self._mac_algs = mac_algs
+        self._compression_algs = compression_algs
+        self._signature_algs = signature_algs
+
         if loop is None:
             self._loop = asyncio.get_event_loop()
         else:
@@ -108,7 +196,26 @@ class BaseDevice(object):
                 'known_hosts': self._known_hosts,
                 'local_addr': self._local_addr,
                 'client_keys': self._client_keys,
-                'passphrase': self._passphrase}
+                'passphrase': self._passphrase,
+                'tunnel': self._tunnel,
+                'agent_forwarding': self._agent_forwarding,
+                'loop': self._loop,
+                'x509_trusted_certs': self._x509_trusted_certs,
+                'x509_trusted_cert_paths': self._x509_trusted_cert_paths,
+                'client_host_keysign': self._client_host_keysign,
+                'client_host_keys': self._client_host_keys,
+                'client_host': self._client_host,
+                'client_username': self._client_username,
+                'gss_host': self._gss_host,
+                'gss_delegate_creds': self._gss_delegate_creds,
+                'agent_path': self._agent_path,
+                'client_version': self._client_version,
+                'kex_algs': self._kex_algs,
+                'encryption_algs': self._encryption_algs,
+                'mac_algs': self._mac_algs,
+                'compression_algs': self._compression_algs,
+                'signature_algs': self._signature_algs,
+                }
         # @formatter:on
 
     async def _establish_connection(self):
@@ -116,20 +223,13 @@ class BaseDevice(object):
         logger.info('Host {}: Establishing connection to port {}'.format(self._host, self._port))
         output = ""
         # initiate SSH connection
-        if self._proxy_dict is None:
-            fut = asyncssh.connect(**self._connect_params_dict)
-        else:
-            proxy_conn = await asyncio.wait_for(asyncssh.connect(**self._proxy_dict, agent_forwarding=True),
-                                                self._timeout)
-            fut = asyncssh.connect(**self._connect_params_dict, tunnel=proxy_conn)
+        fut = asyncssh.connect(**self._connect_params_dict)
         try:
             self._conn = await asyncio.wait_for(fut, self._timeout)
         except asyncssh.DisconnectError as e:
             raise DisconnectError(self._host, e.code, e.reason)
         except asyncio.TimeoutError:
             raise TimeoutError(self._host)
-        except Exception as e:
-            print(e)
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(term_type='Dumb', term_size=(200, 24))
         logger.info("Host {}: Connection is established".format(self._host))
         # Flush unnecessary data
