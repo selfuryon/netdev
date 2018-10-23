@@ -23,23 +23,6 @@ class JunOSLikeDevice(BaseDevice):
       * configuration mode. This mode is using for configuration system
     """
 
-    def __init__(self, *args, **kwargs):
-        """
-        Initialize  class for asynchronous working with network devices
-
-        :param str host: hostname or ip address for connection
-        :param str username: username for logger to device
-        :param str password: password for user for logger to device
-        :param int port: ssh port for connection. Default is 22
-        :param str device_type: network device type
-        :param known_hosts: file with known hosts. Default is None (no policy). with () it will use default file
-        :param str local_addr: local address for binding source of tcp connection
-        :param client_keys: path for client keys. With () it will use default file in OS.
-        :param str passphrase: password for encrypted client keys
-        :param loop: asyncio loop object
-        """
-        super().__init__(*args, **kwargs)
-
     _delimiter_list = ['%', '>', '#']
     """All this characters will stop reading from buffer. It mean the end of device prompt"""
 
