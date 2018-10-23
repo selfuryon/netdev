@@ -32,7 +32,7 @@ class Terminal(BaseDevice):
     _delimiter_list = ['$', '#']
     """All this characters will stop reading from buffer. It mean the end of device prompt"""
 
-    _pattern = r"[{}]"
+    _pattern = r"[{delimiters}]"
     """Pattern for using in reading buffer. When it found processing ends"""
 
     async def connect(self):
@@ -55,6 +55,6 @@ class Terminal(BaseDevice):
         delimiters = map(re.escape, type(self)._delimiter_list)
         delimiters = r"|".join(delimiters)
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(delimiters)
+        self._base_pattern = pattern.format(delimiters=delimiters)
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt

@@ -26,7 +26,7 @@ class JunOSLikeDevice(BaseDevice):
     _delimiter_list = ['%', '>', '#']
     """All this characters will stop reading from buffer. It mean the end of device prompt"""
 
-    _pattern = r"\w+(\@[\-\w]*)?[{}]"
+    _pattern = r"\w+(\@[\-\w]*)?[{delimiters}]"
     """Pattern for using in reading buffer. When it found processing ends"""
 
     _disable_paging_command = 'set cli screen-length 0'
@@ -66,7 +66,7 @@ class JunOSLikeDevice(BaseDevice):
         delimiters = r"|".join(delimiters)
         base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(delimiters)
+        self._base_pattern = pattern.format(delimiters=delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt

@@ -9,7 +9,7 @@ from netdev.vendors.ios_like import IOSLikeDevice
 class FujitsuSwitch(IOSLikeDevice):
     """Class for working with Fujitsu Blade switch"""
 
-    _pattern = r"\({}.*?\) (\(.*?\))?[{}]"
+    _pattern = r"\({prompt}.*?\) (\(.*?\))?[{delimiters}]"
     """Pattern for using in reading buffer. When it found processing ends"""
 
     _disable_paging_command = 'no pager'
@@ -34,7 +34,7 @@ class FujitsuSwitch(IOSLikeDevice):
         delimiters = r"|".join(delimiters)
         base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(base_prompt, delimiters)
+        self._base_pattern = pattern.format(prompt=base_prompt, delimiters=delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt

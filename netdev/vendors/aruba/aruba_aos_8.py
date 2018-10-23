@@ -18,7 +18,7 @@ class ArubaAOS8(IOSLikeDevice):
     _config_check = '] (config'
     """Checking string in prompt. If it's exist im prompt - we are in configuration mode"""
 
-    _pattern = r"\({}.*?\) [*^]?\[.*?\] (\(.*?\))?\s?[{}]"
+    _pattern = r"\({prompt}.*?\) [*^]?\[.*?\] (\(.*?\))?\s?[{delimiters}]"
     """Pattern for using in reading buffer. When it found processing ends"""
 
     async def _set_base_prompt(self):
@@ -39,7 +39,7 @@ class ArubaAOS8(IOSLikeDevice):
         delimiters = r"|".join(delimiters)
         base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(base_prompt, delimiters)
+        self._base_pattern = pattern.format(prompt=base_prompt, delimiters=delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt

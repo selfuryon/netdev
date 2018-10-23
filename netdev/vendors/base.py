@@ -19,7 +19,7 @@ class BaseDevice(object):
     """
 
     def __init__(self, host=u'', username=u'', password=u'', port=22, device_type=u'', known_hosts=None,
-                 local_addr=None, client_keys=None, passphrase=None, timeout=15, loop=None):
+                 local_addr=None, client_keys=None, passphrase=None, timeout=15, loop=None, pattern=None):
         """
         Initialize base class for asynchronous working with network devices
 
@@ -34,6 +34,8 @@ class BaseDevice(object):
         :param str passphrase: password for encrypted client keys
         :param float timeout: timeout in second for getting information from channel
         :param loop: asyncio loop object
+        :param str pattern: pattern for searching the end of device prompt.
+                Example: r"{hostname}.*?(\(.*?\))?[{delimeters}]"
         """
         if host:
             self._host = host
@@ -53,6 +55,9 @@ class BaseDevice(object):
         else:
             self._loop = loop
 
+        if pattern is not None:
+            self._pattern = pattern
+
         # Filling internal vars
         self._stdin = self._stdout = self._stderr = self._conn = None
         self._base_prompt = self._base_pattern = ''
@@ -62,7 +67,7 @@ class BaseDevice(object):
     _delimiter_list = ['>', '#']
     """All this characters will stop reading from buffer. It mean the end of device prompt"""
 
-    _pattern = r"{}.*?(\(.*?\))?[{}]"
+    _pattern = r"{prompt}.*?(\(.*?\))?[{delimiters}]"
     """Pattern for using in reading buffer. When it found processing ends"""
 
     _disable_paging_command = 'terminal length 0'
@@ -152,7 +157,7 @@ class BaseDevice(object):
         delimiters = r"|".join(delimiters)
         base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(base_prompt, delimiters)
+        self._base_pattern = pattern.format(prompt=base_prompt, delimiters=delimiters)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt

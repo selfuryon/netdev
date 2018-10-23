@@ -26,7 +26,7 @@ class ComwareLikeDevice(BaseDevice):
     _delimiter_left_list = ['<', '[']
     """Begging prompt characters. Prompt must contain it"""
 
-    _pattern = r"[{}]{}[\-\w]*[{}]"
+    _pattern = r"[{delimiter_left}]{prompt}[\-\w]*[{delimiter_right}]"
     """Pattern for using in reading buffer. When it found processing ends"""
 
     _disable_paging_command = 'screen-length disable'
@@ -59,7 +59,9 @@ class ComwareLikeDevice(BaseDevice):
         delimiter_left = r"|".join(delimiter_left)
         base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(delimiter_left, base_prompt, delimiter_right)
+        self._base_pattern = pattern.format(delimiter_left=delimiter_left,
+                                            prompt=base_prompt,
+                                            delimiter_right=delimiter_right)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
