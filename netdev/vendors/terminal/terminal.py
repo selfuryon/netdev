@@ -25,7 +25,7 @@ class Terminal(BaseDevice):
         :param float timeout: timeout in second for getting information from channel
         :param loop: asyncio loop object
         """
-        super(Terminal, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if delimeter_list is not None:
             self._delimiter_list = delimeter_list
 
