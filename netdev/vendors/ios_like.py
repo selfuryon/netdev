@@ -38,9 +38,8 @@ class IOSLikeDevice(BaseDevice):
         :param float timeout: timeout in second for getting information from channel
         :param loop: asyncio loop object
         """
-        self._secret = secret
-
         super().__init__(*args, **kwargs)
+        self._secret = secret
 
     _priv_enter = 'enable'
     """Command for entering to privilege exec"""
