@@ -10,8 +10,9 @@ from netdev.vendors.juniper import JuniperJunOS
 from netdev.vendors.junos_like import JunOSLikeDevice
 from netdev.vendors.mikrotik import MikrotikRouterOS
 from netdev.vendors.terminal import Terminal
+from netdev.vendors.ubiquiti import UbiquityEdgeSwitch
 
 __all__ = ('CiscoASA', 'CiscoIOS', 'CiscoIOSXR', 'CiscoNXOS', 'HPComware', 'HPComwareLimited', 'FujitsuSwitch',
            'MikrotikRouterOS', 'JuniperJunOS', 'JunOSLikeDevice', 'AristaEOS', 'ArubaAOS6', 'ArubaAOS8', 'BaseDevice',
            'IOSLikeDevice', 'ComwareLikeDevice', 'Terminal', 'arista', 'aruba', 'cisco', 'fujitsu', 'hp', 'juniper',
-           'mikrotik')
+           'mikrotik', 'UbiquityEdgeSwitch')
