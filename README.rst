@@ -58,12 +58,12 @@ Example of interacting with Cisco IOS devices:
 
 
     async def run():
-        dev1 = { 'username' : 'user,
+        dev1 = { 'username' : 'user',
                  'password' : 'pass',
                  'device_type': 'cisco_ios',
                  'host': 'ip address',
         }
-        dev2 = { 'username' : 'user,
+        dev2 = { 'username' : 'user',
                  'password' : 'pass',
                  'device_type': 'cisco_ios',
                  'host': 'ip address',
