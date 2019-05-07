@@ -1,5 +1,3 @@
-.. module:: netdev
-
 .. toctree::
    :hidden:
    :maxdepth: -1

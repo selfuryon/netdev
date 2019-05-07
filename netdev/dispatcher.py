@@ -9,6 +9,7 @@ from netdev.vendors import HPComware, HPComwareLimited
 from netdev.vendors import JuniperJunOS
 from netdev.vendors import MikrotikRouterOS
 from netdev.vendors import Terminal
+from netdev.vendors import UbiquityEdgeSwitch
 
 # @formatter:off
 # The keys of this dictionary are the supported device_types
@@ -26,6 +27,7 @@ CLASS_MAPPER = {
     'hp_comware_limited': HPComwareLimited,
     'juniper_junos': JuniperJunOS,
     'mikrotik_routeros': MikrotikRouterOS,
+    'ubiquity_edge': UbiquityEdgeSwitch,
     'terminal': Terminal,
 }
 

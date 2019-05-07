@@ -1,5 +1,3 @@
-.. module:: netdev
-
 .. _Examples:
 
 Examples

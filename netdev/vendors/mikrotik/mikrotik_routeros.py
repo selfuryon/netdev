@@ -32,7 +32,7 @@ class MikrotikRouterOS(BaseDevice):
         '+t' disable auto term capabilities detection
         '+200w' set terminal width to 200 rows
         """
-        super(MikrotikRouterOS, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._base_pattern = r"\[.*?\] \>.*\[.*?\] \>"
         self._username += '+ct200w'
         self._ansi_escape_codes = True

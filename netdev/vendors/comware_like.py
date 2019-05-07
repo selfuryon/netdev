@@ -20,31 +20,13 @@ class ComwareLikeDevice(BaseDevice):
     * system view. This mode is using for configuration system
     """
 
-    def __init__(self, *args, **kwargs):
-        """
-        Initialize  class for asynchronous working with network devices
-
-        :param str host: device hostname or ip address for connection
-        :param str username: username for logging to device
-        :param str password: user password for logging to device
-        :param int port: ssh port for connection. Default is 22
-        :param str device_type: network device type
-        :param known_hosts: file with known hosts. Default is None (no policy). With () it will use default file
-        :param str local_addr: local address for binding source of tcp connection
-        :param client_keys: path for client keys. Default in None. With () it will use default file in OS
-        :param str passphrase: password for encrypted client keys
-        :param float timeout: timeout in second for getting information from channel
-        :param loop: asyncio loop object
-        """
-        super().__init__(*args, **kwargs)
-
     _delimiter_list = ['>', ']']
     """All this characters will stop reading from buffer. It mean the end of device prompt"""
 
     _delimiter_left_list = ['<', '[']
     """Begging prompt characters. Prompt must contain it"""
 
-    _pattern = r"[{}]{}[\-\w]*[{}]"
+    _pattern = r"[{delimiter_left}]{prompt}[\-\w]*[{delimiter_right}]"
     """Pattern for using in reading buffer. When it found processing ends"""
 
     _disable_paging_command = 'screen-length disable'
@@ -77,7 +59,9 @@ class ComwareLikeDevice(BaseDevice):
         delimiter_left = r"|".join(delimiter_left)
         base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(delimiter_left, base_prompt, delimiter_right)
+        self._base_pattern = pattern.format(delimiter_left=delimiter_left,
+                                            prompt=base_prompt,
+                                            delimiter_right=delimiter_right)
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
