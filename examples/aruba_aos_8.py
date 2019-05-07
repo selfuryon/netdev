@@ -26,8 +26,8 @@ async def task(param):
 
 
 async def run():
-    config = yaml.load(open(config_path, 'r'))
-    devices = yaml.load(open(config['device_list'], 'r'))
+    config = yaml.safe_load(open(config_path, 'r'))
+    devices = yaml.safe_load(open(config['device_list'], 'r'))
     tasks = [task(dev) for dev in devices if dev['device_type'] == 'aruba_aos_8']
     await asyncio.wait(tasks)
 

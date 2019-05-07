@@ -14,9 +14,9 @@ class TestASA(unittest.TestCase):
     @staticmethod
     def load_credits():
         with open(config_path, 'r') as conf:
-            config = yaml.load(conf)
+            config = yaml.safe_load(conf)
             with open(config['device_list'], 'r') as devs:
-                devices = yaml.load(devs)
+                devices = yaml.safe_load(devs)
                 params = [p for p in devices if p['device_type'] == 'cisco_asa']
                 return params
 
