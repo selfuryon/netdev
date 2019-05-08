@@ -29,7 +29,7 @@ class Terminal(BaseDevice):
         if delimeter_list is not None:
             self._delimiter_list = delimeter_list
 
-    _delimiter_list = ['$', '#']
+    _delimiter_list = ["$", "#"]
     """All this characters will stop reading from buffer. It mean the end of device prompt"""
 
     _pattern = r"[{delimiters}]"

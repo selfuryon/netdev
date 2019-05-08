@@ -29,7 +29,7 @@ class CiscoASA(IOSLikeDevice):
         super().__init__(*args, **kwargs)
         self._multiple_mode = False
 
-    _disable_paging_command = 'terminal pager 0'
+    _disable_paging_command = "terminal pager 0"
 
     @property
     def multiple_mode(self):
@@ -68,7 +68,7 @@ class CiscoASA(IOSLikeDevice):
         prompt = await self._find_prompt()
         # Cut off prompt from "prompt/context/other" if it exists
         # If not we get all prompt
-        prompt = prompt[:-1].split('/')
+        prompt = prompt[:-1].split("/")
         prompt = prompt[0]
         self._base_prompt = prompt
         delimiters = map(re.escape, type(self)._delimiter_list)
@@ -83,8 +83,10 @@ class CiscoASA(IOSLikeDevice):
     async def _check_multiple_mode(self):
         """Check mode multiple. If mode is multiple we adding info about contexts"""
         logger.info("Host {}:Checking multiple mode".format(self._host))
-        out = await self.send_command('show mode')
-        if 'multiple' in out:
+        out = await self.send_command("show mode")
+        if "multiple" in out:
             self._multiple_mode = True
 
-        logger.debug("Host {}: Multiple mode: {}".format(self._host, self._multiple_mode))
+        logger.debug(
+            "Host {}: Multiple mode: {}".format(self._host, self._multiple_mode)
+        )

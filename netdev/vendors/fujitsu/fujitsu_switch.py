@@ -12,10 +12,10 @@ class FujitsuSwitch(IOSLikeDevice):
     _pattern = r"\({prompt}.*?\) (\(.*?\))?[{delimiters}]"
     """Pattern for using in reading buffer. When it found processing ends"""
 
-    _disable_paging_command = 'no pager'
+    _disable_paging_command = "no pager"
     """Command for disabling paging"""
 
-    _config_enter = 'conf'
+    _config_enter = "conf"
     """Command for entering to configuration mode"""
 
     async def _set_base_prompt(self):
@@ -44,5 +44,5 @@ class FujitsuSwitch(IOSLikeDevice):
         """
         Convert '\r\r\n','\r\n', '\n\r' to '\n and remove extra '\n\n' in the text
         """
-        newline = re.compile(r'(\r\r\n|\r\n|\n\r)')
-        return newline.sub('\n', a_string).replace('\n\n', '\n')
+        newline = re.compile(r"(\r\r\n|\r\n|\n\r)")
+        return newline.sub("\n", a_string).replace("\n\n", "\n")

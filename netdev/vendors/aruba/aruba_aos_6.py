@@ -9,13 +9,13 @@ from netdev.vendors.ios_like import IOSLikeDevice
 class ArubaAOS6(IOSLikeDevice):
     """Class for working with Aruba OS 6.X"""
 
-    _disable_paging_command = 'no paging'
+    _disable_paging_command = "no paging"
     """Command for disabling paging"""
 
-    _config_exit = 'end'
+    _config_exit = "end"
     """Command for existing from configuration mode to privilege exec"""
 
-    _config_check = ') (config'
+    _config_check = ") (config"
     """Checking string in prompt. If it's exist im prompt - we are in configuration mode"""
 
     _pattern = r"\({prompt}.*?\) (\(.*?\))?\s?[{delimiters}]"

@@ -5,10 +5,10 @@ from netdev.vendors.junos_like import JunOSLikeDevice
 class JuniperJunOS(JunOSLikeDevice):
     """Class for working with Juniper JunOS"""
 
-    _cli_check = '>'
+    _cli_check = ">"
     """Checking string for shell mode"""
 
-    _cli_command = 'cli'
+    _cli_command = "cli"
     """Command for entering to cli mode"""
 
     async def connect(self):
@@ -31,9 +31,9 @@ class JuniperJunOS(JunOSLikeDevice):
 
     async def check_cli_mode(self):
         """Check if we are in cli mode. Return boolean"""
-        logger.info('Host {}: Checking shell mode'.format(self._host))
+        logger.info("Host {}: Checking shell mode".format(self._host))
         cli_check = type(self)._cli_check
-        self._stdin.write(self._normalize_cmd('\n'))
+        self._stdin.write(self._normalize_cmd("\n"))
         output = await self._read_until_prompt()
         return cli_check in output
 

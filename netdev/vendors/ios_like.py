@@ -21,7 +21,7 @@ class IOSLikeDevice(BaseDevice):
     * configuration mode or config mode. This mode are used for configuration whole system.
     """
 
-    def __init__(self, secret=u'', *args, **kwargs):
+    def __init__(self, secret=u"", *args, **kwargs):
         """
         Initialize class for asynchronous working with network devices
 
@@ -41,22 +41,22 @@ class IOSLikeDevice(BaseDevice):
         super().__init__(*args, **kwargs)
         self._secret = secret
 
-    _priv_enter = 'enable'
+    _priv_enter = "enable"
     """Command for entering to privilege exec"""
 
-    _priv_exit = 'disable'
+    _priv_exit = "disable"
     """Command for existing from privilege exec to user exec"""
 
-    _priv_check = '#'
+    _priv_check = "#"
     """Checking string in prompt. If it's exist im prompt - we are in privilege exec"""
 
-    _config_enter = 'conf t'
+    _config_enter = "conf t"
     """Command for entering to configuration mode"""
 
-    _config_exit = 'end'
+    _config_exit = "end"
     """Command for existing from configuration mode to privilege exec"""
 
-    _config_check = ')#'
+    _config_check = ")#"
     """Checking string in prompt. If it's exist im prompt - we are in configuration mode"""
 
     async def connect(self):
@@ -80,20 +80,22 @@ class IOSLikeDevice(BaseDevice):
 
     async def check_enable_mode(self):
         """Check if we are in privilege exec. Return boolean"""
-        logger.info('Host {}: Checking privilege exec'.format(self._host))
+        logger.info("Host {}: Checking privilege exec".format(self._host))
         check_string = type(self)._priv_check
-        self._stdin.write(self._normalize_cmd('\n'))
+        self._stdin.write(self._normalize_cmd("\n"))
         output = await self._read_until_prompt()
         return check_string in output
 
-    async def enable_mode(self, pattern='password', re_flags=re.IGNORECASE):
+    async def enable_mode(self, pattern="password", re_flags=re.IGNORECASE):
         """Enter to privilege exec"""
-        logger.info('Host {}: Entering to privilege exec'.format(self._host))
+        logger.info("Host {}: Entering to privilege exec".format(self._host))
         output = ""
         enable_command = type(self)._priv_enter
         if not await self.check_enable_mode():
             self._stdin.write(self._normalize_cmd(enable_command))
-            output += await self._read_until_prompt_or_pattern(pattern=pattern, re_flags=re_flags)
+            output += await self._read_until_prompt_or_pattern(
+                pattern=pattern, re_flags=re_flags
+            )
             if re.search(pattern, output, re_flags):
                 self._stdin.write(self._normalize_cmd(self._secret))
                 output += await self._read_until_prompt()
@@ -103,7 +105,7 @@ class IOSLikeDevice(BaseDevice):
 
     async def exit_enable_mode(self):
         """Exit from privilege exec"""
-        logger.info('Host {}: Exiting from privilege exec'.format(self._host))
+        logger.info("Host {}: Exiting from privilege exec".format(self._host))
         output = ""
         exit_enable = type(self)._priv_exit
         if await self.check_enable_mode():
@@ -115,28 +117,28 @@ class IOSLikeDevice(BaseDevice):
 
     async def check_config_mode(self):
         """Checks if the device is in configuration mode or not"""
-        logger.info('Host {}: Checking configuration mode'.format(self._host))
+        logger.info("Host {}: Checking configuration mode".format(self._host))
         check_string = type(self)._config_check
-        self._stdin.write(self._normalize_cmd('\n'))
+        self._stdin.write(self._normalize_cmd("\n"))
         output = await self._read_until_prompt()
         return check_string in output
 
     async def config_mode(self):
         """Enter into config_mode"""
-        logger.info('Host {}: Entering to configuration mode'.format(self._host))
-        output = ''
+        logger.info("Host {}: Entering to configuration mode".format(self._host))
+        output = ""
         config_command = type(self)._config_enter
         if not await self.check_config_mode():
             self._stdin.write(self._normalize_cmd(config_command))
             output = await self._read_until_prompt()
             if not await self.check_config_mode():
-                raise ValueError('Failed to enter to configuration mode')
+                raise ValueError("Failed to enter to configuration mode")
         return output
 
     async def exit_config_mode(self):
         """Exit from configuration mode"""
-        logger.info('Host {}: Exiting from configuration mode'.format(self._host))
-        output = ''
+        logger.info("Host {}: Exiting from configuration mode".format(self._host))
+        output = ""
         exit_config = type(self)._config_exit
         if await self.check_config_mode():
             self._stdin.write(self._normalize_cmd(exit_config))
@@ -156,7 +158,7 @@ class IOSLikeDevice(BaseDevice):
         """
 
         if config_commands is None:
-            return ''
+            return ""
 
         # Send config commands
         output = await self.config_mode()
@@ -166,7 +168,9 @@ class IOSLikeDevice(BaseDevice):
             output += await self.exit_config_mode()
 
         output = self._normalize_linefeeds(output)
-        logger.debug("Host {}: Config commands output: {}".format(self._host, repr(output)))
+        logger.debug(
+            "Host {}: Config commands output: {}".format(self._host, repr(output))
+        )
         return output
 
     async def _cleanup(self):

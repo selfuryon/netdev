@@ -1,3 +1,3 @@
 from .ubiquity_edge import UbiquityEdgeSwitch
 
-__all__ = ['UbiquityEdgeSwitch']
+__all__ = ["UbiquityEdgeSwitch"]

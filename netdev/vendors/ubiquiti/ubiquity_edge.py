@@ -11,7 +11,7 @@ class UbiquityEdgeSwitch(IOSLikeDevice):
     _pattern = r"\({prompt}.*?\) (\(.*?\))?[{delimiters}]"
     """Pattern for using in reading buffer. When it found processing ends"""
 
-    _config_enter = 'configure'
+    _config_enter = "configure"
     """Command for entering to configuration mode"""
 
     async def _set_base_prompt(self):
