@@ -12,7 +12,30 @@ from netdev.vendors.mikrotik import MikrotikRouterOS
 from netdev.vendors.terminal import Terminal
 from netdev.vendors.ubiquiti import UbiquityEdgeSwitch
 
-__all__ = ('CiscoASA', 'CiscoIOS', 'CiscoIOSXR', 'CiscoNXOS', 'HPComware', 'HPComwareLimited', 'FujitsuSwitch',
-           'MikrotikRouterOS', 'JuniperJunOS', 'JunOSLikeDevice', 'AristaEOS', 'ArubaAOS6', 'ArubaAOS8', 'BaseDevice',
-           'IOSLikeDevice', 'ComwareLikeDevice', 'Terminal', 'arista', 'aruba', 'cisco', 'fujitsu', 'hp', 'juniper',
-           'mikrotik', 'UbiquityEdgeSwitch')
+__all__ = (
+    "CiscoASA",
+    "CiscoIOS",
+    "CiscoIOSXR",
+    "CiscoNXOS",
+    "HPComware",
+    "HPComwareLimited",
+    "FujitsuSwitch",
+    "MikrotikRouterOS",
+    "JuniperJunOS",
+    "JunOSLikeDevice",
+    "AristaEOS",
+    "ArubaAOS6",
+    "ArubaAOS8",
+    "BaseDevice",
+    "IOSLikeDevice",
+    "ComwareLikeDevice",
+    "Terminal",
+    "arista",
+    "aruba",
+    "cisco",
+    "fujitsu",
+    "hp",
+    "juniper",
+    "mikrotik",
+    "UbiquityEdgeSwitch",
+)

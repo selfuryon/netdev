@@ -23,28 +23,28 @@ class JunOSLikeDevice(BaseDevice):
       * configuration mode. This mode is using for configuration system
     """
 
-    _delimiter_list = ['%', '>', '#']
+    _delimiter_list = ["%", ">", "#"]
     """All this characters will stop reading from buffer. It mean the end of device prompt"""
 
     _pattern = r"\w+(\@[\-\w]*)?[{delimiters}]"
     """Pattern for using in reading buffer. When it found processing ends"""
 
-    _disable_paging_command = 'set cli screen-length 0'
+    _disable_paging_command = "set cli screen-length 0"
     """Command for disabling paging"""
 
-    _config_enter = 'configure'
+    _config_enter = "configure"
     """Command for entering to configuration mode"""
 
-    _config_exit = 'exit configuration-mode'
+    _config_exit = "exit configuration-mode"
     """Command for existing from configuration mode to privilege exec"""
 
-    _config_check = '#'
+    _config_check = "#"
     """Checking string in prompt. If it's exist im prompt - we are in configuration mode"""
 
-    _commit_command = 'commit'
+    _commit_command = "commit"
     """Command for committing changes"""
 
-    _commit_comment_command = 'commit comment {}'
+    _commit_comment_command = "commit comment {}"
     """Command for committing changes with comment"""
 
     async def _set_base_prompt(self):
@@ -59,8 +59,8 @@ class JunOSLikeDevice(BaseDevice):
         prompt = await self._find_prompt()
         prompt = prompt[:-1]
         # Strip off trailing terminator
-        if '@' in prompt:
-            prompt = prompt.split('@')[1]
+        if "@" in prompt:
+            prompt = prompt.split("@")[1]
         self._base_prompt = prompt
         delimiters = map(re.escape, type(self)._delimiter_list)
         delimiters = r"|".join(delimiters)
@@ -73,15 +73,15 @@ class JunOSLikeDevice(BaseDevice):
 
     async def check_config_mode(self):
         """Check if are in configuration mode. Return boolean"""
-        logger.info('Host {}: Checking configuration mode'.format(self._host))
+        logger.info("Host {}: Checking configuration mode".format(self._host))
         check_string = type(self)._config_check
-        self._stdin.write(self._normalize_cmd('\n'))
+        self._stdin.write(self._normalize_cmd("\n"))
         output = await self._read_until_prompt()
         return check_string in output
 
     async def config_mode(self):
         """Enter to configuration mode"""
-        logger.info('Host {}: Entering to configuration mode'.format(self._host))
+        logger.info("Host {}: Entering to configuration mode".format(self._host))
         output = ""
         config_enter = type(self)._config_enter
         if not await self.check_config_mode():
@@ -93,7 +93,7 @@ class JunOSLikeDevice(BaseDevice):
 
     async def exit_config_mode(self):
         """Exit from configuration mode"""
-        logger.info('Host {}: Exiting from configuration mode'.format(self._host))
+        logger.info("Host {}: Exiting from configuration mode".format(self._host))
         output = ""
         config_exit = type(self)._config_exit
         if await self.check_config_mode():
@@ -103,7 +103,13 @@ class JunOSLikeDevice(BaseDevice):
                 raise ValueError("Failed to exit from configuration mode")
         return output
 
-    async def send_config_set(self, config_commands=None, with_commit=True, commit_comment='', exit_config_mode=True):
+    async def send_config_set(
+        self,
+        config_commands=None,
+        with_commit=True,
+        commit_comment="",
+        exit_config_mode=True,
+    ):
         """
         Sending configuration commands to device
         By default automatically exits/enters configuration mode.
@@ -116,7 +122,7 @@ class JunOSLikeDevice(BaseDevice):
         """
 
         if config_commands is None:
-            return ''
+            return ""
 
         # Send config commands
         output = await self.config_mode()
@@ -133,5 +139,7 @@ class JunOSLikeDevice(BaseDevice):
             output += await self.exit_config_mode()
 
         output = self._normalize_linefeeds(output)
-        logger.debug("Host {}: Config commands output: {}".format(self._host, repr(output)))
+        logger.debug(
+            "Host {}: Config commands output: {}".format(self._host, repr(output))
+        )
         return output

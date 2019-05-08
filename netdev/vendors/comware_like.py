@@ -20,25 +20,25 @@ class ComwareLikeDevice(BaseDevice):
     * system view. This mode is using for configuration system
     """
 
-    _delimiter_list = ['>', ']']
+    _delimiter_list = [">", "]"]
     """All this characters will stop reading from buffer. It mean the end of device prompt"""
 
-    _delimiter_left_list = ['<', '[']
+    _delimiter_left_list = ["<", "["]
     """Begging prompt characters. Prompt must contain it"""
 
     _pattern = r"[{delimiter_left}]{prompt}[\-\w]*[{delimiter_right}]"
     """Pattern for using in reading buffer. When it found processing ends"""
 
-    _disable_paging_command = 'screen-length disable'
+    _disable_paging_command = "screen-length disable"
     """Command for disabling paging"""
 
-    _system_view_enter = 'system-view'
+    _system_view_enter = "system-view"
     """Command for entering to system view"""
 
-    _system_view_exit = 'return'
+    _system_view_exit = "return"
     """Command for existing from system view to user view"""
 
-    _system_view_check = ']'
+    _system_view_check = "]"
     """Checking string in prompt. If it's exist im prompt - we are in system view"""
 
     async def _set_base_prompt(self):
@@ -59,24 +59,26 @@ class ComwareLikeDevice(BaseDevice):
         delimiter_left = r"|".join(delimiter_left)
         base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(delimiter_left=delimiter_left,
-                                            prompt=base_prompt,
-                                            delimiter_right=delimiter_right)
+        self._base_pattern = pattern.format(
+            delimiter_left=delimiter_left,
+            prompt=base_prompt,
+            delimiter_right=delimiter_right,
+        )
         logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
         logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
         return self._base_prompt
 
     async def _check_system_view(self):
         """Check if we are in system view. Return boolean"""
-        logger.info('Host {}: Checking system view'.format(self._host))
+        logger.info("Host {}: Checking system view".format(self._host))
         check_string = type(self)._system_view_check
-        self._stdin.write(self._normalize_cmd('\n'))
+        self._stdin.write(self._normalize_cmd("\n"))
         output = await self._read_until_prompt()
         return check_string in output
 
     async def _system_view(self):
         """Enter to system view"""
-        logger.info('Host {}: Entering to system view'.format(self._host))
+        logger.info("Host {}: Entering to system view".format(self._host))
         output = ""
         system_view_enter = type(self)._system_view_enter
         if not await self._check_system_view():
@@ -88,7 +90,7 @@ class ComwareLikeDevice(BaseDevice):
 
     async def _exit_system_view(self):
         """Exit from system view"""
-        logger.info('Host {}: Exiting from system view'.format(self._host))
+        logger.info("Host {}: Exiting from system view".format(self._host))
         output = ""
         system_view_exit = type(self)._system_view_exit
         if await self._check_system_view():
@@ -109,7 +111,7 @@ class ComwareLikeDevice(BaseDevice):
         """
 
         if config_commands is None:
-            return ''
+            return ""
 
         # Send config commands
         output = await self._system_view()
@@ -119,5 +121,7 @@ class ComwareLikeDevice(BaseDevice):
             output += await self._exit_system_view()
 
         output = self._normalize_linefeeds(output)
-        logger.debug("Host {}: Config commands output: {}".format(self._host, repr(output)))
+        logger.debug(
+            "Host {}: Config commands output: {}".format(self._host, repr(output))
+        )
         return output

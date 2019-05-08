@@ -5,7 +5,7 @@ from netdev.vendors.comware_like import ComwareLikeDevice
 class HPComwareLimited(ComwareLikeDevice):
     """Class for working with HP Comware Limited like 1910 and 1920 models"""
 
-    def __init__(self, cmdline_password=u'', *args, **kwargs):
+    def __init__(self, cmdline_password=u"", *args, **kwargs):
         """
         Initialize  class for asynchronous working with network devices
 
@@ -25,10 +25,10 @@ class HPComwareLimited(ComwareLikeDevice):
         super().__init__(*args, **kwargs)
         self._cmdline_password = cmdline_password
 
-    _cmdline_mode_enter_command = '_cmdline-mode on'
+    _cmdline_mode_enter_command = "_cmdline-mode on"
     """Command for entering to cmdline model"""
 
-    _cmdline_mode_check = 'Invalid password'
+    _cmdline_mode_check = "Invalid password"
     """Checking string for wrong password in trying of entering to cmdline mode"""
 
     async def connect(self):
@@ -52,18 +52,20 @@ class HPComwareLimited(ComwareLikeDevice):
 
     async def _cmdline_mode_enter(self):
         """Entering to cmdline-mode"""
-        logger.info('Host {}: Entering to cmdline mode'.format(self._host))
-        output = ''
+        logger.info("Host {}: Entering to cmdline mode".format(self._host))
+        output = ""
         cmdline_mode_enter = type(self)._cmdline_mode_enter_command
         check_error_string = type(self)._cmdline_mode_check
 
-        output = await self.send_command(cmdline_mode_enter, pattern='\[Y\/N\]')
-        output += await self.send_command('Y', pattern='password\:')
+        output = await self.send_command(cmdline_mode_enter, pattern="\[Y\/N\]")
+        output += await self.send_command("Y", pattern="password\:")
         output += await self.send_command(self._cmdline_password)
 
-        logger.debug("Host {}: cmdline mode output: {}".format(self._host, repr(output)))
-        logger.info('Host {}: Checking cmdline mode'.format(self._host))
+        logger.debug(
+            "Host {}: cmdline mode output: {}".format(self._host, repr(output))
+        )
+        logger.info("Host {}: Checking cmdline mode".format(self._host))
         if check_error_string in output:
-            raise ValueError('Failed to enter to cmdline mode')
+            raise ValueError("Failed to enter to cmdline mode")
 
         return output

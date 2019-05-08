@@ -9,13 +9,13 @@ from netdev.vendors.ios_like import IOSLikeDevice
 class ArubaAOS8(IOSLikeDevice):
     """Class for working with Aruba OS 8.X"""
 
-    _disable_paging_command = 'no paging'
+    _disable_paging_command = "no paging"
     """Command for disabling paging"""
 
-    _config_exit = 'end'
+    _config_exit = "end"
     """Command for existing from configuration mode to privilege exec"""
 
-    _config_check = '] (config'
+    _config_check = "] (config"
     """Checking string in prompt. If it's exist im prompt - we are in configuration mode"""
 
     _pattern = r"\({prompt}.*?\) [*^]?\[.*?\] (\(.*?\))?\s?[{delimiters}]"
@@ -32,7 +32,7 @@ class ArubaAOS8(IOSLikeDevice):
         """
         logger.info("Host {}: Setting base prompt".format(self._host))
         prompt = await self._find_prompt()
-        prompt = prompt.split(')')[0]
+        prompt = prompt.split(")")[0]
         # Strip off trailing terminator
         self._base_prompt = prompt[1:]
         delimiters = map(re.escape, type(self)._delimiter_list)

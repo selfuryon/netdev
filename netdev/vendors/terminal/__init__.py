@@ -1,3 +1,3 @@
 from .terminal import Terminal
 
-__all__ = ['Terminal']
+__all__ = ["Terminal"]

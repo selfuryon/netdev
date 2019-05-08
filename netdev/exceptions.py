@@ -1,5 +1,6 @@
 class DisconnectError(Exception):
     """AsyncSSH Disconnect Error with ip address"""
+
     def __init__(self, ip_address, code, reason):
         self.ip_address = ip_address
         self.code = code
