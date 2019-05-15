@@ -221,7 +221,7 @@ class BaseDevice(object):
         except asyncio.TimeoutError:
             raise TimeoutError(self._host)
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(
-            term_type="Dumb", term_size=(200, 24)
+            term_type="vt100", term_size=(200, 24)
         )
         logger.info("Host {}: Connection is established".format(self._host))
         # Flush unnecessary data
