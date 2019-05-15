@@ -11,6 +11,7 @@ Requires:
 * AsyncSSH
 * Python >=3.5
 * pyYAML
+* TextFSM
   
  
 Supports: 

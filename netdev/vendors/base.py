@@ -11,7 +11,7 @@ import asyncssh
 
 from netdev.exceptions import TimeoutError, DisconnectError
 from netdev.logger import logger
-
+from netdev.vendors import utils
 
 class BaseDevice(object):
     """
@@ -298,6 +298,7 @@ class BaseDevice(object):
         re_flags=0,
         strip_command=True,
         strip_prompt=True,
+        use_textfsm=False
     ):
         """
         Sending command to device (support interactive commands with pattern)
@@ -326,6 +327,8 @@ class BaseDevice(object):
             output = self._strip_prompt(output)
         if strip_command:
             output = self._strip_command(command_string, output)
+        if use_textfsm:
+            output = utils.textfasm_parser(output, command_string, self._device_type)
 
         logger.debug(
             "Host {}: Send command output: {}".format(self._host, repr(output))
