@@ -43,16 +43,16 @@ class HPComwareLimited(ComwareLikeDevice):
         * _cmdline_mode_enter() for entering hidden full functional mode
         * _disable_paging() for non interact output in commands
         """
-        logger.info("Host {}: Trying to connect to the device".format(self._host))
+        logger.info("Host {}: Trying to connect to the device".format(self.host))
         await self._establish_connection()
         await self._set_base_prompt()
         await self._cmdline_mode_enter()
         await self._disable_paging()
-        logger.info("Host {}: Has connected to the device".format(self._host))
+        logger.info("Host {}: Has connected to the device".format(self.host))
 
     async def _cmdline_mode_enter(self):
         """Entering to cmdline-mode"""
-        logger.info("Host {}: Entering to cmdline mode".format(self._host))
+        logger.info("Host {}: Entering to cmdline mode".format(self.host))
         output = ""
         cmdline_mode_enter = type(self)._cmdline_mode_enter_command
         check_error_string = type(self)._cmdline_mode_check
@@ -62,9 +62,9 @@ class HPComwareLimited(ComwareLikeDevice):
         output += await self.send_command(self._cmdline_password)
 
         logger.debug(
-            "Host {}: cmdline mode output: {}".format(self._host, repr(output))
+            "Host {}: cmdline mode output: {}".format(self.host, repr(output))
         )
-        logger.info("Host {}: Checking cmdline mode".format(self._host))
+        logger.info("Host {}: Checking cmdline mode".format(self.host))
         if check_error_string in output:
             raise ValueError("Failed to enter to cmdline mode")
 

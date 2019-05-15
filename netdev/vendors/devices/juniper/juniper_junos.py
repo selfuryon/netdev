@@ -22,16 +22,16 @@ class JuniperJunOS(JunOSLikeDevice):
         * _set_base_prompt() for finding and setting device prompt
         * _disable_paging() for non interact output in commands
         """
-        logger.info("Host {}: Trying to connect to the device".format(self._host))
+        logger.info("Host {}: Trying to connect to the device".format(self.host))
         await self._establish_connection()
         await self._set_base_prompt()
         await self.cli_mode()
         await self._disable_paging()
-        logger.info("Host {}: Entering to cmdline mode".format(self._host))
+        logger.info("Host {}: Entering to cmdline mode".format(self.host))
 
     async def check_cli_mode(self):
         """Check if we are in cli mode. Return boolean"""
-        logger.info("Host {}: Checking shell mode".format(self._host))
+        logger.info("Host {}: Checking shell mode".format(self.host))
         cli_check = type(self)._cli_check
         self._stdin.write(self._normalize_cmd("\n"))
         output = await self._read_until_prompt()
@@ -39,7 +39,7 @@ class JuniperJunOS(JunOSLikeDevice):
 
     async def cli_mode(self):
         """Enter to cli mode"""
-        logger.info("Host {}: Entering to cli mode".format(self._host))
+        logger.info("Host {}: Entering to cli mode".format(self.host))
         output = ""
         cli_command = type(self)._cli_command
         if not await self.check_cli_mode():

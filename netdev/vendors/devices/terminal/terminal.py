@@ -44,17 +44,17 @@ class Terminal(BaseDevice):
         * _establish_connection() for connecting to device
         * _set_base_prompt() for setting base pattern without setting base prompt
         """
-        logger.info("Host {}: Connecting to device".format(self._host))
+        logger.info("Host {}: Connecting to device".format(self.host))
         await self._establish_connection()
         await self._set_base_prompt()
-        logger.info("Host {}: Connected to device".format(self._host))
+        logger.info("Host {}: Connected to device".format(self.host))
 
     async def _set_base_prompt(self):
         """Setting base pattern"""
-        logger.info("Host {}: Setting base prompt".format(self._host))
+        logger.info("Host {}: Setting base prompt".format(self.host))
         delimiters = map(re.escape, type(self)._delimiter_list)
         delimiters = r"|".join(delimiters)
         pattern = type(self)._pattern
         self._base_pattern = pattern.format(delimiters=delimiters)
-        logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
+        logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
         return self._base_prompt

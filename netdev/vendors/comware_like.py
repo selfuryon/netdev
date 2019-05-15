@@ -49,7 +49,7 @@ class ComwareLikeDevice(BaseDevice):
 
         For Comware devices base_pattern is "[\]|>]prompt(\-\w+)?[\]|>]
         """
-        logger.info("Host {}: Setting base prompt".format(self._host))
+        logger.info("Host {}: Setting base prompt".format(self.host))
         prompt = await self._find_prompt()
         # Strip off trailing terminator
         self._base_prompt = prompt[1:-1]
@@ -64,13 +64,13 @@ class ComwareLikeDevice(BaseDevice):
             prompt=base_prompt,
             delimiter_right=delimiter_right,
         )
-        logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
-        logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
+        logger.debug("Host {}: Base Prompt: {}".format(self.host, self._base_prompt))
+        logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
         return self._base_prompt
 
     async def _check_system_view(self):
         """Check if we are in system view. Return boolean"""
-        logger.info("Host {}: Checking system view".format(self._host))
+        logger.info("Host {}: Checking system view".format(self.host))
         check_string = type(self)._system_view_check
         self._stdin.write(self._normalize_cmd("\n"))
         output = await self._read_until_prompt()
@@ -78,7 +78,7 @@ class ComwareLikeDevice(BaseDevice):
 
     async def _system_view(self):
         """Enter to system view"""
-        logger.info("Host {}: Entering to system view".format(self._host))
+        logger.info("Host {}: Entering to system view".format(self.host))
         output = ""
         system_view_enter = type(self)._system_view_enter
         if not await self._check_system_view():
@@ -90,7 +90,7 @@ class ComwareLikeDevice(BaseDevice):
 
     async def _exit_system_view(self):
         """Exit from system view"""
-        logger.info("Host {}: Exiting from system view".format(self._host))
+        logger.info("Host {}: Exiting from system view".format(self.host))
         output = ""
         system_view_exit = type(self)._system_view_exit
         if await self._check_system_view():
@@ -122,6 +122,6 @@ class ComwareLikeDevice(BaseDevice):
 
         output = self._normalize_linefeeds(output)
         logger.debug(
-            "Host {}: Config commands output: {}".format(self._host, repr(output))
+            "Host {}: Config commands output: {}".format(self.host, repr(output))
         )
         return output

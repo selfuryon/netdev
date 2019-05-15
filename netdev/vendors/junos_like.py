@@ -55,7 +55,7 @@ class JunOSLikeDevice(BaseDevice):
 
         For JunOS devices base_pattern is "user(@[hostname])?[>|#]
         """
-        logger.info("Host {}: Setting base prompt".format(self._host))
+        logger.info("Host {}: Setting base prompt".format(self.host))
         prompt = await self._find_prompt()
         prompt = prompt[:-1]
         # Strip off trailing terminator
@@ -67,48 +67,37 @@ class JunOSLikeDevice(BaseDevice):
         base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
         self._base_pattern = pattern.format(delimiters=delimiters)
-        logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
-        logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
+        logger.debug("Host {}: Base Prompt: {}".format(self.host, self._base_prompt))
+        logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
         return self._base_prompt
 
     async def check_config_mode(self):
         """Check if are in configuration mode. Return boolean"""
-        logger.info("Host {}: Checking configuration mode".format(self._host))
+        logger.info("Host {}: Checking configuration mode".format(self.host))
         check_string = type(self)._config_check
-        self._stdin.write(self._normalize_cmd("\n"))
-        output = await self._read_until_prompt()
-        return check_string in output
+        return await self.check_mode(check_string)
 
     async def config_mode(self):
         """Enter to configuration mode"""
-        logger.info("Host {}: Entering to configuration mode".format(self._host))
+        logger.info("Host {}: Entering to configuration mode".format(self.host))
         output = ""
         config_enter = type(self)._config_enter
-        if not await self.check_config_mode():
-            self._stdin.write(self._normalize_cmd(config_enter))
-            output += await self._read_until_prompt()
-            if not await self.check_config_mode():
-                raise ValueError("Failed to enter to configuration mode")
-        return output
+        check_string = type(self)._config_check
+        return await self.enter_mode(config_enter, check_string, 'configuration mode')
 
     async def exit_config_mode(self):
         """Exit from configuration mode"""
-        logger.info("Host {}: Exiting from configuration mode".format(self._host))
-        output = ""
+        logger.info("Host {}: Exiting from configuration mode".format(self.host))
         config_exit = type(self)._config_exit
-        if await self.check_config_mode():
-            self._stdin.write(self._normalize_cmd(config_exit))
-            output += await self._read_until_prompt()
-            if await self.check_config_mode():
-                raise ValueError("Failed to exit from configuration mode")
-        return output
+        check_string = type(self)._config_check
+        return await self.exit_mode(config_exit, check_string, 'configuration mode')
 
     async def send_config_set(
-        self,
-        config_commands=None,
-        with_commit=True,
-        commit_comment="",
-        exit_config_mode=True,
+            self,
+            config_commands=None,
+            with_commit=True,
+            commit_comment="",
+            exit_config_mode=True,
     ):
         """
         Sending configuration commands to device
@@ -140,6 +129,6 @@ class JunOSLikeDevice(BaseDevice):
 
         output = self._normalize_linefeeds(output)
         logger.debug(
-            "Host {}: Config commands output: {}".format(self._host, repr(output))
+            "Host {}: Config commands output: {}".format(self.host, repr(output))
         )
         return output

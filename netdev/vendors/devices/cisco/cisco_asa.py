@@ -48,13 +48,13 @@ class CiscoASA(IOSLikeDevice):
         * _disable_paging() for non interact output in commands
         *  _check_multiple_mode() for checking multiple mode in ASA
         """
-        logger.info("Host {}: trying to connect to the device".format(self._host))
+        logger.info("Host {}: trying to connect to the device".format(self.host))
         await self._establish_connection()
         await self._set_base_prompt()
-        await self.enable_mode()
+        await self.enable_term.enter()
         await self._disable_paging()
         await self._check_multiple_mode()
-        logger.info("Host {}: Has connected to the device".format(self._host))
+        logger.info("Host {}: Has connected to the device".format(self.host))
 
     async def _set_base_prompt(self):
         """
@@ -64,7 +64,7 @@ class CiscoASA(IOSLikeDevice):
 
         For ASA devices base_pattern is "prompt([\/\w]+)?(\(.*?\))?[#|>]
         """
-        logger.info("Host {}: Setting base prompt".format(self._host))
+        logger.info("Host {}: Setting base prompt".format(self.host))
         prompt = await self._find_prompt()
         # Cut off prompt from "prompt/context/other" if it exists
         # If not we get all prompt
@@ -76,17 +76,17 @@ class CiscoASA(IOSLikeDevice):
         base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
         self._base_pattern = pattern.format(prompt=base_prompt, delimiters=delimiters)
-        logger.debug("Host {}: Base Prompt: {}".format(self._host, self._base_prompt))
-        logger.debug("Host {}: Base Pattern: {}".format(self._host, self._base_pattern))
+        logger.debug("Host {}: Base Prompt: {}".format(self.host, self._base_prompt))
+        logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
         return self._base_prompt
 
     async def _check_multiple_mode(self):
         """Check mode multiple. If mode is multiple we adding info about contexts"""
-        logger.info("Host {}:Checking multiple mode".format(self._host))
+        logger.info("Host {}:Checking multiple mode".format(self.host))
         out = await self.send_command("show mode")
         if "multiple" in out:
             self._multiple_mode = True
 
         logger.debug(
-            "Host {}: Multiple mode: {}".format(self._host, self._multiple_mode)
+            "Host {}: Multiple mode: {}".format(self.host, self._multiple_mode)
         )

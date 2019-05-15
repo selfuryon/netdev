@@ -22,11 +22,11 @@ class CiscoIOSXR(IOSLikeDevice):
     """Command for showing the other commit which have occurred during our session"""
 
     async def send_config_set(
-        self,
-        config_commands=None,
-        with_commit=True,
-        commit_comment="",
-        exit_config_mode=True,
+            self,
+            config_commands=None,
+            with_commit=True,
+            commit_comment="",
+            exit_config_mode=True,
     ):
         """
         Sending configuration commands to device
@@ -61,30 +61,30 @@ class CiscoIOSXR(IOSLikeDevice):
                 reason = await self.send_command(
                     self._normalize_cmd(show_config_failed)
                 )
-                raise CommitError(self._host, reason)
+                raise CommitError(self.host, reason)
             if "One or more commits have occurred" in output:
                 show_commit_changes = type(self)._show_commit_changes
                 self._stdin.write(self._normalize_cmd("no"))
                 reason = await self.send_command(
                     self._normalize_cmd(show_commit_changes)
                 )
-                raise CommitError(self._host, reason)
+                raise CommitError(self.host, reason)
 
         if exit_config_mode:
             output += await self.exit_config_mode()
 
         output = self._normalize_linefeeds(output)
         logger.debug(
-            "Host {}: Config commands output: {}".format(self._host, repr(output))
+            "Host {}: Config commands output: {}".format(self.host, repr(output))
         )
         return output
 
     async def exit_config_mode(self):
         """Exit from configuration mode"""
-        logger.info("Host {}: Exiting from configuration mode".format(self._host))
+        logger.info("Host {}: Exiting from configuration mode".format(self.host))
         output = ""
         exit_config = type(self)._config_exit
-        if await self.check_config_mode():
+        if await self.config_term.check():
             self._stdin.write(self._normalize_cmd(exit_config))
             output = await self._read_until_prompt_or_pattern(
                 r"Uncommitted changes found"
@@ -101,4 +101,4 @@ class CiscoIOSXR(IOSLikeDevice):
         abort = type(self)._abort_command
         abort = self._normalize_cmd(abort)
         self._stdin.write(abort)
-        logger.info("Host {}: Cleanup session".format(self._host))
+        logger.info("Host {}: Cleanup session".format(self.host))
