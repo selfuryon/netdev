@@ -2,7 +2,7 @@
 import re
 
 from netdev.logger import logger
-from netdev.vendors.ios_like import IOSLikeDevice
+from netdev.vendors.devices.ios_like import IOSLikeDevice
 
 
 class UbiquityEdgeSwitch(IOSLikeDevice):

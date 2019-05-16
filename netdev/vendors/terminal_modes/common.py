@@ -46,21 +46,21 @@ class TerminalMode:
         return output
 
 
-class IOSXRConfigMode(TerminalMode):
-
-    async def exit(self):
-        """Exit from configuration mode"""
-        logger.info("Host {}: Exiting from configuration mode".format(self.host))
-        output = ""
-
-        if await self.check():
-            self._stdin.write(self._normalize_cmd(se))
-            output = await self._device._read_until_prompt_or_pattern(
-                r"Uncommitted changes found"
-            )
-            if "Uncommitted changes found" in output:
-                self._stdin.write(self._normalize_cmd("no"))
-                output += await self._read_until_prompt()
-            if await self.check_config_mode():
-                raise ValueError("Failed to exit from configuration mode")
-        return output
+# class IOSXRConfigMode(TerminalMode):
+#
+#     async def exit(self):
+#         """Exit from configuration mode"""
+#         logger.info("Host {}: Exiting from configuration mode".format(self.host))
+#         output = ""
+#
+#         if await self.check():
+#             self._stdin.write(self._normalize_cmd())
+#             output = await self._device._read_until_prompt_or_pattern(
+#                 r"Uncommitted changes found"
+#             )
+#             if "Uncommitted changes found" in output:
+#                 self._stdin.write(self._normalize_cmd("no"))
+#                 output += await self._read_until_prompt()
+#             if await self.check_config_mode():
+#                 raise ValueError("Failed to exit from configuration mode")
+#         return output

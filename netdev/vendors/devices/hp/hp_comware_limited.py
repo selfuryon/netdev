@@ -1,5 +1,5 @@
 from netdev.logger import logger
-from netdev.vendors.comware_like import ComwareLikeDevice
+from netdev.vendors.devices.comware_like import ComwareLikeDevice
 
 
 class HPComwareLimited(ComwareLikeDevice):

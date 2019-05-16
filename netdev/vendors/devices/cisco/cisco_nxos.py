@@ -1,6 +1,6 @@
 import re
 
-from netdev.vendors.ios_like import IOSLikeDevice
+from netdev.vendors.devices.ios_like import IOSLikeDevice
 
 
 class CiscoNXOS(IOSLikeDevice):

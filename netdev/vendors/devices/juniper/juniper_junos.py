@@ -1,5 +1,5 @@
 from netdev.logger import logger
-from netdev.vendors.junos_like import JunOSLikeDevice
+from netdev.vendors.devices.junos_like import JunOSLikeDevice
 
 
 class JuniperJunOS(JunOSLikeDevice):

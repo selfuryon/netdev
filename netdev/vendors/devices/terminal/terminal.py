@@ -1,7 +1,7 @@
 import re
 
 from netdev.logger import logger
-from netdev.vendors.base import BaseDevice
+from netdev.vendors.devices.base import BaseDevice
 
 
 class Terminal(BaseDevice):

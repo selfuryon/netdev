@@ -7,8 +7,8 @@ Connection Method are based upon AsyncSSH and should be running in asyncio loop
 import re
 
 from netdev.logger import logger
-from netdev.vendors.base import BaseDevice
-from netdev.vendors.term_modes import TerminalMode
+from netdev.vendors.devices.base import BaseDevice
+from netdev.vendors.terminal_modes import TerminalMode
 
 
 class IOSLikeDevice(BaseDevice):
@@ -92,7 +92,6 @@ class IOSLikeDevice(BaseDevice):
         await self._establish_connection()
         await self._set_base_prompt()
         await self.enable_mode()
-        await self._disable_paging()
         logger.info("Host {}: Has connected to the device".format(self.host))
 
     async def check_enable_mode(self):
