@@ -52,6 +52,10 @@ class ComwareLikeDevice(BaseDevice):
     _system_view_check = "]"
     """Checking string in prompt. If it's exist im prompt - we are in system view"""
 
+    async def _session_preparation(self):
+        await super()._session_preparation()
+        await self._disable_paging()
+
     async def _set_base_prompt(self):
         """
         Setting two important vars

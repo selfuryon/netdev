@@ -3,7 +3,7 @@ IOSLikeDevice Class is abstract class for using in Cisco IOS like devices
 
 Connection Method are based upon AsyncSSH and should be running in asyncio loop
 """
-
+import re
 from netdev.logger import logger
 from netdev.vendors.devices.base import BaseDevice
 from netdev.vendors.terminal_modes.cisco import EnableMode, ConfigMode
@@ -74,24 +74,12 @@ class IOSLikeDevice(BaseDevice):
     _config_check = ")#"
     """Checking string in prompt. If it's exist im prompt - we are in configuration mode"""
 
-    async def connect(self):
-        """
-        Basic asynchronous connection method for Cisco IOS like devices
 
-        It connects to device and makes some preparation steps for working.
-        Usual using 4 functions:
 
-        * _establish_connection() for connecting to device
-        * _set_base_prompt() for finding and setting device prompt
-        * _enable() for getting privilege exec mode
-        * _disable_paging() for non interact output in commands
-        """
-        logger.info("Host {}: Trying to connect to the device".format(self.host))
-        await self._establish_connection()
-        await self._session_preparation()
-        await self._set_base_prompt()
+    async def _session_preparation(self):
+        await super()._session_preparation()
         await self.enable_mode()
-        logger.info("Host {}: Has connected to the device".format(self.host))
+        await self._disable_paging()
 
     async def send_config_set(self, config_commands=None, exit_config_mode=True):
         """

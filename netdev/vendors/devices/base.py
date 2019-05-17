@@ -9,7 +9,7 @@ import re
 from netdev.logger import logger
 from netdev.version import __version__
 from netdev import utils
-from netdev.connections import SSHConnection
+from netdev.connections import SSHConnection, TelnetConnection
 
 
 class BaseDevice(object):
@@ -23,8 +23,10 @@ class BaseDevice(object):
             username=u"",
             password=u"",
             port=22,
+            protocol='ssh',
             device_type=u"",
             timeout=15,
+            telnet_port=23,
             loop=None,
             known_hosts=None,
             local_addr=None,
@@ -126,35 +128,46 @@ class BaseDevice(object):
         else:
             raise ValueError("Host must be set")
         self._port = int(port)
+        self._telnet_port = int(telnet_port)
         self._device_type = device_type
         self._timeout = timeout
+        self._protocol = protocol
         if loop is None:
             self._loop = asyncio.get_event_loop()
         else:
             self._loop = loop
 
-        """Convert needed connect params to a dictionary for simplicity"""
-        self._ssh_connect_params_dict = {
-            "host": self.host,
-            "port": self._port,
-            "username": username,
-            "password": password,
-            "known_hosts": known_hosts,
-            "local_addr": local_addr,
-            "client_keys": client_keys,
-            "passphrase": passphrase,
-            "tunnel": tunnel,
-            "agent_forwarding": agent_forwarding,
-            "loop": loop,
-            "family": family,
-            "agent_path": agent_path,
-            "client_version": client_version,
-            "kex_algs": kex_algs,
-            "encryption_algs": encryption_algs,
-            "mac_algs": mac_algs,
-            "compression_algs": compression_algs,
-            "signature_algs": signature_algs,
-        }
+        if self._protocol == 'ssh':
+            self._ssh_connect_params_dict = {
+                "host": self.host,
+                "port": self._port,
+                "username": username,
+                "password": password,
+                "known_hosts": known_hosts,
+                "local_addr": local_addr,
+                "client_keys": client_keys,
+                "passphrase": passphrase,
+                "tunnel": tunnel,
+                "agent_forwarding": agent_forwarding,
+                "loop": loop,
+                "family": family,
+                "agent_path": agent_path,
+                "client_version": client_version,
+                "kex_algs": kex_algs,
+                "encryption_algs": encryption_algs,
+                "mac_algs": mac_algs,
+                "compression_algs": compression_algs,
+                "signature_algs": signature_algs,
+            }
+        elif self._protocol == 'telnet':
+            self._telnet_connect_params_dict = {
+                "host": self.host,
+                "port": self._telnet_port,
+                "username": username,
+                "password": password,
+            }
+        else:
+            raise ValueError("unknown protocol %r , only telnet and ssh supported" % self._protocol)
         self.current_terminal = None
 
         if pattern is not None:
@@ -193,8 +206,9 @@ class BaseDevice(object):
         """
         logger.info("Host {}: Trying to connect to the device".format(self.host))
         await self._establish_connection()
-        await self._session_preparation()
         await self._set_base_prompt()
+        await self._session_preparation()
+
         logger.info("Host {}: Has connected to the device".format(self.host))
 
     async def _establish_connection(self):
@@ -204,8 +218,10 @@ class BaseDevice(object):
         )
 
         # initiate SSH connection
-        if self._ssh_connect_params_dict:
+        if self._protocol == 'ssh':
             conn = SSHConnection(**self._ssh_connect_params_dict)
+        elif self._protocol == 'telnet':
+            conn = TelnetConnection(**self._telnet_connect_params_dict)
         else:
             raise ValueError("only SSH connection is supported")
 
@@ -214,14 +230,14 @@ class BaseDevice(object):
         logger.info("Host {}: Connection is established".format(self.host))
 
     async def _session_preparation(self):
+        await self._flush_buffer()
+
+    async def _flush_buffer(self):
+        """ flush unnecessary data """
+        await self.send_new_line()
         delimiters = map(re.escape, type(self)._delimiter_list)
         delimiters = r"|".join(delimiters)
-        output = await self._conn.read_until_pattern(delimiters)
-        logger.debug(
-            "Host {}: Establish Connection Output: {}".format(self.host, repr(output))
-        )
-
-        return output
+        await self._conn.read_until_pattern(delimiters)
 
     async def _disable_paging(self):
         await self._send_command_expect(type(self)._disable_paging_command)

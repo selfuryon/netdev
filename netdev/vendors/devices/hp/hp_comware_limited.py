@@ -37,22 +37,6 @@ class HPComwareLimited(ComwareLikeDevice):
     _cmdline_mode_check = "Invalid password"
     """Checking string for wrong password in trying of entering to cmdline mode"""
 
-    async def connect(self):
-        """
-        Basic asynchronous connection method
-
-        It connects to device and makes some preparation steps for working.
-        Usual using 4 functions:
-
-        * _establish_connection() for connecting to device
-        * _set_base_prompt() for finding and setting device prompt
-        * _cmdline_mode_enter() for entering hidden full functional mode
-        * _disable_paging() for non interact output in commands
-        """
-        logger.info("Host {}: Trying to connect to the device".format(self.host))
-        await self._establish_connection()
-        await self._session_preparation()
-        await self._set_base_prompt()
+    async def _session_preparation(self):
         await self.cmdline_mode()
-        await self._disable_paging()
-        logger.info("Host {}: Has connected to the device".format(self.host))
+        await super()._session_preparation()

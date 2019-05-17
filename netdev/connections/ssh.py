@@ -2,9 +2,7 @@ import asyncio
 import asyncssh
 from netdev.contants import TERM_LEN, TERM_WID, TERM_TYPE
 from netdev.exceptions import DisconnectError
-from netdev.logger import logger
 from .base import BaseConnection
-
 
 
 class SSHConnection(BaseConnection):
@@ -32,7 +30,7 @@ class SSHConnection(BaseConnection):
                  signature_algs=()):
         super().__init__()
         if host:
-            self.host = host
+            self._host = host
         else:
             raise ValueError("Host must be set")
         self._port = int(port)
@@ -44,7 +42,7 @@ class SSHConnection(BaseConnection):
 
         """Convert needed connect params to a dictionary for simplicity"""
         connect_params_dict = {
-            "host": self.host,
+            "host": self._host,
             "port": self._port,
             "username": username,
             "password": password,
@@ -71,30 +69,21 @@ class SSHConnection(BaseConnection):
         self._conn_dict = connect_params_dict
         self._timeout = timeout
 
-    async def __aenter__(self):
-        """Async Context Manager"""
-        await self.connect()
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async Context Manager"""
-        await self.disconnect()
-
     async def connect(self):
         fut = asyncssh.connect(**self._conn_dict)
         try:
             self._conn = await asyncio.wait_for(fut, self._timeout)
         except asyncssh.DisconnectError as e:
-            raise DisconnectError(self.host, e.code, e.reason)
+            raise DisconnectError(self._host, e.code, e.reason)
         except asyncio.TimeoutError:
-            raise TimeoutError(self.host)
+            raise TimeoutError(self._host)
 
         await self._start_session()
 
     async def disconnect(self):
         """ Gracefully close the SSH connection """
-        logger.info("Host {}: Disconnecting".format(self.host))
-        logger.info("Host {}: Disconnecting".format(self.host))
+        self._logger.info("Host {}: Disconnecting".format(self._host))
+        self._logger.info("Host {}: Disconnecting".format(self._host))
         await self._cleanup()
         self._conn.close()
         await self._conn.wait_closed()

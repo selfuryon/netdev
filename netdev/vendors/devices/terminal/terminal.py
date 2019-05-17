@@ -35,20 +35,6 @@ class Terminal(BaseDevice):
     _pattern = r"[{delimiters}]"
     """Pattern for using in reading buffer. When it found processing ends"""
 
-    async def connect(self):
-        """
-        Async Connection method
-
-        General Terminal using 2 functions:
-
-        * _establish_connection() for connecting to device
-        * _set_base_prompt() for setting base pattern without setting base prompt
-        """
-        logger.info("Host {}: Connecting to device".format(self.host))
-        await self._establish_connection()
-        await self._set_base_prompt()
-        logger.info("Host {}: Connected to device".format(self.host))
-
     async def _set_base_prompt(self):
         """Setting base pattern"""
         logger.info("Host {}: Setting base prompt".format(self.host))

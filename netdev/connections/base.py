@@ -9,7 +9,7 @@ class BaseConnection(IConnection):
     def __init__(self, *args, **kwargs):
         self._host = None
         self._timeout = None
-        self._transport = self._conn = None
+        self._conn = None
         self._base_prompt = self._base_pattern = ""
         self._MAX_BUFFER = 65535
         self._ansi_escape_codes = False
@@ -24,6 +24,10 @@ class BaseConnection(IConnection):
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async Context Manager"""
         await self.disconnect()
+
+    @property
+    def _logger(self):
+        return logger
 
     def set_base_prompt(self, prompt):
         self._base_prompt = prompt
@@ -59,6 +63,7 @@ class BaseConnection(IConnection):
 
         logger.debug("Host {}: Reading pattern: {}".format(self._host, pattern))
         while True:
+
             fut = self.read()
             try:
                 output += await asyncio.wait_for(fut, self._timeout)

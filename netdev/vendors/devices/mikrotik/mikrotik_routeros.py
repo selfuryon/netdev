@@ -36,32 +36,8 @@ class MikrotikRouterOS(BaseDevice):
 
     _pattern = r"\[.*?\] (\/.*?)?\>"
 
-    async def connect(self):
-        """
-        Async Connection method
-
-        RouterOS using 2 functions:
-
-        * _establish_connection() for connecting to device
-        * _set_base_prompt() for finding and setting device prompt
-        """
-        logger.info("Host {}: Connecting to device".format(self.host))
-        await self._establish_connection()
-        await self._session_preparation()
-        await self._set_base_prompt()
-        logger.info("Host {}: Connected to device".format(self.host))
-
-    async def _establish_connection(self):
-        """Establish SSH connection to the network device"""
-        await super()._establish_connection()
-
-    async def _session_preparation(self):
-        # Flush unnecessary data
-        output = await self._conn._read_until_prompt()
-        logger.debug(
-            "Host {}: Establish Connection Output: {}".format(self.host, repr(output))
-        )
-        return output
+    async def _flush_buffer(self):
+        await self._conn._read_until_prompt()
 
     async def _set_base_prompt(self):
         """

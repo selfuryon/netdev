@@ -36,26 +36,9 @@ class CiscoASA(IOSLikeDevice):
         """ Returning Bool True if ASA in multiple mode"""
         return self._multiple_mode
 
-    async def connect(self):
-        """
-        Async Connection method
-
-        Using 5 functions:
-
-        * _establish_connection() for connecting to device
-        * _set_base_prompt() for finding and setting device prompt
-        * _enable() for getting privilege exec mode
-        * _disable_paging() for non interact output in commands
-        *  _check_multiple_mode() for checking multiple mode in ASA
-        """
-        logger.info("Host {}: trying to connect to the device".format(self.host))
-        await self._establish_connection()
-        await self._session_preparation()
-        await self._set_base_prompt()
-        await self.enable_mode()
-        await self._disable_paging()
+    async def _session_preparation(self):
+        await super()._session_preparation()
         await self._check_multiple_mode()
-        logger.info("Host {}: Has connected to the device".format(self.host))
 
     async def _check_multiple_mode(self):
         """Check mode multiple. If mode is multiple we adding info about contexts"""

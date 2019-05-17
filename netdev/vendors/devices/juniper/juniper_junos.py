@@ -22,21 +22,6 @@ class JuniperJunOS(JunOSLikeDevice):
     _cli_command = "cli"
     """Command for entering to cli mode"""
 
-    async def connect(self):
-        """
-        Juniper JunOS asynchronous connection method
-
-        It connects to device and makes some preparation steps for working:
-
-        * _establish_connection() for connecting to device
-        * cli_mode() for checking shell mode. If we are in shell - we automatically enter to cli
-        * _set_base_prompt() for finding and setting device prompt
-        * _disable_paging() for non interact output in commands
-        """
-        logger.info("Host {}: Trying to connect to the device".format(self.host))
-        await self._establish_connection()
-        await self._session_preparation()
-        await self._set_base_prompt()
+    async def _session_preparation(self):
         await self.cli_mode()
-        await self._disable_paging()
-        logger.info("Host {}: Entering to cmdline mode".format(self.host))
+        await super()._session_preparation()
