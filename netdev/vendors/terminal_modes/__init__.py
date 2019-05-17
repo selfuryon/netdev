@@ -1,1 +1,1 @@
-from .common import TerminalMode
+from .base import BaseTerminalMode

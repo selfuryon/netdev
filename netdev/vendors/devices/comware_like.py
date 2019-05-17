@@ -7,6 +7,7 @@ Connection Method are based upon AsyncSSH and should be running in asyncio loop
 import re
 
 from netdev.logger import logger
+from netdev.vendors.terminal_modes.hp import SystemView
 from netdev.vendors.devices.base import BaseDevice
 
 
@@ -19,6 +20,16 @@ class ComwareLikeDevice(BaseDevice):
     * user exec or user view. This mode is using for getting information from device
     * system view. This mode is using for configuration system
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.system_view = SystemView(
+            enter_command=type(self)._system_view_enter,
+            exit_command=type(self)._system_view_exit,
+            check_string=type(self)._system_view_check,
+            device=self
+        )
 
     _delimiter_list = [">", "]"]
     """All this characters will stop reading from buffer. It mean the end of device prompt"""
@@ -68,38 +79,6 @@ class ComwareLikeDevice(BaseDevice):
         logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
         return self._base_prompt
 
-    async def _check_system_view(self):
-        """Check if we are in system view. Return boolean"""
-        logger.info("Host {}: Checking system view".format(self.host))
-        check_string = type(self)._system_view_check
-        self._stdin.write(self._normalize_cmd("\n"))
-        output = await self._read_until_prompt()
-        return check_string in output
-
-    async def _system_view(self):
-        """Enter to system view"""
-        logger.info("Host {}: Entering to system view".format(self.host))
-        output = ""
-        system_view_enter = type(self)._system_view_enter
-        if not await self._check_system_view():
-            self._stdin.write(self._normalize_cmd(system_view_enter))
-            output += await self._read_until_prompt()
-            if not await self._check_system_view():
-                raise ValueError("Failed to enter to system view")
-        return output
-
-    async def _exit_system_view(self):
-        """Exit from system view"""
-        logger.info("Host {}: Exiting from system view".format(self.host))
-        output = ""
-        system_view_exit = type(self)._system_view_exit
-        if await self._check_system_view():
-            self._stdin.write(self._normalize_cmd(system_view_exit))
-            output += await self._read_until_prompt()
-            if await self._check_system_view():
-                raise ValueError("Failed to exit from system view")
-        return output
-
     async def send_config_set(self, config_commands=None, exit_system_view=False):
         """
         Sending configuration commands to device
@@ -114,11 +93,11 @@ class ComwareLikeDevice(BaseDevice):
             return ""
 
         # Send config commands
-        output = await self._system_view()
+        output = await self.system_view()
         output += await super().send_config_set(config_commands=config_commands)
 
         if exit_system_view:
-            output += await self._exit_system_view()
+            output += await self.system_view.exit()
 
         output = self._normalize_linefeeds(output)
         logger.debug(

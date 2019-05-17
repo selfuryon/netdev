@@ -1,4 +1,5 @@
 from netdev.logger import logger
+from netdev.vendors.terminal_modes.hp import CmdLineMode
 from netdev.vendors.devices.comware_like import ComwareLikeDevice
 
 
@@ -23,7 +24,12 @@ class HPComwareLimited(ComwareLikeDevice):
         :param loop: asyncio loop object
         """
         super().__init__(*args, **kwargs)
-        self._cmdline_password = cmdline_password
+        self.cmdline_mode = CmdLineMode(
+            enter_command=type(self)._cmdline_mode_enter_command,
+            check_error_string=type(self)._cmdline_mode_check,
+            password=cmdline_password,
+            device=self
+        )
 
     _cmdline_mode_enter_command = "_cmdline-mode on"
     """Command for entering to cmdline model"""
@@ -45,27 +51,8 @@ class HPComwareLimited(ComwareLikeDevice):
         """
         logger.info("Host {}: Trying to connect to the device".format(self.host))
         await self._establish_connection()
+        await self._session_preparation()
         await self._set_base_prompt()
-        await self._cmdline_mode_enter()
+        await self.cmdline_mode()
         await self._disable_paging()
         logger.info("Host {}: Has connected to the device".format(self.host))
-
-    async def _cmdline_mode_enter(self):
-        """Entering to cmdline-mode"""
-        logger.info("Host {}: Entering to cmdline mode".format(self.host))
-        output = ""
-        cmdline_mode_enter = type(self)._cmdline_mode_enter_command
-        check_error_string = type(self)._cmdline_mode_check
-
-        output = await self.send_command(cmdline_mode_enter, pattern="\[Y\/N\]")
-        output += await self.send_command("Y", pattern="password\:")
-        output += await self.send_command(self._cmdline_password)
-
-        logger.debug(
-            "Host {}: cmdline mode output: {}".format(self.host, repr(output))
-        )
-        logger.info("Host {}: Checking cmdline mode".format(self.host))
-        if check_error_string in output:
-            raise ValueError("Failed to enter to cmdline mode")
-
-        return output

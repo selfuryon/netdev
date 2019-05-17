@@ -7,6 +7,7 @@ Connection Method are based upon AsyncSSH and should be running in asyncio loop
 import re
 
 from netdev.logger import logger
+from netdev.vendors.terminal_modes.juniper import ConfigMode
 from netdev.vendors.devices.base import BaseDevice
 
 
@@ -22,6 +23,15 @@ class JunOSLikeDevice(BaseDevice):
       * operation mode. This mode is using for getting information from device
       * configuration mode. This mode is using for configuration system
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.config_mode = ConfigMode(
+            enter_command=type(self)._config_enter,
+            exit_command=type(self)._config_check,
+            check_string=type(self)._config_exit,
+            device=self
+        )
 
     _delimiter_list = ["%", ">", "#"]
     """All this characters will stop reading from buffer. It mean the end of device prompt"""
@@ -71,27 +81,6 @@ class JunOSLikeDevice(BaseDevice):
         logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
         return self._base_prompt
 
-    async def check_config_mode(self):
-        """Check if are in configuration mode. Return boolean"""
-        logger.info("Host {}: Checking configuration mode".format(self.host))
-        check_string = type(self)._config_check
-        return await self.check_mode(check_string)
-
-    async def config_mode(self):
-        """Enter to configuration mode"""
-        logger.info("Host {}: Entering to configuration mode".format(self.host))
-        output = ""
-        config_enter = type(self)._config_enter
-        check_string = type(self)._config_check
-        return await self.enter_mode(config_enter, check_string, 'configuration mode')
-
-    async def exit_config_mode(self):
-        """Exit from configuration mode"""
-        logger.info("Host {}: Exiting from configuration mode".format(self.host))
-        config_exit = type(self)._config_exit
-        check_string = type(self)._config_check
-        return await self.exit_mode(config_exit, check_string, 'configuration mode')
-
     async def send_config_set(
             self,
             config_commands=None,
@@ -121,11 +110,10 @@ class JunOSLikeDevice(BaseDevice):
             if commit_comment:
                 commit = type(self)._commit_comment_command.format(commit_comment)
 
-            self._stdin.write(self._normalize_cmd(commit))
-            output += await self._read_until_prompt()
+            output += await self._send_command_expect(commit)
 
         if exit_config_mode:
-            output += await self.exit_config_mode()
+            output += await self.config_mode.exit()
 
         output = self._normalize_linefeeds(output)
         logger.debug(

@@ -1,5 +1,6 @@
 from netdev.exceptions import CommitError
 from netdev.logger import logger
+from netdev.vendors.terminal_modes.cisco import IOSxrConfigMode
 from netdev.vendors.devices.ios_like import IOSLikeDevice
 
 
@@ -20,6 +21,16 @@ class CiscoIOSXR(IOSLikeDevice):
 
     _show_commit_changes = "show configuration commit changes"
     """Command for showing the other commit which have occurred during our session"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.config_mode = IOSxrConfigMode(
+            enter_command=type(self)._config_enter,
+            exit_command=type(self)._config_check,
+            check_string=type(self)._config_exit,
+            device=self,
+            parent=self.enable_mode
+        )
 
     async def send_config_set(
             self,
@@ -52,26 +63,22 @@ class CiscoIOSXR(IOSLikeDevice):
             if commit_comment:
                 commit = type(self)._commit_comment_command.format(commit_comment)
 
-            self._stdin.write(self._normalize_cmd(commit))
-            output += await self._read_until_prompt_or_pattern(
-                r"Do you wish to proceed with this commit anyway\?"
+            output += await self._send_command_expect(
+                commit,
+                pattern=r"Do you wish to proceed with this commit anyway\?"
             )
             if "Failed to commit" in output:
                 show_config_failed = type(self)._show_config_failed
-                reason = await self.send_command(
-                    self._normalize_cmd(show_config_failed)
-                )
+                reason = await self._send_command_expect(show_config_failed)
                 raise CommitError(self.host, reason)
             if "One or more commits have occurred" in output:
                 show_commit_changes = type(self)._show_commit_changes
-                self._stdin.write(self._normalize_cmd("no"))
-                reason = await self.send_command(
-                    self._normalize_cmd(show_commit_changes)
-                )
+                await self._send_command_expect('no')
+                reason = await self._send_command_expect(show_commit_changes)
                 raise CommitError(self.host, reason)
 
         if exit_config_mode:
-            output += await self.exit_config_mode()
+            output += await self.config_mode.exit()
 
         output = self._normalize_linefeeds(output)
         logger.debug(
@@ -79,26 +86,8 @@ class CiscoIOSXR(IOSLikeDevice):
         )
         return output
 
-    async def exit_config_mode(self):
-        """Exit from configuration mode"""
-        logger.info("Host {}: Exiting from configuration mode".format(self.host))
-        output = ""
-        exit_config = type(self)._config_exit
-        if await self.config_term.check():
-            self._stdin.write(self._normalize_cmd(exit_config))
-            output = await self._read_until_prompt_or_pattern(
-                r"Uncommitted changes found"
-            )
-            if "Uncommitted changes found" in output:
-                self._stdin.write(self._normalize_cmd("no"))
-                output += await self._read_until_prompt()
-            if await self.check_config_mode():
-                raise ValueError("Failed to exit from configuration mode")
-        return output
-
     async def _cleanup(self):
         """ Any needed cleanup before closing connection """
         abort = type(self)._abort_command
-        abort = self._normalize_cmd(abort)
-        self._stdin.write(abort)
+        await self._send_command_expect(abort)
         logger.info("Host {}: Cleanup session".format(self.host))

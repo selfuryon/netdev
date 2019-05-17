@@ -25,12 +25,13 @@ class UbiquityEdgeSwitch(IOSLikeDevice):
         logger.info("Host {}: Setting base prompt".format(self.host))
         prompt = await self._find_prompt()
         # Strip off trailing terminator
-        self._base_prompt = prompt[1:-3]
+        base_prompt = prompt[1:-3]
+        self._conn.set_base_prompt(base_prompt)
         delimiters = map(re.escape, type(self)._delimiter_list)
         delimiters = r"|".join(delimiters)
-        base_prompt = re.escape(self._base_prompt[:12])
+        base_prompt = re.escape(base_prompt[:12])
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(prompt=base_prompt, delimiters=delimiters)
-        logger.debug("Host {}: Base Prompt: {}".format(self.host, self._base_prompt))
-        logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
-        return self._base_prompt
+        base_pattern = pattern.format(prompt=base_prompt, delimiters=delimiters)
+        logger.debug("Host {}: Base Prompt: {}".format(self.host, base_prompt))
+        logger.debug("Host {}: Base Pattern: {}".format(self.host, base_pattern))
+        self._conn.set_base_pattern(base_pattern)

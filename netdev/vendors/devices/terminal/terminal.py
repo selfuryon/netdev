@@ -55,6 +55,6 @@ class Terminal(BaseDevice):
         delimiters = map(re.escape, type(self)._delimiter_list)
         delimiters = r"|".join(delimiters)
         pattern = type(self)._pattern
-        self._base_pattern = pattern.format(delimiters=delimiters)
-        logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
-        return self._base_prompt
+        base_pattern = pattern.format(delimiters=delimiters)
+        logger.debug("Host {}: Base Pattern: {}".format(self.host, base_pattern))
+        self._conn.set_base_pattern(base_pattern)

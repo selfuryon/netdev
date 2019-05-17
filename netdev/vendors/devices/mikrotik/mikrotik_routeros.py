@@ -1,6 +1,3 @@
-import asyncssh
-
-from netdev.exceptions import DisconnectError
 from netdev.logger import logger
 from netdev.vendors.devices.base import BaseDevice
 
@@ -50,27 +47,17 @@ class MikrotikRouterOS(BaseDevice):
         """
         logger.info("Host {}: Connecting to device".format(self.host))
         await self._establish_connection()
+        await self._session_preparation()
         await self._set_base_prompt()
         logger.info("Host {}: Connected to device".format(self.host))
 
     async def _establish_connection(self):
         """Establish SSH connection to the network device"""
-        logger.info(
-            "Host {}: Establishing connection to port {}".format(self.host, self._port)
-        )
-        output = ""
-        # initiate SSH connection
-        try:
-            self._conn = await asyncssh.connect(**self._connect_params_dict)
-        except asyncssh.DisconnectError as e:
-            raise DisconnectError(self.host, e.code, e.reason)
+        await super()._establish_connection()
 
-        self._stdin, self._stdout, self._stderr = await self._conn.open_session(
-            term_type="dumb"
-        )
-        logger.info("Host {}: Connection is established".format(self.host))
+    async def _session_preparation(self):
         # Flush unnecessary data
-        output = await self._read_until_prompt()
+        output = await self._conn._read_until_prompt()
         logger.debug(
             "Host {}: Establish Connection Output: {}".format(self.host, repr(output))
         )
@@ -100,9 +87,7 @@ class MikrotikRouterOS(BaseDevice):
     async def _find_prompt(self):
         """Finds the current network device prompt, last line only."""
         logger.info("Host {}: Finding prompt".format(self.host))
-        self._stdin.write("\r")
-        prompt = ""
-        prompt = await self._read_until_prompt()
+        prompt = await self._send_command_expect("\r")
         prompt = prompt.strip()
         if self._ansi_escape_codes:
             prompt = self._strip_ansi_escape_codes(prompt)

@@ -28,7 +28,7 @@ class BaseConnection(IConnection):
     def set_base_prompt(self, prompt):
         self._base_prompt = prompt
 
-    def set_base_patter(self, pattern):
+    def set_base_pattern(self, pattern):
         self._base_pattern = pattern
 
     def disconnect(self):
@@ -43,11 +43,14 @@ class BaseConnection(IConnection):
         """ send Command """
         raise NotImplementedError("Connection must implement send method")
 
-    def read(self):
+    async def read(self):
         raise NotImplementedError("Connection must implement read method ")
 
     async def read_until_pattern(self, pattern, re_flags=0):
         """Read channel until pattern detected. Return ALL data available"""
+
+        if pattern is None:
+            raise ValueError("pattern cannot be None")
 
         if isinstance(pattern, str):
             pattern = [pattern]
@@ -61,6 +64,7 @@ class BaseConnection(IConnection):
                 output += await asyncio.wait_for(fut, self._timeout)
             except asyncio.TimeoutError:
                 raise TimeoutError(self._host)
+
             for exp in pattern:
                 if re.search(exp, output, flags=re_flags):
                     logger.debug(
@@ -80,7 +84,7 @@ class BaseConnection(IConnection):
         logger.info("Host {}: Reading until prompt or pattern".format(self._host))
 
         if isinstance(pattern, str):
-            pattern = [self._base_prompt].append(pattern)
+            pattern = [self._base_prompt, pattern]
         elif isinstance(pattern, list):
             pattern = [self._base_prompt] + pattern
         else:

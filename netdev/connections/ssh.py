@@ -1,9 +1,10 @@
 import asyncio
 import asyncssh
+from netdev.contants import TERM_LEN, TERM_WID, TERM_TYPE
 from netdev.exceptions import DisconnectError
 from netdev.logger import logger
 from .base import BaseConnection
-from netdev.version import __version__
+
 
 
 class SSHConnection(BaseConnection):
@@ -22,7 +23,7 @@ class SSHConnection(BaseConnection):
                  pattern=None,
                  agent_forwarding=False,
                  agent_path=(),
-                 client_version=u"netdev-%s" % __version__,
+                 client_version=u"netdev-%s",
                  family=0,
                  kex_algs=(),
                  encryption_algs=(),
@@ -88,6 +89,8 @@ class SSHConnection(BaseConnection):
         except asyncio.TimeoutError:
             raise TimeoutError(self.host)
 
+        await self._start_session()
+
     async def disconnect(self):
         """ Gracefully close the SSH connection """
         logger.info("Host {}: Disconnecting".format(self.host))
@@ -96,11 +99,11 @@ class SSHConnection(BaseConnection):
         self._conn.close()
         await self._conn.wait_closed()
 
-    async def send(self, cmd):
-        self._stdin.write()
+    def send(self, cmd):
+        self._stdin.write(cmd)
 
     async def read(self):
-        return self._stdout.read()
+        return await self._stdout.read(self._MAX_BUFFER)
 
     def __check_session(self):
         if not self._stdin:
@@ -108,8 +111,13 @@ class SSHConnection(BaseConnection):
 
     async def _start_session(self):
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(
-            term_type="vt100", term_size=(0, 0)
+            term_type=TERM_TYPE, term_size=(TERM_WID, TERM_LEN)
         )
 
     async def _cleanup(self):
         pass
+
+    async def close(self):
+        await self._cleanup()
+        self._conn.close()
+        await self._conn.wait_closed()

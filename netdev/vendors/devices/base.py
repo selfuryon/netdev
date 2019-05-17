@@ -7,6 +7,8 @@ import asyncio
 import re
 
 from netdev.logger import logger
+from netdev.version import __version__
+from netdev import utils
 from netdev.connections import SSHConnection
 
 
@@ -32,7 +34,7 @@ class BaseDevice(object):
             pattern=None,
             agent_forwarding=False,
             agent_path=(),
-            client_version=u"netdev",
+            client_version=u"netdev-%s" % __version__,
             family=0,
             kex_algs=(),
             encryption_algs=(),
@@ -153,18 +155,12 @@ class BaseDevice(object):
             "compression_algs": compression_algs,
             "signature_algs": signature_algs,
         }
+        self.current_terminal = None
 
         if pattern is not None:
             self._pattern = pattern
 
-        # Filling internal vars
-        self._stdin = self._stdout = self._stderr = self._conn = None
-        self._base_prompt = self._base_pattern = ""
-        self._MAX_BUFFER = 65535
         self._ansi_escape_codes = False
-
-        self.enable_mode = None
-        self.config_mode = None
 
     _delimiter_list = [">", "#"]
     """All this characters will stop reading from buffer. It mean the end of device prompt"""
@@ -174,11 +170,6 @@ class BaseDevice(object):
 
     _disable_paging_command = "terminal length 0"
     """Command for disabling paging"""
-
-    @property
-    def base_prompt(self):
-        """Returning base prompt for this network device"""
-        return self._base_prompt
 
     async def __aenter__(self):
         """Async Context Manager"""
@@ -202,6 +193,7 @@ class BaseDevice(object):
         """
         logger.info("Host {}: Trying to connect to the device".format(self.host))
         await self._establish_connection()
+        await self._session_preparation()
         await self._set_base_prompt()
         logger.info("Host {}: Has connected to the device".format(self.host))
 
@@ -218,16 +210,21 @@ class BaseDevice(object):
             raise ValueError("only SSH connection is supported")
 
         await conn.connect()
+        self._conn = conn
         logger.info("Host {}: Connection is established".format(self.host))
-        # Flush unnecessary data
+
+    async def _session_preparation(self):
         delimiters = map(re.escape, type(self)._delimiter_list)
         delimiters = r"|".join(delimiters)
-        output = await conn.read_until_pattern(delimiters)
+        output = await self._conn.read_until_pattern(delimiters)
         logger.debug(
             "Host {}: Establish Connection Output: {}".format(self.host, repr(output))
         )
-        self._conn = conn
+
         return output
+
+    async def _disable_paging(self):
+        await self._send_command_expect(type(self)._disable_paging_command)
 
     async def _set_base_prompt(self):
         """
@@ -243,6 +240,8 @@ class BaseDevice(object):
 
         # Strip off trailing terminator
         base_prompt = prompt[:-1]
+        if not base_prompt:
+            raise ValueError("unable to find base_prompt")
         self._conn.set_base_prompt(base_prompt)
 
         delimiters = map(re.escape, type(self)._delimiter_list)
@@ -250,8 +249,10 @@ class BaseDevice(object):
         base_prompt = re.escape(base_prompt[:12])
         pattern = type(self)._pattern
         base_pattern = pattern.format(prompt=base_prompt, delimiters=delimiters)
-        logger.debug("Host {}: Base Prompt: {}".format(self.host, self._base_prompt))
-        logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
+        logger.debug("Host {}: Base Prompt: {}".format(self.host, base_prompt))
+        logger.debug("Host {}: Base Pattern: {}".format(self.host, base_pattern))
+        if not base_pattern:
+            raise ValueError("unable to find base_pattern")
         self._conn.set_base_pattern(base_pattern)
 
     async def _find_prompt(self):
@@ -278,6 +279,7 @@ class BaseDevice(object):
             re_flags=0,
             strip_command=True,
             strip_prompt=True,
+            use_textfsm=False
     ):
         """
         Sending command to device (support interactive commands with pattern)
@@ -295,8 +297,8 @@ class BaseDevice(object):
         logger.debug(
             "Host {}: Send command: {}".format(self.host, repr(command_string))
         )
-        self._conn.send(command_string)
-        output = await self._conn.read_until_prompt_or_pattern(pattern, re_flags)
+
+        output = await self._send_command_expect(command_string, pattern, re_flags)
 
         # Some platforms have ansi_escape codes
         if self._ansi_escape_codes:
@@ -306,6 +308,9 @@ class BaseDevice(object):
             output = self._strip_prompt(output)
         if strip_command:
             output = self._strip_command(command_string, output)
+
+        if use_textfsm:
+            output = utils.get_structured_data(output, self._device_type, command_string)
 
         logger.debug(
             "Host {}: Send command output: {}".format(self.host, repr(output))
@@ -317,7 +322,7 @@ class BaseDevice(object):
         logger.info("Host {}: Stripping prompt".format(self.host))
         response_list = a_string.split("\n")
         last_line = response_list[-1]
-        if self._base_prompt in last_line:
+        if self._conn._base_prompt in last_line:
             return "\n".join(response_list[:-1])
         else:
             return a_string
@@ -361,13 +366,30 @@ class BaseDevice(object):
         command += "\n"
         return command
 
-    async def send_command_line(self, command):
-        """ Send a single line of command and readuntil prompte"""
-        self._conn.send(self._normalize_cmd(command))
-        return await self._conn._read_until_prompt()
+    # async def send_command(self, command, pattern='', re_flags=0):
+    #     """ Send a single line of command and readuntil prompte"""
+    #     self._conn.send(self._normalize_cmd(command))
+    #     if pattern:
+    #         output = await self._conn.read_until_prompt_or_pattern(pattern, re_flags)
+    #
+    #     else:
+    #         output = await self._conn.read_until_prompt()
+    #
+    #     return output
 
     async def send_new_line(self):
-        return await self.send_command_line('\n')
+        return await self._send_command_expect('\n')
+
+    async def _send_command_expect(self, command, pattern='', re_flags=0):
+        """ Send a single line of command and readuntil prompte"""
+        self._conn.send(self._normalize_cmd(command))
+        if pattern:
+            output = await self._conn.read_until_prompt_or_pattern(pattern, re_flags)
+
+        else:
+            output = await self._conn.read_until_prompt()
+
+        return output
 
     async def send_config_set(self, config_commands=None):
         """
@@ -392,7 +414,7 @@ class BaseDevice(object):
         logger.debug("Host {}: Config commands: {}".format(self.host, config_commands))
         output = ""
         for cmd in config_commands:
-            output += await self.send_command_line(cmd)
+            output += await self._send_command_expect(cmd)
 
         if self._ansi_escape_codes:
             output = self._strip_ansi_escape_codes(output)
@@ -405,80 +427,9 @@ class BaseDevice(object):
 
     @staticmethod
     def _strip_ansi_escape_codes(string_buffer):
-        """
-        Remove some ANSI ESC codes from the output
-
-        http://en.wikipedia.org/wiki/ANSI_escape_code
-
-        Note: this does not capture ALL possible ANSI Escape Codes only the ones
-        I have encountered
-
-        Current codes that are filtered:
-        ESC = '\x1b' or chr(27)
-        ESC = is the escape character [^ in hex ('\x1b')
-        ESC[24;27H   Position cursor
-        ESC[?25h     Show the cursor
-        ESC[E        Next line (HP does ESC-E)
-        ESC[2K       Erase line
-        ESC[1;24r    Enable scrolling from start to row end
-        ESC7         Save cursor position
-        ESC[r        Scroll all screen
-        ESC8         Restore cursor position
-        ESC[nA       Move cursor up to n cells
-        ESC[nB       Move cursor down to n cells
-
-        require:
-            HP ProCurve
-            F5 LTM's
-            Mikrotik
-        """
-        logger.info("Stripping ansi escape codes")
-        logger.debug("Unstripped output: {}".format(repr(string_buffer)))
-
-        code_save_cursor = chr(27) + r"7"
-        code_scroll_screen = chr(27) + r"\[r"
-        code_restore_cursor = chr(27) + r"8"
-        code_cursor_up = chr(27) + r"\[\d+A"
-        code_cursor_down = chr(27) + r"\[\d+B"
-
-        code_position_cursor = chr(27) + r"\[\d+;\d+H"
-        code_show_cursor = chr(27) + r"\[\?25h"
-        code_next_line = chr(27) + r"E"
-        code_erase_line = chr(27) + r"\[2K"
-        code_enable_scroll = chr(27) + r"\[\d+;\d+r"
-
-        code_set = [
-            code_save_cursor,
-            code_scroll_screen,
-            code_restore_cursor,
-            code_cursor_up,
-            code_cursor_down,
-            code_position_cursor,
-            code_show_cursor,
-            code_erase_line,
-            code_enable_scroll,
-        ]
-
-        output = string_buffer
-        for ansi_esc_code in code_set:
-            output = re.sub(ansi_esc_code, "", output)
-
-        # CODE_NEXT_LINE must substitute with '\n'
-        output = re.sub(code_next_line, "\n", output)
-
-        logger.debug("Stripped output: {}".format(repr(output)))
-
-        return output
-
-    async def _cleanup(self):
-        """ Any needed cleanup before closing connection """
-        logger.info("Host {}: Cleanup session".format(self.host))
-        pass
+        return utils.strip_ansi_escape_codes(string_buffer)
 
     async def disconnect(self):
         """ Gracefully close the SSH connection """
         logger.info("Host {}: Disconnecting".format(self.host))
-        logger.info("Host {}: Disconnecting".format(self.host))
-        await self._cleanup()
-        self._conn.close()
-        await self._conn.wait_closed()
+        await self._conn.close()
