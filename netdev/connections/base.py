@@ -1,3 +1,6 @@
+"""
+Base Connection Module
+"""
 import re
 import asyncio
 from netdev.logger import logger
@@ -30,9 +33,11 @@ class BaseConnection(IConnection):
         return logger
 
     def set_base_prompt(self, prompt):
+        """ base prompt setter """
         self._base_prompt = prompt
 
     def set_base_pattern(self, pattern):
+        """ base patter setter """
         self._base_pattern = pattern
 
     def disconnect(self):
@@ -44,10 +49,11 @@ class BaseConnection(IConnection):
         raise NotImplementedError("Connection must implement connect method")
 
     def send(self, cmd):
-        """ send Command """
+        """ send data """
         raise NotImplementedError("Connection must implement send method")
 
     async def read(self):
+        """ read from buffer """
         raise NotImplementedError("Connection must implement read method ")
 
     async def read_until_pattern(self, pattern, re_flags=0):

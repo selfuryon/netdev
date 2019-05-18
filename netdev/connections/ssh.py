@@ -1,3 +1,6 @@
+"""
+SSH Connection Module
+"""
 import asyncio
 import asyncssh
 from netdev.contants import TERM_LEN, TERM_WID, TERM_TYPE
@@ -40,7 +43,6 @@ class SSHConnection(BaseConnection):
         else:
             self._loop = loop
 
-        """Convert needed connect params to a dictionary for simplicity"""
         connect_params_dict = {
             "host": self._host,
             "port": self._port,
@@ -70,6 +72,7 @@ class SSHConnection(BaseConnection):
         self._timeout = timeout
 
     async def connect(self):
+        """ Etablish SSH connection """
         fut = asyncssh.connect(**self._conn_dict)
         try:
             self._conn = await asyncio.wait_for(fut, self._timeout)
@@ -95,10 +98,12 @@ class SSHConnection(BaseConnection):
         return await self._stdout.read(self._MAX_BUFFER)
 
     def __check_session(self):
+        """ check session was opened """
         if not self._stdin:
             raise RuntimeError("SSH session not started")
 
     async def _start_session(self):
+        """ start interactive-session (shell) """
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(
             term_type=TERM_TYPE, term_size=(TERM_WID, TERM_LEN)
         )
@@ -107,6 +112,7 @@ class SSHConnection(BaseConnection):
         pass
 
     async def close(self):
+        """ Close Connection """
         await self._cleanup()
         self._conn.close()
         await self._conn.wait_closed()

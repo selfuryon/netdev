@@ -26,6 +26,8 @@ class JunOSLikeDevice(BaseDevice):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.current_terminal = None  # State Machine for the current Terminal mode of the session
         self.config_mode = ConfigMode(
             enter_command=type(self)._config_enter,
             exit_command=type(self)._config_check,

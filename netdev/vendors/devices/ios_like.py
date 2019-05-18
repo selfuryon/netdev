@@ -40,7 +40,7 @@ class IOSLikeDevice(BaseDevice):
         super().__init__(*args, **kwargs)
         self._secret = secret
 
-        self.current_terminal = None
+        self.current_terminal = None  # State Machine for the current Terminal mode of the session
 
         self.enable_mode = EnableMode(
             enter_command=type(self)._priv_enter,
@@ -73,8 +73,6 @@ class IOSLikeDevice(BaseDevice):
 
     _config_check = ")#"
     """Checking string in prompt. If it's exist im prompt - we are in configuration mode"""
-
-
 
     async def _session_preparation(self):
         await super()._session_preparation()

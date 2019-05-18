@@ -1,6 +1,5 @@
 """
-Base Class for using in connection to network devices
-
+Base Device
 """
 
 import asyncio
@@ -13,9 +12,6 @@ from netdev.connections import SSHConnection, TelnetConnection
 
 
 class BaseDevice(object):
-    """
-    Base Abstract Class for working with network devices
-    """
 
     def __init__(
             self,
@@ -50,7 +46,9 @@ class BaseDevice(object):
         :param host: device hostname or ip address for connection
         :param username: username for logging to device
         :param password: user password for logging to device
-        :param port: ssh port for connection. Default is 22
+        :param port: ssh port number
+        :param protocol: connection protocol (telnet or ssh)
+        :param telnet_port: telnet port number
         :param device_type: network device type
         :param timeout: timeout in second for getting information from channel
         :param loop: asyncio loop object
@@ -99,6 +97,8 @@ class BaseDevice(object):
         :type username: str
         :type password: str
         :type port: int
+        :type protocol: str
+        :type telnet_port: int
         :type device_type: str
         :type timeout: int
         :type known_hosts:
@@ -230,6 +230,7 @@ class BaseDevice(object):
         logger.info("Host {}: Connection is established".format(self.host))
 
     async def _session_preparation(self):
+        """ Prepare session before start using it """
         await self._flush_buffer()
 
     async def _flush_buffer(self):
@@ -240,6 +241,7 @@ class BaseDevice(object):
         await self._conn.read_until_pattern(delimiters)
 
     async def _disable_paging(self):
+        """ disable terminal pagination """
         await self._send_command_expect(type(self)._disable_paging_command)
 
     async def _set_base_prompt(self):
@@ -305,6 +307,9 @@ class BaseDevice(object):
         :param re.flags re_flags: re flags for pattern
         :param bool strip_command: True or False for stripping command from output
         :param bool strip_prompt: True or False for stripping ending device prompt
+        :param use_textfsm: True or False for parsing output with textfsm templates
+                            download templates from https://github.com/networktocode/ntc-templates
+                            and set  NET_TEXTFSM environment to pint to ./ntc-templates/templates
         :return: The output of the command
         """
         logger.info("Host {}: Sending command".format(self.host))
@@ -382,18 +387,8 @@ class BaseDevice(object):
         command += "\n"
         return command
 
-    # async def send_command(self, command, pattern='', re_flags=0):
-    #     """ Send a single line of command and readuntil prompte"""
-    #     self._conn.send(self._normalize_cmd(command))
-    #     if pattern:
-    #         output = await self._conn.read_until_prompt_or_pattern(pattern, re_flags)
-    #
-    #     else:
-    #         output = await self._conn.read_until_prompt()
-    #
-    #     return output
-
     async def send_new_line(self):
+        """ Sending new line """
         return await self._send_command_expect('\n')
 
     async def _send_command_expect(self, command, pattern='', re_flags=0):
@@ -443,6 +438,33 @@ class BaseDevice(object):
 
     @staticmethod
     def _strip_ansi_escape_codes(string_buffer):
+        """
+            Remove some ANSI ESC codes from the output
+
+            http://en.wikipedia.org/wiki/ANSI_escape_code
+
+            Note: this does not capture ALL possible ANSI Escape Codes only the ones
+            I have encountered
+
+            Current codes that are filtered:
+            ESC = '\x1b' or chr(27)
+            ESC = is the escape character [^ in hex ('\x1b')
+            ESC[24;27H   Position cursor
+            ESC[?25h     Show the cursor
+            ESC[E        Next line (HP does ESC-E)
+            ESC[2K       Erase line
+            ESC[1;24r    Enable scrolling from start to row end
+            ESC7         Save cursor position
+            ESC[r        Scroll all screen
+            ESC8         Restore cursor position
+            ESC[nA       Move cursor up to n cells
+            ESC[nB       Move cursor down to n cells
+
+            require:
+                HP ProCurve
+                F5 LTM's
+                Mikrotik
+            """
         return utils.strip_ansi_escape_codes(string_buffer)
 
     async def disconnect(self):

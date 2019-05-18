@@ -1,3 +1,6 @@
+"""
+Utilities Module.
+"""
 import re, os
 from netdev._textfsm import _clitable as clitable
 from netdev._textfsm._clitable import CliTableError

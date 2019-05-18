@@ -1,4 +1,6 @@
-from netdev.logger import logger
+"""
+Juniper Terminal Modes
+"""
 from .base import BaseTerminalMode
 from .cisco import ConfigMode as CiscoConfigMode
 

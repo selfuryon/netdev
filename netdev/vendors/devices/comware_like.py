@@ -24,6 +24,7 @@ class ComwareLikeDevice(BaseDevice):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.current_terminal = None  # State Machine for the current Terminal mode of the session
         self.system_view = SystemView(
             enter_command=type(self)._system_view_enter,
             exit_command=type(self)._system_view_exit,
@@ -53,6 +54,7 @@ class ComwareLikeDevice(BaseDevice):
     """Checking string in prompt. If it's exist im prompt - we are in system view"""
 
     async def _session_preparation(self):
+        """ Prepare Session """
         await super()._session_preparation()
         await self._disable_paging()
 

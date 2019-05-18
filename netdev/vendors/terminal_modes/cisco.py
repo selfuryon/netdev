@@ -7,9 +7,11 @@ from .base import BaseTerminalMode
 
 
 class EnableMode(BaseTerminalMode):
+    """ Cisco Like Enable Mode Class """
     _name = 'enable_mode'
 
     async def enter(self):
+        """ Enter Enable Mode """
         logger.info("Host {}: Entering to {}".format(self.device.host, self._name))
         if await self.check():
             return ""
@@ -23,11 +25,13 @@ class EnableMode(BaseTerminalMode):
 
 
 class ConfigMode(BaseTerminalMode):
+    """ Cisco Like Config Mode """
     _name = 'config_mode'
     pass
 
 
 class IOSxrConfigMode(ConfigMode):
+    """ Cisco IOSxr Config Mode """
     async def exit(self):
         """Exit from configuration mode"""
         logger.info("Host {}: Exiting from configuration mode".format(self.device.host))

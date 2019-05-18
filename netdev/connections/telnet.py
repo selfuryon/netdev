@@ -1,3 +1,6 @@
+"""
+Telnet Connection Module
+"""
 import asyncio
 from netdev.exceptions import DisconnectError
 from .base import BaseConnection
@@ -32,6 +35,7 @@ class TelnetConnection(BaseConnection):
         self._timeout = timeout
 
     async def _start_session(self):
+        """ start Telnet Session by login to device """
         output = await self.read_until_pattern(['username', 'Username'])
         self.send(self._username + '\n')
         output += await self.read_until_pattern(['password', 'Password'])
@@ -41,15 +45,12 @@ class TelnetConnection(BaseConnection):
         if 'Login invalid' in output:
             raise DisconnectError(self._host, None, "authentication failed")
 
-    # async def read_until_pattern(self, pattern, re_flags=0):
-    #     self.send('\n')
-    #     return await super().read_until_pattern(pattern, re_flags)
-
     def __check_session(self):
         if not self._stdin:
             raise RuntimeError("SSH session not started")
 
     async def connect(self):
+        """ Establish Telnet Connection """
         try:
             self._stdout, self._stdin = await asyncio.open_connection(self._host, self._port, family=0, flags=0)
         except Exception as e:
@@ -58,7 +59,7 @@ class TelnetConnection(BaseConnection):
         await self._start_session()
 
     async def disconnect(self):
-        """ Gracefully close the SSH connection """
+        """ Gracefully close the Telnet connection """
         self._logger.info("Host {}: Disconnecting".format(self._host))
         self._logger.info("Host {}: Disconnecting".format(self._host))
         self._conn.close()
