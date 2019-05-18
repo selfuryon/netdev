@@ -47,7 +47,6 @@ class BaseDevice(object):
         :param password: user password for logging to device
         :param port: ssh port number
         :param protocol: connection protocol (telnet or ssh)
-        :param telnet_port: telnet port number
         :param device_type: network device type
         :param timeout: timeout in second for getting information from channel
         :param loop: asyncio loop object
