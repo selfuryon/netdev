@@ -2,7 +2,6 @@
 Cisco Terminal-Modes Module
 """
 
-from netdev.logger import logger
 from .base import BaseTerminalMode
 
 
@@ -12,7 +11,7 @@ class EnableMode(BaseTerminalMode):
 
     async def enter(self):
         """ Enter Enable Mode """
-        logger.info("Host {}: Entering to {}".format(self.device.host, self._name))
+        self._logger.info("Host {}: Entering to {}".format(self.device.host, self._name))
         if await self.check():
             return ""
         output = await self.device.send_command(self._enter_command, pattern="Password")
@@ -34,7 +33,7 @@ class IOSxrConfigMode(ConfigMode):
     """ Cisco IOSxr Config Mode """
     async def exit(self):
         """Exit from configuration mode"""
-        logger.info("Host {}: Exiting from configuration mode".format(self.device.host))
+        self._logger.info("Host {}: Exiting from configuration mode".format(self.device.host))
 
         if not await self.check():
             return ""

@@ -38,9 +38,12 @@ class BaseTerminalMode:
         """ callable terminal to enter """
         return await self.enter()
 
+    @property
+    def _logger(self):
+        return logger
+
     async def check(self, force=False):
         """Check if are in configuration mode. Return boolean"""
-        logger.info("Host {}: Checking {}".format(self.device.host, self._name))
         if self.device.current_terminal is not None and not force:
             if self.device.current_terminal._name == self._name:
                 return True
@@ -49,7 +52,7 @@ class BaseTerminalMode:
 
     async def enter(self):
         """ enter terminal mode """
-        logger.info("Host {}: Entering to {}".format(self.device.host, self._name))
+        self._logger.info("Host {}: Entering to {}".format(self.device.host, self._name))
         if await self.check():
             return ""
         output = await self.device.send_command(self._enter_command, pattern="Password")
@@ -60,7 +63,7 @@ class BaseTerminalMode:
 
     async def exit(self):
         """ exit terminal mode """
-        logger.info("Host {}: Exiting from {}".format(self.device.host, self._name))
+        self._logger.info("Host {}: Exiting from {}".format(self.device.host, self._name))
         if not await self.check():
             return ""
         if self.device.current_terminal._name != self._name:

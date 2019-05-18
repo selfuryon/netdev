@@ -6,7 +6,6 @@ Connection Method are based upon AsyncSSH and should be running in asyncio loop
 
 import re
 
-from netdev.logger import logger
 from netdev.vendors.terminal_modes.hp import SystemView
 from netdev.vendors.devices.base import BaseDevice
 
@@ -66,7 +65,7 @@ class ComwareLikeDevice(BaseDevice):
 
         For Comware devices base_pattern is "[\]|>]prompt(\-\w+)?[\]|>]
         """
-        logger.info("Host {}: Setting base prompt".format(self.host))
+        self._logger.info("Host {}: Setting base prompt".format(self.host))
         prompt = await self._find_prompt()
         # Strip off trailing terminator
         self._base_prompt = prompt[1:-1]
@@ -81,8 +80,8 @@ class ComwareLikeDevice(BaseDevice):
             prompt=base_prompt,
             delimiter_right=delimiter_right,
         )
-        logger.debug("Host {}: Base Prompt: {}".format(self.host, self._base_prompt))
-        logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
+        self._logger.debug("Host {}: Base Prompt: {}".format(self.host, self._base_prompt))
+        self._logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
         return self._base_prompt
 
     async def send_config_set(self, config_commands=None, exit_system_view=False):
@@ -106,7 +105,7 @@ class ComwareLikeDevice(BaseDevice):
             output += await self.system_view.exit()
 
         output = self._normalize_linefeeds(output)
-        logger.debug(
+        self._logger.debug(
             "Host {}: Config commands output: {}".format(self.host, repr(output))
         )
         return output

@@ -67,7 +67,7 @@ class JunOSLikeDevice(BaseDevice):
 
         For JunOS devices base_pattern is "user(@[hostname])?[>|#]
         """
-        logger.info("Host {}: Setting base prompt".format(self.host))
+        self._logger.info("Host {}: Setting base prompt".format(self.host))
         prompt = await self._find_prompt()
         prompt = prompt[:-1]
         # Strip off trailing terminator
@@ -79,8 +79,8 @@ class JunOSLikeDevice(BaseDevice):
         base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
         self._base_pattern = pattern.format(delimiters=delimiters)
-        logger.debug("Host {}: Base Prompt: {}".format(self.host, self._base_prompt))
-        logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
+        self._logger.debug("Host {}: Base Prompt: {}".format(self.host, self._base_prompt))
+        self._logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
         return self._base_prompt
 
     async def send_config_set(
@@ -118,7 +118,7 @@ class JunOSLikeDevice(BaseDevice):
             output += await self.config_mode.exit()
 
         output = self._normalize_linefeeds(output)
-        logger.debug(
+        self._logger.debug(
             "Host {}: Config commands output: {}".format(self.host, repr(output))
         )
         return output

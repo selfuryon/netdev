@@ -73,6 +73,8 @@ class SSHConnection(BaseConnection):
 
     async def connect(self):
         """ Etablish SSH connection """
+        self._logger.info("Host %s: SSH: Establishing SSH connection on port %s" % (self._host, self._port))
+
         fut = asyncssh.connect(**self._conn_dict)
         try:
             self._conn = await asyncio.wait_for(fut, self._timeout)
@@ -85,8 +87,8 @@ class SSHConnection(BaseConnection):
 
     async def disconnect(self):
         """ Gracefully close the SSH connection """
-        self._logger.info("Host {}: Disconnecting".format(self._host))
-        self._logger.info("Host {}: Disconnecting".format(self._host))
+        self._logger.info("Host %s: SSH: Disconnecting" % self._host)
+        self._logger.info("Host %s: SSH: Disconnecting" % self._host)
         await self._cleanup()
         self._conn.close()
         await self._conn.wait_closed()
@@ -104,6 +106,9 @@ class SSHConnection(BaseConnection):
 
     async def _start_session(self):
         """ start interactive-session (shell) """
+        self._logger.info(
+            "Host %s: SSH: Starting Interacive session term_type=%s, term_width=%s, term_length=%s" % (
+                self._host, TERM_TYPE, TERM_WID, TERM_LEN))
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(
             term_type=TERM_TYPE, term_size=(TERM_WID, TERM_LEN)
         )

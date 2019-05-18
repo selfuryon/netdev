@@ -193,6 +193,10 @@ class BaseDevice(object):
         """Async Context Manager"""
         await self.disconnect()
 
+    @property
+    def _logger(self):
+        return logger
+
     async def connect(self):
         """
         Basic asynchronous connection method
@@ -204,17 +208,18 @@ class BaseDevice(object):
         * _set_base_prompt() for finding and setting device prompt
         * _disable_paging() for non interactive output in commands
         """
-        logger.info("Host {}: Trying to connect to the device".format(self.host))
+        self._logger.info("Host {}: Trying to connect to the device".format(self.host))
         await self._establish_connection()
-        await self._set_base_prompt()
         await self._session_preparation()
+
+
 
         logger.info("Host {}: Has connected to the device".format(self.host))
 
     async def _establish_connection(self):
         """Establishing SSH connection to the network device"""
-        logger.info(
-            "Host {}: Establishing connection to port {}".format(self.host, self._port)
+        self._logger.info(
+            "Host %s: Establishing connection " % self.host
         )
 
         # initiate SSH connection
@@ -227,21 +232,26 @@ class BaseDevice(object):
 
         await conn.connect()
         self._conn = conn
-        logger.info("Host {}: Connection is established".format(self.host))
+        self._logger.info("Host {}: Connection is established".format(self.host))
 
     async def _session_preparation(self):
         """ Prepare session before start using it """
         await self._flush_buffer()
+        await self._set_base_prompt()
 
     async def _flush_buffer(self):
         """ flush unnecessary data """
-        await self.send_new_line()
+        self._logger.debug("Host %s: Flushing buffers" % self.host)
+
         delimiters = map(re.escape, type(self)._delimiter_list)
         delimiters = r"|".join(delimiters)
+        # await self.send_new_line(pattern=delimiters)
         await self._conn.read_until_pattern(delimiters)
 
     async def _disable_paging(self):
         """ disable terminal pagination """
+        self._logger.info(
+            "Host %s: Disabling Pagination, command = %r" % (self.host, type(self)._disable_paging_command))
         await self._send_command_expect(type(self)._disable_paging_command)
 
     async def _set_base_prompt(self):
@@ -253,7 +263,7 @@ class BaseDevice(object):
 
         For Cisco devices base_pattern is "prompt(\(.*?\))?[#|>]
         """
-        logger.info("Host {}: Setting base prompt".format(self.host))
+        self._logger.info("Host {}: Setting base prompt".format(self.host))
         prompt = await self._find_prompt()
 
         # Strip off trailing terminator
@@ -267,16 +277,16 @@ class BaseDevice(object):
         base_prompt = re.escape(base_prompt[:12])
         pattern = type(self)._pattern
         base_pattern = pattern.format(prompt=base_prompt, delimiters=delimiters)
-        logger.debug("Host {}: Base Prompt: {}".format(self.host, base_prompt))
-        logger.debug("Host {}: Base Pattern: {}".format(self.host, base_pattern))
+        self._logger.debug("Host {}: Base Prompt: {}".format(self.host, base_prompt))
+        self._logger.debug("Host {}: Base Pattern: {}".format(self.host, base_pattern))
         if not base_pattern:
             raise ValueError("unable to find base_pattern")
         self._conn.set_base_pattern(base_pattern)
 
     async def _find_prompt(self):
         """Finds the current network device prompt, last line only"""
-        logger.info("Host {}: Finding prompt".format(self.host))
-        self._conn.send(self._normalize_cmd("\n"))
+        self._logger.info("Host {}: Finding prompt".format(self.host))
+        await self.send_new_line(dont_read=True)
         delimiters = map(re.escape, type(self)._delimiter_list)
         delimiters = r"|".join(delimiters)
         prompt = await self._conn.read_until_pattern(delimiters)
@@ -287,7 +297,7 @@ class BaseDevice(object):
             raise ValueError(
                 "Host {}: Unable to find prompt: {}".format(self.host, repr(prompt))
             )
-        logger.debug("Host {}: Found Prompt: {}".format(self.host, repr(prompt)))
+        self._logger.debug("Host {}: Found Prompt: {}".format(self.host, repr(prompt)))
         return prompt
 
     async def send_command(
@@ -312,10 +322,10 @@ class BaseDevice(object):
                             and set  NET_TEXTFSM environment to pint to ./ntc-templates/templates
         :return: The output of the command
         """
-        logger.info("Host {}: Sending command".format(self.host))
+        self._logger.info("Host {}: Sending command".format(self.host))
 
         command_string = self._normalize_cmd(command_string)
-        logger.debug(
+        self._logger.debug(
             "Host {}: Send command: {}".format(self.host, repr(command_string))
         )
 
@@ -331,6 +341,7 @@ class BaseDevice(object):
             output = self._strip_command(command_string, output)
 
         if use_textfsm:
+            self._logger.info("Host %s: parsing output using texfsm, command=%r," % (self.host, command_string))
             output = utils.get_structured_data(output, self._device_type, command_string)
 
         logger.debug(
@@ -340,7 +351,7 @@ class BaseDevice(object):
 
     def _strip_prompt(self, a_string):
         """Strip the trailing router prompt from the output"""
-        logger.info("Host {}: Stripping prompt".format(self.host))
+        self._logger.info("Host {}: Stripping prompt".format(self.host))
         response_list = a_string.split("\n")
         last_line = response_list[-1]
         if self._conn._base_prompt in last_line:
@@ -361,7 +372,6 @@ class BaseDevice(object):
 
         Cisco IOS adds backspaces into output for long commands (i.e. for commands that line wrap)
         """
-        logger.info("Stripping command")
         backspace_char = "\x08"
 
         # Check for line wrap (remove backspaces)
@@ -387,13 +397,15 @@ class BaseDevice(object):
         command += "\n"
         return command
 
-    async def send_new_line(self):
+    async def send_new_line(self, pattern='', dont_read=False):
         """ Sending new line """
-        return await self._send_command_expect('\n')
+        return await self._send_command_expect('\n', pattern=pattern, dont_read=dont_read)
 
-    async def _send_command_expect(self, command, pattern='', re_flags=0):
+    async def _send_command_expect(self, command, pattern='', re_flags=0, dont_read=False):
         """ Send a single line of command and readuntil prompte"""
         self._conn.send(self._normalize_cmd(command))
+        if dont_read:
+            return ''
         if pattern:
             output = await self._conn.read_until_prompt_or_pattern(pattern, re_flags)
 
@@ -411,7 +423,7 @@ class BaseDevice(object):
         :param list config_commands: iterable string list with commands for applying to network device
         :return: The output of this commands
         """
-        logger.info("Host {}: Sending configuration settings".format(self.host))
+        self._logger.info("Host {}: Sending configuration settings".format(self.host))
         if config_commands is None:
             return ""
         if not hasattr(config_commands, "__iter__"):
@@ -422,7 +434,7 @@ class BaseDevice(object):
             )
 
         # Send config commands
-        logger.debug("Host {}: Config commands: {}".format(self.host, config_commands))
+        self._logger.debug("Host {}: Config commands: {}".format(self.host, config_commands))
         output = ""
         for cmd in config_commands:
             output += await self._send_command_expect(cmd)
@@ -431,43 +443,16 @@ class BaseDevice(object):
             output = self._strip_ansi_escape_codes(output)
 
         output = self._normalize_linefeeds(output)
-        logger.debug(
+        self._logger.debug(
             "Host {}: Config commands output: {}".format(self.host, repr(output))
         )
         return output
 
     @staticmethod
     def _strip_ansi_escape_codes(string_buffer):
-        """
-            Remove some ANSI ESC codes from the output
-
-            http://en.wikipedia.org/wiki/ANSI_escape_code
-
-            Note: this does not capture ALL possible ANSI Escape Codes only the ones
-            I have encountered
-
-            Current codes that are filtered:
-            ESC = '\x1b' or chr(27)
-            ESC = is the escape character [^ in hex ('\x1b')
-            ESC[24;27H   Position cursor
-            ESC[?25h     Show the cursor
-            ESC[E        Next line (HP does ESC-E)
-            ESC[2K       Erase line
-            ESC[1;24r    Enable scrolling from start to row end
-            ESC7         Save cursor position
-            ESC[r        Scroll all screen
-            ESC8         Restore cursor position
-            ESC[nA       Move cursor up to n cells
-            ESC[nB       Move cursor down to n cells
-
-            require:
-                HP ProCurve
-                F5 LTM's
-                Mikrotik
-            """
         return utils.strip_ansi_escape_codes(string_buffer)
 
     async def disconnect(self):
         """ Gracefully close the SSH connection """
-        logger.info("Host {}: Disconnecting".format(self.host))
+        self._logger.info("Host {}: Disconnecting".format(self.host))
         await self._conn.close()

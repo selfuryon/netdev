@@ -46,11 +46,6 @@ def strip_ansi_escape_codes(string):
     return output
 
 
-"""
-below code is a copy-paste from netmiko
-"""
-
-
 def get_template_dir():
     """Find and return the ntc-templates/templates dir."""
     try:

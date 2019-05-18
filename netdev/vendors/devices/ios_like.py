@@ -3,8 +3,7 @@ IOSLikeDevice Class is abstract class for using in Cisco IOS like devices
 
 Connection Method are based upon AsyncSSH and should be running in asyncio loop
 """
-import re
-from netdev.logger import logger
+
 from netdev.vendors.devices.base import BaseDevice
 from netdev.vendors.terminal_modes.cisco import EnableMode, ConfigMode
 
@@ -100,12 +99,12 @@ class IOSLikeDevice(BaseDevice):
             output += await self.config_mode.exit()
 
         output = self._normalize_linefeeds(output)
-        logger.debug(
+        self._logger.debug(
             "Host {}: Config commands output: {}".format(self.host, repr(output))
         )
         return output
 
     async def _cleanup(self):
         """ Any needed cleanup before closing connection """
-        logger.info("Host {}: Cleanup session".format(self.host))
+        self._logger.info("Host {}: Cleanup session".format(self.host))
         await self.config_mode.exit()

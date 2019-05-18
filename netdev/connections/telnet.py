@@ -36,6 +36,7 @@ class TelnetConnection(BaseConnection):
 
     async def _start_session(self):
         """ start Telnet Session by login to device """
+        self._logger.info("Host %s: telnet: trying to login to device" % self._host)
         output = await self.read_until_pattern(['username', 'Username'])
         self.send(self._username + '\n')
         output += await self.read_until_pattern(['password', 'Password'])
@@ -51,6 +52,7 @@ class TelnetConnection(BaseConnection):
 
     async def connect(self):
         """ Establish Telnet Connection """
+        self._logger.info("Host %s: telnet: Establishing Telnet Connection on port %s" % (self._host, self._port))
         try:
             self._stdout, self._stdin = await asyncio.open_connection(self._host, self._port, family=0, flags=0)
         except Exception as e:
@@ -60,8 +62,8 @@ class TelnetConnection(BaseConnection):
 
     async def disconnect(self):
         """ Gracefully close the Telnet connection """
-        self._logger.info("Host {}: Disconnecting".format(self._host))
-        self._logger.info("Host {}: Disconnecting".format(self._host))
+        self._logger.info("Host {}: telnet: Disconnecting".format(self._host))
+        self._logger.info("Host {}: telnet: Disconnecting".format(self._host))
         self._conn.close()
         await self._conn.wait_closed()
 

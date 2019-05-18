@@ -1,8 +1,5 @@
 """Subclass specific to Cisco ASA"""
 
-import re
-
-from netdev.logger import logger
 from netdev.vendors.devices.ios_like import IOSLikeDevice
 
 
@@ -42,11 +39,11 @@ class CiscoASA(IOSLikeDevice):
 
     async def _check_multiple_mode(self):
         """Check mode multiple. If mode is multiple we adding info about contexts"""
-        logger.info("Host {}:Checking multiple mode".format(self.host))
+        self._logger.info("Host {}:Checking multiple mode".format(self.host))
         out = await self._send_command_expect("show mode")
         if "multiple" in out:
             self._multiple_mode = True
 
-        logger.debug(
+        self._logger.debug(
             "Host {}: Multiple mode: {}".format(self.host, self._multiple_mode)
         )

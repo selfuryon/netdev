@@ -1,5 +1,4 @@
 from netdev.exceptions import CommitError
-from netdev.logger import logger
 from netdev.vendors.terminal_modes.cisco import IOSxrConfigMode
 from netdev.vendors.devices.ios_like import IOSLikeDevice
 
@@ -81,7 +80,7 @@ class CiscoIOSXR(IOSLikeDevice):
             output += await self.config_mode.exit()
 
         output = self._normalize_linefeeds(output)
-        logger.debug(
+        self._logger.debug(
             "Host {}: Config commands output: {}".format(self.host, repr(output))
         )
         return output
@@ -90,4 +89,4 @@ class CiscoIOSXR(IOSLikeDevice):
         """ Any needed cleanup before closing connection """
         abort = type(self)._abort_command
         await self._send_command_expect(abort)
-        logger.info("Host {}: Cleanup session".format(self.host))
+        self._logger.info("Host {}: Cleanup session".format(self.host))
