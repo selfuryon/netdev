@@ -15,7 +15,6 @@ class BaseConnection(IConnection):
         self._conn = None
         self._base_prompt = self._base_pattern = ""
         self._MAX_BUFFER = 65535
-        self._ansi_escape_codes = False
         self._base_pattern = ''
         self._base_prompt = ''
 
