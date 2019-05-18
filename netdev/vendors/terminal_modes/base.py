@@ -57,7 +57,7 @@ class BaseTerminalMode:
             return ""
         output = await self.device.send_command(self._enter_command, pattern="Password")
         if not await self.check():
-            raise ValueError("Failed to enter to %s" % self._name)
+            raise ValueError("Failed to enter to {}".format(self._name))
         self.device.current_terminal = self
         return output
 
@@ -71,7 +71,7 @@ class BaseTerminalMode:
 
         output = await self.device.send_command(self._exit_command)
         if await self.check(force=True):
-            raise ValueError("Failed to Exit from %s" % self._name)
+            raise ValueError("Failed to Exit from {}".format(self._name))
         self.device.current_terminal = self._parent
         return output
 

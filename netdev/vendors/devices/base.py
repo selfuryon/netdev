@@ -18,11 +18,10 @@ class BaseDevice(object):
             host=u"",
             username=u"",
             password=u"",
-            port=22,
+            port=None,
             protocol='ssh',
             device_type=u"",
             timeout=15,
-            telnet_port=23,
             loop=None,
             known_hosts=None,
             local_addr=None,
@@ -32,7 +31,7 @@ class BaseDevice(object):
             pattern=None,
             agent_forwarding=False,
             agent_path=(),
-            client_version=u"netdev-%s" % __version__,
+            client_version=u"netdev-" + __version__,
             family=0,
             kex_algs=(),
             encryption_algs=(),
@@ -98,7 +97,6 @@ class BaseDevice(object):
         :type password: str
         :type port: int
         :type protocol: str
-        :type telnet_port: int
         :type device_type: str
         :type timeout: int
         :type known_hosts:
@@ -127,8 +125,7 @@ class BaseDevice(object):
             self.host = host
         else:
             raise ValueError("Host must be set")
-        self._port = int(port)
-        self._telnet_port = int(telnet_port)
+
         self._device_type = device_type
         self._timeout = timeout
         self._protocol = protocol
@@ -138,6 +135,8 @@ class BaseDevice(object):
             self._loop = loop
 
         if self._protocol == 'ssh':
+            self._port = port or 22
+            self._port = int(self._port)
             self._ssh_connect_params_dict = {
                 "host": self.host,
                 "port": self._port,
@@ -160,14 +159,16 @@ class BaseDevice(object):
                 "signature_algs": signature_algs,
             }
         elif self._protocol == 'telnet':
+            self._port = port or 23
+            self._port = int(self._port)
             self._telnet_connect_params_dict = {
                 "host": self.host,
-                "port": self._telnet_port,
+                "port": self._port,
                 "username": username,
                 "password": password,
             }
         else:
-            raise ValueError("unknown protocol %r , only telnet and ssh supported" % self._protocol)
+            raise ValueError("unknown protocol {} , only telnet and ssh supported".format(self._protocol))
         self.current_terminal = None
 
         if pattern is not None:
@@ -212,14 +213,12 @@ class BaseDevice(object):
         await self._establish_connection()
         await self._session_preparation()
 
-
-
         logger.info("Host {}: Has connected to the device".format(self.host))
 
     async def _establish_connection(self):
         """Establishing SSH connection to the network device"""
         self._logger.info(
-            "Host %s: Establishing connection " % self.host
+            "Host {}: Establishing connection ".format(self.host)
         )
 
         # initiate SSH connection
@@ -241,7 +240,7 @@ class BaseDevice(object):
 
     async def _flush_buffer(self):
         """ flush unnecessary data """
-        self._logger.debug("Host %s: Flushing buffers" % self.host)
+        self._logger.debug("Host {}: Flushing buffers".format(self.host))
 
         delimiters = map(re.escape, type(self)._delimiter_list)
         delimiters = r"|".join(delimiters)
@@ -251,7 +250,7 @@ class BaseDevice(object):
     async def _disable_paging(self):
         """ disable terminal pagination """
         self._logger.info(
-            "Host %s: Disabling Pagination, command = %r" % (self.host, type(self)._disable_paging_command))
+            "Host {}: Disabling Pagination, command = %r".format(self.host, type(self)._disable_paging_command))
         await self._send_command_expect(type(self)._disable_paging_command)
 
     async def _set_base_prompt(self):
@@ -341,7 +340,7 @@ class BaseDevice(object):
             output = self._strip_command(command_string, output)
 
         if use_textfsm:
-            self._logger.info("Host %s: parsing output using texfsm, command=%r," % (self.host, command_string))
+            self._logger.info("Host {}: parsing output using texfsm, command=%r,".format(self.host, command_string))
             output = utils.get_structured_data(output, self._device_type, command_string)
 
         logger.debug(

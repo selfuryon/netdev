@@ -17,36 +17,36 @@ class IConnection(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def disconnect(self):
+    async def disconnect(self):
         """ Close Connection """
         pass
 
     @abc.abstractmethod
-    def connect(self):
+    async def connect(self):
         """ Establish Connection """
         pass
 
     @abc.abstractmethod
-    def send(self, cmd):
+    async def send(self, cmd):
         """ send Command """
         pass
 
     @abc.abstractmethod
-    def read(self):
+    async def read(self):
         """ send Command """
         pass
 
     @abc.abstractmethod
-    def read_until_pattern(self, pattern, re_flags=0):
+    async def read_until_pattern(self, pattern, re_flags=0):
         """ read util pattern """
         pass
 
     @abc.abstractmethod
-    def read_until_prompt(self):
+    async def read_until_prompt(self):
         """ read util pattern """
         pass
 
     @abc.abstractmethod
-    def read_until_prompt_or_pattern(self, attern, re_flags=0):
+    async def read_until_prompt_or_pattern(self, attern, re_flags=0):
         """ read util pattern """
         pass

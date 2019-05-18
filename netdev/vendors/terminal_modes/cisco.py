@@ -18,7 +18,7 @@ class EnableMode(BaseTerminalMode):
         if "Password" in output:
             await self.device.send_command(self.device._secret)
         if not await self.check():
-            raise ValueError("Failed to enter to %s" % self._name)
+            raise ValueError("Failed to enter to {}".format(self._name))
         self.device.current_terminal = self
         return output
 
@@ -31,6 +31,7 @@ class ConfigMode(BaseTerminalMode):
 
 class IOSxrConfigMode(ConfigMode):
     """ Cisco IOSxr Config Mode """
+
     async def exit(self):
         """Exit from configuration mode"""
         self._logger.info("Host {}: Exiting from configuration mode".format(self.device.host))

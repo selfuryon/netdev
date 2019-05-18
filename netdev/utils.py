@@ -2,9 +2,8 @@
 Utilities Module.
 """
 import re, os
-from netdev._textfsm import _clitable as clitable
-from netdev._textfsm._clitable import CliTableError
-from contants import CODE_SET, CODE_NEXT_LINE
+from clitable import CliTable, CliTableError
+from constants import CODE_SET, CODE_NEXT_LINE
 
 
 def strip_ansi_escape_codes(string):
@@ -84,7 +83,7 @@ def get_structured_data(raw_output, platform, command):
     """Convert raw CLI output to structured data using TextFSM template."""
     template_dir = get_template_dir()
     index_file = os.path.join(template_dir, "index")
-    textfsm_obj = clitable.CliTable(index_file, template_dir)
+    textfsm_obj = CliTable(index_file, template_dir)
     attrs = {"Command": command, "Platform": platform}
     try:
         # Parse output through template

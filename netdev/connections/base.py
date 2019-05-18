@@ -40,15 +40,15 @@ class BaseConnection(IConnection):
         """ base patter setter """
         self._base_pattern = pattern
 
-    def disconnect(self):
+    async def disconnect(self):
         """ Close Connection """
         raise NotImplementedError("Connection must implement disconnect method")
 
-    def connect(self):
+    async def connect(self):
         """ Establish Connection """
         raise NotImplementedError("Connection must implement connect method")
 
-    def send(self, cmd):
+    async def send(self, cmd):
         """ send data """
         raise NotImplementedError("Connection must implement send method")
 

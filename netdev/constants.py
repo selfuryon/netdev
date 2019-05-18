@@ -1,5 +1,5 @@
 """
-Contacts Module
+Constants Module
 """
 # Session Terminal Const.
 TERM_WID = 2147483647
