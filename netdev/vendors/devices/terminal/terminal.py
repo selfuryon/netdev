@@ -1,6 +1,5 @@
 import re
 
-from netdev.logger import logger
 from netdev.vendors.devices.base import BaseDevice
 
 
@@ -37,10 +36,10 @@ class Terminal(BaseDevice):
 
     async def _set_base_prompt(self):
         """Setting base pattern"""
-        logger.info("Host {}: Setting base prompt".format(self.host))
+        self._logger.info("Host {}: Setting base prompt".format(self.host))
         delimiters = map(re.escape, type(self)._delimiter_list)
         delimiters = r"|".join(delimiters)
         pattern = type(self)._pattern
         base_pattern = pattern.format(delimiters=delimiters)
-        logger.debug("Host {}: Base Pattern: {}".format(self.host, base_pattern))
+        self._logger.debug("Host {}: Base Pattern: {}".format(self.host, base_pattern))
         self._conn.set_base_pattern(base_pattern)

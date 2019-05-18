@@ -2,7 +2,6 @@
 
 import re
 
-from netdev.logger import logger
 from netdev.vendors.devices.ios_like import IOSLikeDevice
 
 
@@ -26,7 +25,7 @@ class FujitsuSwitch(IOSLikeDevice):
 
         For Fujitsu devices base_pattern is "(prompt) (\(.*?\))?[>|#]"
         """
-        logger.info("Host {}: Setting base prompt".format(self.host))
+        self._logger.info("Host {}: Setting base prompt".format(self.host))
         prompt = await self._find_prompt()
         # Strip off trailing terminator
         self._base_prompt = prompt[1:-3]
@@ -35,8 +34,8 @@ class FujitsuSwitch(IOSLikeDevice):
         base_prompt = re.escape(self._base_prompt[:12])
         pattern = type(self)._pattern
         self._base_pattern = pattern.format(prompt=base_prompt, delimiters=delimiters)
-        logger.debug("Host {}: Base Prompt: {}".format(self.host, self._base_prompt))
-        logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
+        self._logger.debug("Host {}: Base Prompt: {}".format(self.host, self._base_prompt))
+        self._logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
         return self._base_prompt
 
     @staticmethod

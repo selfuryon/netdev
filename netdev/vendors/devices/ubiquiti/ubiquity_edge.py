@@ -1,7 +1,6 @@
 """Subclass specific to Ubiquity Edge Switch"""
 import re
 
-from netdev.logger import logger
 from netdev.vendors.devices.ios_like import IOSLikeDevice
 
 
@@ -22,7 +21,7 @@ class UbiquityEdgeSwitch(IOSLikeDevice):
 
         For Ubiquity devices base_pattern is "(prompt) (\(.*?\))?[>|#]"
         """
-        logger.info("Host {}: Setting base prompt".format(self.host))
+        self._logger.info("Host {}: Setting base prompt".format(self.host))
         prompt = await self._find_prompt()
         # Strip off trailing terminator
         base_prompt = prompt[1:-3]
@@ -32,6 +31,6 @@ class UbiquityEdgeSwitch(IOSLikeDevice):
         base_prompt = re.escape(base_prompt[:12])
         pattern = type(self)._pattern
         base_pattern = pattern.format(prompt=base_prompt, delimiters=delimiters)
-        logger.debug("Host {}: Base Prompt: {}".format(self.host, base_prompt))
-        logger.debug("Host {}: Base Pattern: {}".format(self.host, base_pattern))
+        self._logger.debug("Host {}: Base Prompt: {}".format(self.host, base_prompt))
+        self._logger.debug("Host {}: Base Pattern: {}".format(self.host, base_pattern))
         self._conn.set_base_pattern(base_pattern)

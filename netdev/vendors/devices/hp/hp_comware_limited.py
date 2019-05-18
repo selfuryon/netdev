@@ -1,4 +1,3 @@
-from netdev.logger import logger
 from netdev.vendors.terminal_modes.hp import CmdLineMode
 from netdev.vendors.devices.comware_like import ComwareLikeDevice
 

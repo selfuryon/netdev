@@ -47,7 +47,7 @@ class MikrotikRouterOS(BaseDevice):
 
         For Mikrotik devices base_pattern is "r"\[.*?\] (\/.*?)?\>"
         """
-        logger.info("Host {}: Setting base prompt".format(self.host))
+        self._logger.info("Host {}: Setting base prompt".format(self.host))
         self._base_pattern = type(self)._pattern
         prompt = await self._find_prompt()
         user = ""
@@ -56,20 +56,20 @@ class MikrotikRouterOS(BaseDevice):
         if "@" in prompt:
             prompt = prompt.split("@")[1]
         self._base_prompt = prompt
-        logger.debug("Host {}: Base Prompt: {}".format(self.host, self._base_prompt))
-        logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
+        self._logger.debug("Host {}: Base Prompt: {}".format(self.host, self._base_prompt))
+        self._logger.debug("Host {}: Base Pattern: {}".format(self.host, self._base_pattern))
         return self._base_prompt
 
     async def _find_prompt(self):
         """Finds the current network device prompt, last line only."""
-        logger.info("Host {}: Finding prompt".format(self.host))
+        self._logger.info("Host {}: Finding prompt".format(self.host))
         prompt = await self._send_command_expect("\r")
         prompt = prompt.strip()
         if self._ansi_escape_codes:
             prompt = self._strip_ansi_escape_codes(prompt)
         if not prompt:
             raise ValueError("Unable to find prompt: {0}".format(prompt))
-        logger.debug("Host {}: Prompt: {}".format(self.host, prompt))
+        self._logger.debug("Host {}: Prompt: {}".format(self.host, prompt))
         return prompt
 
     @staticmethod

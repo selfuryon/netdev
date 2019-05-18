@@ -1,4 +1,3 @@
-from netdev.logger import logger
 from netdev.vendors.terminal_modes.juniper import CliMode
 from netdev.vendors.devices.junos_like import JunOSLikeDevice
 
