@@ -3,7 +3,7 @@ Utilities Module.
 """
 import re, os
 from clitable import CliTable, CliTableError
-from constants import CODE_SET, CODE_NEXT_LINE
+from netdev.constants import CODE_SET, CODE_NEXT_LINE
 
 
 def strip_ansi_escape_codes(string):
