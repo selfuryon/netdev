@@ -2,7 +2,7 @@
 Telnet Connection Module
 """
 import asyncio
-from netdev.exceptions import DisconnectError
+from netdev.exceptions import DisconnectError, TimeoutError
 from .base import BaseConnection
 
 
@@ -56,7 +56,9 @@ class TelnetConnection(BaseConnection):
         self._logger.info("Host {}: telnet: Establishing Telnet Connection on port {}".format(self._host, self._port))
         fut = asyncio.open_connection(self._host, self._port, family=0, flags=0)
         try:
-            self._stdout, self._stdin = yield from asyncio.wait_for(fut,self._timeout)
+            self._stdout, self._stdin = yield from asyncio.wait_for(fut, self._timeout)
+        except asyncio.TimeoutError:
+            raise TimeoutError(self._host)
         except Exception as e:
             raise DisconnectError(self._host, None, str(e))
 
