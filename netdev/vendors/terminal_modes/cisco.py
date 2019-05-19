@@ -7,25 +7,25 @@ from .base import BaseTerminalMode
 
 class EnableMode(BaseTerminalMode):
     """ Cisco Like Enable Mode Class """
-    _name = 'enable_mode'
+    name = 'enable_mode'
 
     async def enter(self):
         """ Enter Enable Mode """
-        self._logger.info("Host {}: Entering to {}".format(self.device.host, self._name))
+        self._logger.info("Host {}: Entering to {}".format(self.device.host, self.name))
         if await self.check():
             return ""
         output = await self.device.send_command(self._enter_command, pattern="Password")
         if "Password" in output:
-            await self.device.send_command(self.device._secret)
+            await self.device.send_command(self.device.secret)
         if not await self.check():
-            raise ValueError("Failed to enter to {}".format(self._name))
+            raise ValueError("Failed to enter to {}".format(self.name))
         self.device.current_terminal = self
         return output
 
 
 class ConfigMode(BaseTerminalMode):
     """ Cisco Like Config Mode """
-    _name = 'config_mode'
+    name = 'config_mode'
     pass
 
 

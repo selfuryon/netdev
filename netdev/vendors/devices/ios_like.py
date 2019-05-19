@@ -27,7 +27,7 @@ class IOSLikeDevice(BaseDevice):
         :param str username: username for logging to device
         :param str password: user password for logging to device
         :param str secret: secret password for privilege mode
-        :param int port: ssh port for connection. Default is 22
+        :param int port: port number. Default is 22 for ssh and 23 for telnet
         :param str device_type: network device type
         :param known_hosts: file with known hosts. Default is None (no policy). With () it will use default file
         :param str local_addr: local address for binding source of tcp connection
@@ -37,7 +37,7 @@ class IOSLikeDevice(BaseDevice):
         :param loop: asyncio loop object
         """
         super().__init__(*args, **kwargs)
-        self._secret = secret
+        self.secret = secret
 
         self.current_terminal = None  # State Machine for the current Terminal mode of the session
 
@@ -98,7 +98,6 @@ class IOSLikeDevice(BaseDevice):
         if exit_config_mode:
             output += await self.config_mode.exit()
 
-        output = self._normalize_linefeeds(output)
         self._logger.debug(
             "Host {}: Config commands output: {}".format(self.host, repr(output))
         )

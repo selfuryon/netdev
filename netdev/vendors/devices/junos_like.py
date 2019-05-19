@@ -117,7 +117,6 @@ class JunOSLikeDevice(BaseDevice):
         if exit_config_mode:
             output += await self.config_mode.exit()
 
-        output = self._normalize_linefeeds(output)
         self._logger.debug(
             "Host {}: Config commands output: {}".format(self.host, repr(output))
         )

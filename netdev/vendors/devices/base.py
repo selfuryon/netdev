@@ -45,7 +45,7 @@ class BaseDevice(object):
         :param host: device hostname or ip address for connection
         :param username: username for logging to device
         :param password: user password for logging to device
-        :param port: ssh port number
+        :param port: port number. Default is 22 for ssh and 23 for telnet
         :param protocol: connection protocol (telnet or ssh)
         :param device_type: network device type
         :param timeout: timeout in second for getting information from channel

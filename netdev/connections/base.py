@@ -15,8 +15,6 @@ class BaseConnection(IConnection):
         self._conn = None
         self._base_prompt = self._base_pattern = ""
         self._MAX_BUFFER = 65535
-        self._base_pattern = ''
-        self._base_prompt = ''
 
     async def __aenter__(self):
         """Async Context Manager"""
@@ -47,7 +45,7 @@ class BaseConnection(IConnection):
         """ Establish Connection """
         raise NotImplementedError("Connection must implement connect method")
 
-    async def send(self, cmd):
+    def send(self, cmd):
         """ send data """
         raise NotImplementedError("Connection must implement send method")
 

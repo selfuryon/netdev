@@ -48,17 +48,19 @@ class TelnetConnection(BaseConnection):
 
     def __check_session(self):
         if not self._stdin:
-            raise RuntimeError("SSH session not started")
+            raise RuntimeError("telnet session not started")
 
-    async def connect(self):
+    @asyncio.coroutine
+    def connect(self):
         """ Establish Telnet Connection """
         self._logger.info("Host {}: telnet: Establishing Telnet Connection on port {}".format(self._host, self._port))
+        fut = asyncio.open_connection(self._host, self._port, family=0, flags=0)
         try:
-            self._stdout, self._stdin = await asyncio.open_connection(self._host, self._port, family=0, flags=0)
+            self._stdout, self._stdin = yield from asyncio.wait_for(fut,self._timeout)
         except Exception as e:
             raise DisconnectError(self._host, None, str(e))
 
-        await self._start_session()
+        yield from self._start_session()
 
     async def disconnect(self):
         """ Gracefully close the Telnet connection """

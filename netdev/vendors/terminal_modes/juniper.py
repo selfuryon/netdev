@@ -10,7 +10,7 @@ class ConfigMode(CiscoConfigMode):
 
 
 class CliMode(BaseTerminalMode):
-    _name = 'cli_mode'
+    name = 'cli_mode'
 
     def exit(self):
         pass

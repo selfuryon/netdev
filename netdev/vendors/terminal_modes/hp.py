@@ -7,7 +7,7 @@ from .base import BaseTerminalMode
 
 class SystemView(BaseTerminalMode):
     """ System View Terminal mode """
-    _name = 'system_view'
+    name = 'system_view'
     pass
 
 
