@@ -167,3 +167,4 @@ class HW1000(BaseDevice):
         logger.info("Host {}: Cleanup session".format(self._host))
         await self.exit_shell_mode()
         await self.exit_enable_mode()
+        
