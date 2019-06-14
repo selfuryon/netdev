@@ -12,17 +12,17 @@ class HW1000(BaseDevice):
     HW1000 devices have three administration modes:
     *user exec or unprivileged exec. This mode allows you perform basic tests and get system information.
     *privilege exec. This mode allows all EXEC mode commands available on the system. HW100 supports
-        only one active privilege session. Use preemt_privilege=True to close current privilege session
+        only one active privilege session. Use preempt_privilege=True to close current privilege session
     *shell. This mode exits standart device shell and enters Linux shell 
     """
-    def __init__(self, secret=u'',preemt_privilege=False, *args, **kwargs):
+    def __init__(self, secret=u'',preempt_privilege=False, *args, **kwargs):
         """
         Initialize class for asynchronous working with network devices
         :param str host: device hostname or ip address for connection
         :param str username: username for logging to device
         :param str password: user password for logging to device
         :param str secret: secret password for privilege mode
-        :param bool preemt_privilege: close current privilige session (if exists). Default is False
+        :param bool preempt_privilege: close current privilige session (if exists). Default is False
         :param int port: ssh port for connection. Default is 22
         :param str device_type: network device type
         :param known_hosts: file with known hosts. Default is None (no policy). With () it will use default file
@@ -33,7 +33,7 @@ class HW1000(BaseDevice):
         :param loop: asyncio loop object
         """
         self._secret = secret
-        self._preemt_privilege = preemt_privilege
+        self._preempt_privilege = preempt_privilege
 
         super().__init__(*args, **kwargs)
 
@@ -100,7 +100,7 @@ class HW1000(BaseDevice):
                 output += await self._read_until_prompt_or_pattern(
                     pattern=type(self)._priv_confirm_message,re_flags=re_flags)
                 if re.search(type(self)._priv_confirm_message,output,re_flags):
-                    if self._preemt_privilege:
+                    if self._preempt_privilege:
                         self._stdin.write(self._normalize_cmd("Yes"))
                     else:
                         raise ValueError("Failed to enter privilege exec:"
