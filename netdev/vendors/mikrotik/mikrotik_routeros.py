@@ -1,6 +1,7 @@
 import asyncssh
+import asyncio
 
-from netdev.exceptions import DisconnectError
+from netdev.exceptions import DisconnectError, TimeoutError
 from netdev.logger import logger
 from netdev.vendors.base import BaseDevice
 
@@ -60,13 +61,15 @@ class MikrotikRouterOS(BaseDevice):
         )
         output = ""
         # initiate SSH connection
+        fut = asyncssh.connect(**self._connect_params_dict)
         try:
-            self._conn = await asyncssh.connect(**self._connect_params_dict)
+            self._conn = await asyncio.wait_for(fut, self._timeout)
         except asyncssh.DisconnectError as e:
             raise DisconnectError(self._host, e.code, e.reason)
-
+        except asyncio.TimeoutError:
+            raise TimeoutError(self._host)
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(
-            term_type="dumb"
+            term_type="Dumb", term_size=(200, 24)
         )
         logger.info("Host {}: Connection is established".format(self._host))
         # Flush unnecessary data
