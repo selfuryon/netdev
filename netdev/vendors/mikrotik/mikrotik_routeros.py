@@ -34,7 +34,7 @@ class MikrotikRouterOS(BaseDevice):
         """
         super().__init__(*args, **kwargs)
         self._base_pattern = r"\[.*?\] \>.*\[.*?\] \>"
-        self._username += "+ct200w"
+        self._connect_params_dict['username'] += "+ct200w"
         self._ansi_escape_codes = True
 
     _pattern = r"\[.*?\] (\/.*?)?\>"

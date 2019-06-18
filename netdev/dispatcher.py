@@ -10,6 +10,7 @@ from netdev.vendors import JuniperJunOS
 from netdev.vendors import MikrotikRouterOS
 from netdev.vendors import Terminal
 from netdev.vendors import UbiquityEdgeSwitch
+from netdev.vendors import HW1000
 
 # @formatter:off
 # The keys of this dictionary are the supported device_types
@@ -29,6 +30,7 @@ CLASS_MAPPER = {
     "mikrotik_routeros": MikrotikRouterOS,
     "ubiquity_edge": UbiquityEdgeSwitch,
     "terminal": Terminal,
+    "hw1000": HW1000,
 }
 
 # @formatter:on

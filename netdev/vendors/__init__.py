@@ -11,6 +11,7 @@ from netdev.vendors.junos_like import JunOSLikeDevice
 from netdev.vendors.mikrotik import MikrotikRouterOS
 from netdev.vendors.terminal import Terminal
 from netdev.vendors.ubiquiti import UbiquityEdgeSwitch
+from netdev.vendors.infotecs import HW1000
 
 __all__ = (
     "CiscoASA",
@@ -38,4 +39,5 @@ __all__ = (
     "juniper",
     "mikrotik",
     "UbiquityEdgeSwitch",
+    "HW1000",
 )
