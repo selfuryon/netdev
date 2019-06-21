@@ -35,7 +35,7 @@ class MikrotikRouterOS(BaseDevice):
         """
         super().__init__(*args, **kwargs)
         self._base_pattern = r"\[.*?\] \>.*\[.*?\] \>"
-        self._connect_params_dict['username'] += "+ct200w"
+        self._connect_params_dict["username"] += "+ct200w"
         self._ansi_escape_codes = True
 
     _pattern = r"\[.*?\] (\/.*?)?\>"
@@ -69,7 +69,7 @@ class MikrotikRouterOS(BaseDevice):
         except asyncio.TimeoutError:
             raise TimeoutError(self._host)
         self._stdin, self._stdout, self._stderr = await self._conn.open_session(
-            term_type="Dumb", term_size=(200, 24)
+            term_type="Dumb"
         )
         logger.info("Host {}: Connection is established".format(self._host))
         # Flush unnecessary data
