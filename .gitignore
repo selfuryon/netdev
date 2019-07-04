@@ -21,3 +21,4 @@ tests/*.log
 # Others
 .idea/
 .vscode/
+.vim/

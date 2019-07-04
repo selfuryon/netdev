@@ -38,6 +38,9 @@ asyncssh = "^1.16"
 black = {version = "^19.3b0",allows-prereleases = true}
 pytest = "^4.0"
 pylint = "^2.3"
+python-language-server = "^0.27"
+pyls-black = "^0.4"
+pyls-isort = "^0.1"
 sphinx = "^2.0"
 sphinx_rtd_theme = "^0.4"
 
