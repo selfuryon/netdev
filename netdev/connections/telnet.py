@@ -1,5 +1,8 @@
 """
-Telnet Connection Module
+Copyright (c) 2019 Sergey Yakovlev <selfuryon@gmail.com>.
+
+The module contains Telnet Connection class.
+This class connects to devices using asyncio protocol.
 """
 import asyncio
 
@@ -13,15 +16,7 @@ class TelnetConnection(IOConnection):
     """ Telnet Connection Class """
 
     def __init__(
-        self,
-        host=u"",
-        port=23,
-        *,
-        username=u"",
-        password=u"",
-        loop=None,
-        family=0,
-        flags=0
+        self, host=u"", port=23, *, username=u"", password=u"", family=0, flags=0
     ):
         if host:
             self._host = host
@@ -30,7 +25,7 @@ class TelnetConnection(IOConnection):
         self._port = port or 23
         self._username = username
         self._password = password
-        self._loop = loop or asyncio.get_event_loop()
+        self._loop = asyncio.get_event_loop()
         self._conn_dict = {"family": family, "flags": flags}
         self._stdout = None
         self._stdin = None

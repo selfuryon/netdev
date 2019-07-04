@@ -1,7 +1,10 @@
 """
-Abstract IO Connection Interface
-"""
+Copyright (c) 2019 Sergey Yakovlev <selfuryon@gmail.com>.
 
+The module contains Abstract IO Connection Interface.
+It's mandatory to use for all particular connection classes.
+
+"""
 import abc
 
 

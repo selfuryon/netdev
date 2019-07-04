@@ -1,3 +1,10 @@
+"""
+Copyright (c) 2019 Sergey Yakovlev <selfuryon@gmail.com>.
+
+The module contains all project error classes.
+"""
+
+
 class DisconnectError(Exception):
     """AsyncSSH Disconnect Error with ip address"""
 
@@ -19,7 +26,7 @@ class TimeoutError(Exception):
 
 
 class CommitError(Exception):
-    """concurrent.futures._base.TimeoutError with ip address"""
+    """Commit error with ip addresses"""
 
     def __init__(self, ip_address, reason):
         self.ip_address = ip_address
