@@ -44,17 +44,19 @@ class TelnetConnection(IOConnection):
 
     async def disconnect(self):
         """ Gracefully close the Telnet Connection """
-        self._logger.info("Host %s: Disconnecting", self._host)
+        self._logger.info("Host %s: Disconnecting", self.host)
         self._stdin.close()
         await self._stdin.wait_closed()
 
     def send(self, cmd):
         """ Send command to the channel"""
+        self._logger.debug("Host %s: Send to channel: %r", self.host, cmd)
         self._stdin.write(cmd.encode())
 
     async def read(self):
         """ Read buffer from the channel """
         output = await self._stdout.read(MAX_BUFFER)
+        self._logger.debug("Host %s: Recieved from channel: %r", self.host, output)
         return output.decode(errors="ignore")
 
     @property

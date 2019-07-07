@@ -54,7 +54,7 @@ class SSHConnection(IOConnection):
         """ Start interactive-session (shell) """
         self._logger.info(
             "Host %s: Starting Interacive session term=%s, width=%s, length=%s",
-            self._host,
+            self.host,
             TERM_TYPE,
             TERM_WID,
             TERM_LEN,
@@ -65,17 +65,20 @@ class SSHConnection(IOConnection):
 
     async def disconnect(self):
         """ Gracefully close the SSH connection """
-        self._logger.info("Host %s: Disconnecting", self._host)
+        self._logger.info("Host %s: Disconnecting", self.host)
         self._conn.close()
         await self._conn.wait_closed()
 
     def send(self, cmd):
         """ Send command to the channel"""
+        self._logger.debug("Host %s: Send to channel: %r", self.host, cmd)
         self._stdin.write(cmd)
 
     async def read(self):
         """ Read buffer from the channel """
-        return await self._stdout.read(MAX_BUFFER)
+        output = await self._stdout.read(MAX_BUFFER)
+        self._logger.debug("Host %s: Recieved from channel: %r", self.host, output)
+        return output
 
     @property
     def _logger(self):
