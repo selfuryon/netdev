@@ -3,6 +3,8 @@ Copyright (c) 2019 Sergey Yakovlev <selfuryon@gmail.com>.
 
 This module provides device stream class.
 Device Stream is the basic abstraction upon different IO Connections.
+Device Stream can send a list of commands to device and it understand
+the device prompt, so it can read the buffer till the end of output
 
 """
 import logging
@@ -36,7 +38,7 @@ class DeviceStream:
             self._io_connection.send(cmd)
 
     async def read_until(self, patterns: str, re_flags, until_prompt=True) -> None:
-        """ Read the output from stream """
+        """ Read the output from stream until patterns or/and prompt """
         if patterns is None and not until_prompt:
             raise ValueError("Pattern can't be None with until_prompt=False")
 
@@ -51,11 +53,20 @@ class DeviceStream:
             pattern_list.append(self._prompt_pattern)
 
         output = ""
+        self._logger.debug("Host %s: Read until patterns: %r", self.host, pattern_list)
         while True:
-            output += await self._io_connection.read()
+            tmp = await self._io_connection.read()
+            self._logger.debug("Host %s: Read from buffer: %r", self.host, tmp)
+            output += tmp
 
             for regexp in pattern_list:
                 if re.search(regexp, output, flags=re_flags):
+                    self._logger.debug(
+                        "Host %s: find pattern [%r] in buffer: %s",
+                        self.host,
+                        regexp,
+                        output,
+                    )
                     return output
 
     @property
