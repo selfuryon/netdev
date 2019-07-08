@@ -40,7 +40,7 @@ class Layer:
 
     @property
     def _logger(self) -> logging.Logger:
-        return logger.getChild("Layer")
+        return logger.getChild(f"{self._name}_Layer")
 
     @property
     def name(self) -> str:
@@ -68,3 +68,7 @@ class LayerManager:
     def commmit_transaction(self, cmd: str) -> None:
         """ Commit the current transaction """
 
+
+    @property
+    def _logger(self) -> logging.Logger:
+        return logger.getChild("LayerManager")
