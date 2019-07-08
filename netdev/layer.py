@@ -40,7 +40,7 @@ class Layer:
 
     @property
     def _logger(self) -> logging.Logger:
-        return logger.getChild(f"{self._name}_Layer")
+        return logger.getChild("Layer")
 
     @property
     def name(self) -> str:
