@@ -5,19 +5,27 @@ The module contains SSH Connection class.
 This class connects to devices using asyncssh.
 """
 import asyncio
+import logging
 
 import asyncssh
 
 from netdev.connections.io_connection import IOConnection
 from netdev.constants import MAX_BUFFER, TERM_LEN, TERM_TYPE, TERM_WID
-from netdev.exceptions import DisconnectError, TimeoutError
+from netdev.exceptions import DisconnectError
 from netdev.logger import logger
 
 
 class SSHConnection(IOConnection):
     """ SSH Connection Class """
 
-    def __init__(self, host="", port=22, *, tunnel=None, **kwargs):
+    def __init__(
+        self,
+        host: str = "",
+        port: int = 22,
+        *,
+        tunnel: asyncssh.SSHClientConnection = None,
+        **kwargs,
+    ) -> None:
         if host:
             self._host = host
         else:
@@ -32,7 +40,7 @@ class SSHConnection(IOConnection):
         self._stdout = None
         self._stderr = None
 
-    async def connect(self):
+    async def connect(self) -> None:
         """ Etablish the SSH connection """
         self._logger.info(
             "Host %s: Establishing SSH connection on port %s", self._host, self._port
@@ -50,7 +58,7 @@ class SSHConnection(IOConnection):
 
         await self._start_session()
 
-    async def _start_session(self):
+    async def _start_session(self) -> None:
         """ Start interactive-session (shell) """
         self._logger.info(
             "Host %s: Starting Interacive session term=%s, width=%s, length=%s",
@@ -63,28 +71,28 @@ class SSHConnection(IOConnection):
             term_type=TERM_TYPE, term_size=(TERM_WID, TERM_LEN)
         )
 
-    async def disconnect(self):
+    async def disconnect(self) -> None:
         """ Gracefully close the SSH connection """
         self._logger.info("Host %s: Disconnecting", self.host)
         self._conn.close()
         await self._conn.wait_closed()
 
-    def send(self, cmd):
+    def send(self, cmd: str) -> None:
         """ Send command to the channel"""
         self._logger.debug("Host %s: Send to channel: %r", self.host, cmd)
         self._stdin.write(cmd)
 
-    async def read(self):
+    async def read(self) -> str:
         """ Read buffer from the channel """
         output = await self._stdout.read(MAX_BUFFER)
         self._logger.debug("Host %s: Recieved from channel: %r", self.host, output)
         return output
 
     @property
-    def _logger(self):
+    def _logger(self) -> logging.Logger:
         return logger.getChild("SSHConnection")
 
     @property
-    def host(self):
+    def host(self) -> str:
         """ Return the host address """
         return self._host

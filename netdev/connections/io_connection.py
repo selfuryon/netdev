@@ -12,26 +12,21 @@ class IOConnection(abc.ABC):
     """ Abstract IO Connection Interface """
 
     @abc.abstractmethod
-    async def disconnect(self):
+    async def disconnect(self) -> None:
         """ Close connection """
-        pass
 
     @abc.abstractmethod
-    async def connect(self):
+    async def connect(self) -> None:
         """ Establish connection """
-        pass
 
     @abc.abstractmethod
-    def send(self, cmd):
+    def send(self, cmd: str) -> None:
         """ Send command to the channel """
-        pass
 
     @abc.abstractmethod
-    async def read(self):
+    async def read(self) -> str:
         """ Read buffer from the channel """
-        pass
 
     @property
-    def host(self):
+    def host(self) -> str:
         """ Return the host address """
-        pass
