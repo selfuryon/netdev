@@ -9,6 +9,7 @@ venv/
 dist/
 *.egg-info/
 poetry.lock
+.pylintrc
 
 # Unit tests
 tests/*.log

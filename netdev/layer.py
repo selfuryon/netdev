@@ -5,6 +5,7 @@ This module provides several classes for work with layers.
 
 """
 import logging
+from typing import Awaitable
 
 from netdev.device_stream import DeviceStream
 from netdev.logger import logger
@@ -17,35 +18,69 @@ class Layer:
         self,
         name: str,
         device_stream: DeviceStream,
-        enter_function,
-        exit_function,
-        transactional,
-        commit_function,
-    ):
+        enter_func,
+        exit_func,
+        transactional: bool = False,
+        commit_func=None,
+    ) -> None:
         self._name = name
         self._device_stream = device_stream
-        self._enter_function = enter_function
-        self._exit_function = exit_function
         self._transactional = transactional
-        self._commit_function = commit_function
-        self._current_layer = None
 
-    async def enter(self, cmd: str) -> None:
+        self._enter_func = enter_func
+        self._exit_func = exit_func
+        self._commit_func = commit_func
+
+    async def enter(self) -> str:
         """ Enter to this layer """
-        self._enter_function(cmd)
+        self._logger.info("Layer %s: Enter to layer", self._name)
 
-    async def exit(self, cmd: str) -> None:
+        output = self._enter_func(self._device_stream)  # type: str
+        self._logger.debug(
+            "Layer %s: Output after entering to layer: %s", self._name, output
+        )
+        return output
+
+    async def exit(self) -> str:
         """Exit from this layer"""
-        self._exit_function(cmd)
+        self._logger.info("Layer %s: Exit from layer", self._name)
+
+        output = ""  # type: str
+        if self._transactional:
+            output = await self.commit()
+        output += self._exit_func(self._device_stream)
+        self._logger.debug(
+            "Layer %s: Output after exiting from layer: %s", self._name, output
+        )
+        return output
+
+    async def commit(self,) -> str:
+        """ Commit changes for this layer if layer is transactional """
+
+        if self._transactional:
+            self._logger.info("Layer %s: Commit the changes", self._name)
+
+            output = self._commit_func(self._device_stream)  # type: str
+            self._logger.debug(
+                "Layer %s: Output after commiting the changes: %s", self._name, output
+            )
+            return output
+
+        self._logger.info("Layer %s: Commiting is not supported", self._name)
 
     @property
-    def _logger(self) -> logging.Logger:
-        return logger.getChild("Layer")
+    def transactional(self):
+        """ If layer is transactional you need to commit changes """
+        return self._transactional
 
     @property
     def name(self) -> str:
         """ Get the name of this layer """
         return self._name
+
+    @property
+    def _logger(self) -> logging.Logger:
+        return logger.getChild("Layer")
 
 
 class LayerManager:
@@ -54,12 +89,15 @@ class LayerManager:
     def __init__(self, device_stream: DeviceStream, checker_function):
         self._device_stream = device_stream
         self._checker_function = checker_function
-        self._layers = {}
+        self._layers_id = {}
+        self._layers_name = {}
+        self._current_layer = None
 
     def add_layer(self, layer: Layer):
-        """ Add new layer with id started from 0 """
-        id_layer = len(self._layers)
-        self._layers[id_layer] = layer
+        """ Add new layer with order from less privilage to more privilage"""
+        layer_id = len(self._layers_id)
+        self._layers_id[layer_id] = layer
+        self._layers_name[layer.name] = layer
         return self
 
     def switch_to_layer(self, layer_name: str) -> None:
@@ -67,7 +105,6 @@ class LayerManager:
 
     def commmit_transaction(self, cmd: str) -> None:
         """ Commit the current transaction """
-
 
     @property
     def _logger(self) -> logging.Logger:
