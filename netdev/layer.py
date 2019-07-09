@@ -5,7 +5,8 @@ This module provides several classes for work with layers.
 
 """
 import logging
-from typing import Awaitable
+from enum import IntEnum
+from typing import Callable
 
 from netdev.device_stream import DeviceStream
 from netdev.logger import logger
@@ -18,10 +19,10 @@ class Layer:
         self,
         name: str,
         device_stream: DeviceStream,
-        enter_func,
-        exit_func,
+        enter_func: Callable[[DeviceStream], str],
+        exit_func: Callable[[DeviceStream], str],
         transactional: bool = False,
-        commit_func=None,
+        commit_func: Callable[[DeviceStream], str] = None,
     ) -> None:
         self._name = name
         self._device_stream = device_stream
@@ -54,7 +55,7 @@ class Layer:
         )
         return output
 
-    async def commit(self,) -> str:
+    async def commit(self) -> str:
         """ Commit changes for this layer if layer is transactional """
 
         if self._transactional:
@@ -86,25 +87,57 @@ class Layer:
 class LayerManager:
     """ Layer Manager which manages terminal modes of network device """
 
-    def __init__(self, device_stream: DeviceStream, checker_function):
+    def __init__(
+        self,
+        device_stream: DeviceStream,
+        layers_enum: IntEnum,
+        checker_func: Callable[[DeviceStream], str],
+    ):
         self._device_stream = device_stream
-        self._checker_function = checker_function
-        self._layers_id = {}
-        self._layers_name = {}
+        self._checker_func = checker_func
+        self._layers_enum = layers_enum
+        self._layers = {}
         self._current_layer = None
 
-    def add_layer(self, layer: Layer):
+    def add_layer(self, layer_id: IntEnum, layer: Layer):
         """ Add new layer with order from less privilage to more privilage"""
-        layer_id = len(self._layers_id)
-        self._layers_id[layer_id] = layer
-        self._layers_name[layer.name] = layer
+        self._logger.debug("LayerManager: Add new layer with ID:%s", layer_id)
+
+        self._layers[layer_id] = layer
         return self
 
-    def switch_to_layer(self, layer_name: str) -> None:
+    async def switch_to_layer(self, layer_id: IntEnum) -> str:
         """ Switch to layer """
+        current_layer = self._current_layer or self.current_layer()
 
-    def commmit_transaction(self, cmd: str) -> None:
-        """ Commit the current transaction """
+        if layer_id == current_layer:
+            self._logger.debug("LayerManager: Don't need to swith to different layer")
+            return ""
+
+        self._logger.debug(
+            "LayerManager: Switching from %s to %s layer", current_layer, layer_id
+        )
+
+        output = ""  # type:str
+        if layer_id > current_layer:
+            for num in range(current_layer, layer_id):
+                layer_id = self._layers_enum(num)
+                layer = self._layers[layer_id]
+                output = await layer.enter()
+
+        elif layer_id < current_layer:
+            for num in range(current_layer, layer_id):
+                layer_id = self._layers_enum(num)
+                layer = self._layers[layer_id]
+                output = await layer.exit()
+
+        return output
+
+    def current_layer(self) -> IntEnum:
+        """ Get current layer. If it's unknown we run the checker funtion to get that """
+        if self._current_layer is None:
+            self._current_layer = self._checker_func(self._device_stream)
+        return self._current_layer
 
     @property
     def _logger(self) -> logging.Logger:
