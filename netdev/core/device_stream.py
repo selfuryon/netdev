@@ -25,41 +25,60 @@ class DeviceStream:
             raise ValueError("IO Connection must be set")
         self._prompt_pattern = prompt_pattern
 
-    async def send(self, cmd_list: List[str]) -> None:
+    async def send_commands(
+        self,
+        cmd_list: List[str],
+        strip_command: bool = True,
+        strip_prompt: bool = True,
+        patterns: List[str] = None,
+        re_flags=0,
+    ):
         """ Send list of commands to stream """
         self._logger.debug(
             "Host %s: Send to stream list of commands: %r", self.host, cmd_list
         )
+
+        pattern_list = []  # type: list[str]
+        if not patterns:
+            pattern_list = [self._prompt_pattern]
+        elif isinstance(patterns, str):
+            pattern_list = [patterns, self._prompt_pattern]
+        elif isinstance(patterns, list):
+            pattern_list = patterns + [self._prompt_pattern]
+        else:
+            raise ValueError("Patterns can be only str or List[str]")
+
         if isinstance(cmd_list, str):
             cmd_list = [cmd_list]
 
+        output = ""
         for cmd in cmd_list:
-            cmd = self._normalize_cmd(cmd)
-            self._io_connection.send(cmd)
+            await self._send(cmd)
+            buf = await self._read_until(pattern_list, re_flags)
+            buf = self._strip_command(cmd, buf) if strip_command else buf
+            buf = self._strip_prompt(buf) if strip_prompt else buf
+            output += buf
 
-    async def read_until(self, patterns: str, re_flags, until_prompt=True) -> None:
-        """ Read the output from stream until patterns or/and prompt """
-        if patterns is None and not until_prompt:
-            raise ValueError("Pattern can't be None with until_prompt=False")
+        return output
 
-        pattern_list = []
+    async def _send(self, cmd: str) -> None:
+        """ Send command to stream """
+        cmd = self._normalize_cmd(cmd)
+        self._io_connection.send(cmd)
 
-        if isinstance(patterns, str):
-            pattern_list.append(patterns)
-        elif isinstance(patterns, list):
-            pattern_list += patterns
-
-        if until_prompt:
-            pattern_list.append(self._prompt_pattern)
+    async def _read_until(self, patterns: List[str], re_flags) -> str:
+        """ Read the output from stream until patterns """
+        if patterns is None:
+            raise ValueError("Pattern can't be None")
 
         output = ""
-        self._logger.debug("Host %s: Read until patterns: %r", self.host, pattern_list)
+        self._logger.debug("Host %s: Read until patterns: %r", self.host, patterns)
         while True:
             tmp = await self._io_connection.read()
             self._logger.debug("Host %s: Read from buffer: %r", self.host, tmp)
             output += tmp
 
-            for regexp in pattern_list:
+            for regexp in patterns:
                 if re.search(regexp, output, flags=re_flags):
                     self._logger.debug(
                         "Host %s: find pattern [%r] in buffer: %s",
@@ -67,6 +86,7 @@ class DeviceStream:
                         regexp,
                         output,
                     )
+                    output = self._normalize_linefeeds(output)
                     return output
 
     @property
@@ -83,3 +103,35 @@ class DeviceStream:
         """Normalize CLI commands to have a single trailing newline"""
         cmd = cmd.rstrip("\n") + "\n"
         return cmd
+
+    @staticmethod
+    def _strip_prompt(output: str) -> str:
+        """ Strip the trailing router prompt from the output """
+        output_lines = output.split("\n")
+        new_output = "\n".join(output_lines[:-1])
+        return new_output
+
+    @staticmethod
+    def _strip_command(cmd: str, output: str) -> str:
+        """
+        Strip command_string from output string
+        Cisco IOS adds backspaces into output for long commands
+        """
+        backspace_char = "\x08"
+        new_output = ""
+
+        if backspace_char in output:
+            output = output.replace(backspace_char, "")
+            output_lines = output.split("\n")
+            new_output = "\n".join(output_lines[1:])
+        else:
+            command_length = len(cmd)
+            new_output = output[command_length:]
+
+        return new_output
+
+    @staticmethod
+    def _normalize_linefeeds(output: str) -> str:
+        """Convert '\r\r\n','\r\n', '\n\r' to '\n"""
+        newline = re.compile(r"(\r\r\n|\r\n|\n\r)")
+        return newline.sub("\n", output)
