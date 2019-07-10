@@ -8,7 +8,7 @@ import logging
 from enum import IntEnum
 from typing import Callable
 
-from netdev.device_stream import DeviceStream
+from netdev.core.device_stream import DeviceStream
 from netdev.logger import logger
 
 

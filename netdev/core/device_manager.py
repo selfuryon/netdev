@@ -4,14 +4,14 @@ Copyright (c) 2019 Sergey Yakovlev <selfuryon@gmail.com>.
 This module provides Device Manager Class
 
 """
-import logging
 import asyncio
-from typing import List
+import logging
 from enum import IntEnum
+from typing import List
 
+from netdev.core.device_stream import DeviceStream
+from netdev.core.layer import LayerManager
 from netdev.exceptions import TimeoutError
-from netdev.device_stream import DeviceStream
-from netdev.layer import LayerManager
 from netdev.logger import logger
 
 
