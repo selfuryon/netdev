@@ -25,9 +25,18 @@ class DeviceStream:
             raise ValueError("IO Connection must be set")
         self._prompt_pattern = prompt_pattern
 
+    async def disconnect(self) -> None:
+        """ Close connection """
+        await self._io_connection.disconnect()
+
+    async def connect(self) -> None:
+        """ Establish connection """
+        await self._io_connection.connect()
+
     async def send_commands(
         self,
         cmd_list: List[str],
+        *,
         strip_command: bool = True,
         strip_prompt: bool = True,
         patterns: List[str] = None,

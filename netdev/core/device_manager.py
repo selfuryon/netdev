@@ -55,6 +55,21 @@ class DeviceManager:
         """ Go to specific layer and send the list of commands """
         return await self.send_commands(cmd_list, layer)
 
+    async def connect(self) -> None:
+        """ Establish connection """
+        await self._device_stream.connect()
+
+    async def disconnect(self) -> None:
+        """ Close connection """
+        await self._device_stream.disconnect()
+
+    async def __aenter__(self):
+        await self.connect()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.disconnect()
+
     @property
     def host(self) -> str:
         """ Return the host address """
