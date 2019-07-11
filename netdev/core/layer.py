@@ -36,7 +36,7 @@ class Layer:
         """ Enter to this layer """
         self._logger.info("Layer %s: Enter to layer", self._name)
 
-        output = self._enter_func(self._device_stream)  # type: str
+        output = await self._enter_func(self._device_stream)  # type: str
         self._logger.debug(
             "Layer %s: Output after entering to layer: %s", self._name, output
         )
@@ -49,7 +49,7 @@ class Layer:
         output = ""  # type: str
         if self._transactional:
             output = await self.commit()
-        output += self._exit_func(self._device_stream)
+        output += await self._exit_func(self._device_stream)
         self._logger.debug(
             "Layer %s: Output after exiting from layer: %s", self._name, output
         )
@@ -61,7 +61,7 @@ class Layer:
         if self._transactional:
             self._logger.info("Layer %s: Commit the changes", self._name)
 
-            output = self._commit_func(self._device_stream)  # type: str
+            output = await self._commit_func(self._device_stream)  # type: str
             self._logger.debug(
                 "Layer %s: Output after commiting the changes: %s", self._name, output
             )
