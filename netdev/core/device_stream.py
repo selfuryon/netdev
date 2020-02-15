@@ -55,7 +55,7 @@ class DeviceStream:
         elif isinstance(patterns, list):
             pattern_list = patterns + [self._prompt_pattern]
         else:
-            raise ValueError("Patterns can be only str or List[str]")
+            raise ValueError("Patterns can be set only to str or List[str]")
 
         if isinstance(cmd_list, str):
             cmd_list = [cmd_list]
@@ -73,7 +73,7 @@ class DeviceStream:
     async def _send(self, cmd: str) -> None:
         """ Send command to stream """
         cmd = self._normalize_cmd(cmd)
-        self._io_connection.send(cmd)
+        await self._io_connection.send(cmd)
 
     async def _read_until(self, patterns: List[str], re_flags) -> str:
         """ Read the output from stream until patterns """
@@ -83,9 +83,9 @@ class DeviceStream:
         output = ""
         self._logger.debug("Host %s: Read until patterns: %r", self.host, patterns)
         while True:
-            tmp = await self._io_connection.read()
-            self._logger.debug("Host %s: Read from buffer: %r", self.host, tmp)
-            output += tmp
+            buf = await self._io_connection.read()
+            self._logger.debug("Host %s: Read from buffer: %r", self.host, buf)
+            output += buf
 
             for regexp in patterns:
                 if re.search(regexp, output, flags=re_flags):
