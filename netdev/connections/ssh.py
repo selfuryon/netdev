@@ -77,7 +77,7 @@ class SSHConnection(IOConnection):
         self._conn.close()
         await self._conn.wait_closed()
 
-    def send(self, cmd: str) -> None:
+    async def send(self, cmd: str) -> None:
         """ Send command to the channel"""
         self._logger.debug("Host %s: Send to channel: %r", self.host, cmd)
         self._stdin.write(cmd)

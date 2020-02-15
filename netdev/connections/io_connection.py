@@ -20,7 +20,7 @@ class IOConnection(abc.ABC):
         """ Establish connection """
 
     @abc.abstractmethod
-    def send(self, cmd: str) -> None:
+    async def send(self, cmd: str) -> None:
         """ Send command to the channel """
 
     @abc.abstractmethod
