@@ -5,10 +5,10 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-venv/
 dist/
 *.egg-info/
 poetry.lock
+.venv/
 .pylintrc
 
 # Unit tests
