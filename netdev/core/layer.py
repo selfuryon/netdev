@@ -13,7 +13,7 @@ from netdev.logger import logger
 
 
 class Layer:
-    """Layer class fpr working with different terminal modes"""
+    """Layer class for working with different terminal modes"""
 
     def __init__(
         self,
@@ -91,10 +91,10 @@ class LayerManager:
         self,
         device_stream: DeviceStream,
         layers_enum: IntEnum,
-        checker_func: Callable[[DeviceStream], str],
+        check_func: Callable[[DeviceStream], str],
     ):
         self._device_stream = device_stream
-        self._checker_func = checker_func
+        self._check_func = check_func
         self._layers_enum = layers_enum
         self._layers = {}
         self._current_layer = None
@@ -111,7 +111,8 @@ class LayerManager:
         current_layer = self._current_layer or self.current_layer()
 
         if layer_id == current_layer:
-            self._logger.debug("LayerManager: Don't need to swith to different layer")
+            self._logger.debug(
+                "LayerManager: Don't need to swith to different layer")
             return ""
 
         self._logger.debug(
@@ -136,7 +137,7 @@ class LayerManager:
     def current_layer(self) -> IntEnum:
         """ Get current layer. If it's unknown we run the checker funtion to get that """
         if self._current_layer is None:
-            self._current_layer = self._checker_func(self._device_stream)
+            self._current_layer = self._check_func(self._device_stream)
         return self._current_layer
 
     @property

@@ -9,7 +9,7 @@ the device prompt, so it can read the buffer till the end of output
 """
 import logging
 import re
-from typing import List
+from typing import Callable, List
 
 from netdev.connections import IOConnection
 from netdev.logger import logger
@@ -18,12 +18,19 @@ from netdev.logger import logger
 class DeviceStream:
     """ Class which know how to work with the device in a stream mode """
 
-    def __init__(self, io_connection: IOConnection, prompt_pattern: str = r"") -> None:
+    def __init__(
+            self, io_connection: IOConnection, delimeter_list: [str], prompt_set_closure: Callable[str, str] = None
+    ) -> None:
         if io_connection:
             self._io_connection = io_connection
         else:
             raise ValueError("IO Connection must be set")
-        self._prompt_pattern = prompt_pattern
+        if prompt_set_closure:
+            self._prompt_set_closure = prompt_set_closure
+        else:
+            raise ValueError("Need to set prompt setter closure")
+        self._prompt_pattern = r"|".join(
+            delimeter_list)  # First time promt pattern
 
     async def disconnect(self) -> None:
         """ Close connection """
@@ -32,6 +39,10 @@ class DeviceStream:
     async def connect(self) -> None:
         """ Establish connection """
         await self._io_connection.connect()
+        # Trying to detect right prompt by 2 attempts
+        await self.send_commands("\n")
+        buf = await self.send_commands("\n")
+        self._prompt_pattern = self._prompt_set_closure(buf)
 
     async def send_commands(
         self,
@@ -81,7 +92,8 @@ class DeviceStream:
             raise ValueError("Pattern can't be None")
 
         output = ""
-        self._logger.debug("Host %s: Read until patterns: %r", self.host, patterns)
+        self._logger.debug(
+            "Host %s: Read until patterns: %r", self.host, patterns)
         while True:
             buf = await self._io_connection.read()
             self._logger.debug("Host %s: Read from buffer: %r", self.host, buf)

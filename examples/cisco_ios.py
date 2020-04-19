@@ -5,7 +5,7 @@ import yaml
 
 import netdev
 
-config_path = 'config.yaml'
+config_path = "config.yaml"
 
 logging.basicConfig(level=logging.INFO)
 netdev.logger.setLevel(logging.DEBUG)
@@ -24,16 +24,18 @@ async def task(param):
         out = await ios.send_command("show run")
         print(out)
         # Testing interactive dialog
-        out = await ios.send_command("conf", pattern=r'\[terminal\]\?', strip_command=False)
+        out = await ios.send_command(
+            "conf", pattern=r"\[terminal\]\?", strip_command=False
+        )
         out += await ios.send_command("term", strip_command=False)
         out += await ios.send_command("exit", strip_command=False, strip_prompt=False)
         print(out)
 
 
 async def run():
-    config = yaml.safe_load(open(config_path, 'r'))
-    devices = yaml.safe_load(open(config['device_list'], 'r'))
-    tasks = [task(dev) for dev in devices if dev['device_type'] == 'cisco_ios']
+    config = yaml.safe_load(open(config_path, "r"))
+    devices = yaml.safe_load(open(config["device_list"], "r"))
+    tasks = [task(dev) for dev in devices if dev["device_type"] == "cisco_ios"]
     await asyncio.wait(tasks)
 
 

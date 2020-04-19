@@ -7,8 +7,8 @@ This class connects to devices using asyncio protocol.
 import asyncio
 import logging
 
+from netdev.connections.constants import MAX_BUFFER
 from netdev.connections.io_connection import IOConnection
-from netdev.constants import MAX_BUFFER
 from netdev.exceptions import DisconnectError
 from netdev.logger import logger
 
@@ -64,7 +64,8 @@ class TelnetConnection(IOConnection):
     async def read(self) -> str:
         """ Read buffer from the channel """
         output = await self._stdout.read(MAX_BUFFER)
-        self._logger.debug("Host %s: Recieved from channel: %r", self.host, output)
+        self._logger.debug(
+            "Host %s: Recieved from channel: %r", self.host, output)
         return output.decode(errors="ignore")
 
     @property

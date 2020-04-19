@@ -5,6 +5,8 @@ This module provides different closures for working with cisco-like devices
 
 """
 from enum import IntEnum
+from re import match
+from typing import List
 
 from netdev.core import DeviceStream
 
@@ -12,8 +14,8 @@ from netdev.core import DeviceStream
 class CiscoTerminalMode(IntEnum):
     """ Configuration modes for Cisco-Like devices """
 
-    unprivilage_exec = 0
-    privilage_exec = 1
+    unprivilege_exec = 0
+    privilege_exec = 1
     config_mode = 2
 
 
@@ -37,7 +39,7 @@ def cisco_exit_closure(exit_cmd: str):
     return cisco_exit
 
 
-def cisco_checker_closure(unprivilege_pattern, privilege_pattern, config_pattern):
+def cisco_check_closure(unprivilege_pattern, privilege_pattern, config_pattern):
     """ Generates cisco_like checker """
 
     async def cisco_checker(prompt: str) -> IntEnum:
@@ -45,12 +47,28 @@ def cisco_checker_closure(unprivilege_pattern, privilege_pattern, config_pattern
         if config_pattern in prompt:
             result = CiscoTerminalMode.config_mode
         elif privilege_pattern in prompt:
-            result = CiscoTerminalMode.privilage_exec
+            result = CiscoTerminalMode.privilege_exec
         elif unprivilege_pattern in prompt:
-            result = CiscoTerminalMode.unprivilage_exec
+            result = CiscoTerminalMode.unprivilege_exec
         else:
             raise ValueError("Can't find the terminal mode")
 
         return result
 
     return cisco_checker
+
+
+def cisco_set_prompt_closure(delimeter_list: List[str]):
+    """ Generates cisco-like set_prompt function """
+
+    def cisco_set_prompt(buf: str) -> str:
+        delimeters = r"|".join(delimeter_list)
+        delimeters = rf"[{delimeters}]"
+        config_mode = r"(\(.*?\))?"
+        buf = buf.strip().split('\n')[-1]
+        pattern = rf"($i([\s\d-_]+)\s?[{delimeters}])"
+        prompt = match(pattern, buf).group(1)
+        prompt_pattern = prompt + config_mode + delimeters
+        return prompt_pattern
+
+    return cisco_set_prompt
