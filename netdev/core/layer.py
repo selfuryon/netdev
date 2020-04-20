@@ -101,8 +101,6 @@ class LayerManager:
 
     def add_layer(self, layer_id: IntEnum, layer: Layer):
         """ Add new layer with order from less privilage to more privilage"""
-        self._logger.debug("LayerManager: Add new layer with ID:%s", layer_id)
-
         self._layers[layer_id] = layer
         return self
 

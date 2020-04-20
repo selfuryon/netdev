@@ -19,14 +19,14 @@ class DeviceStream:
     """ Class which know how to work with the device in a stream mode """
 
     def __init__(
-            self, io_connection: IOConnection, delimeter_list: [str], prompt_set_closure: Callable[str, str] = None
+            self, io_connection: IOConnection, delimeter_list: [str], set_prompt_func: Callable[[str], str] = None
     ) -> None:
         if io_connection:
             self._io_connection = io_connection
         else:
             raise ValueError("IO Connection must be set")
-        if prompt_set_closure:
-            self._prompt_set_closure = prompt_set_closure
+        if set_prompt_func:
+            self._set_prompt_func = set_prompt_func
         else:
             raise ValueError("Need to set prompt setter closure")
         self._prompt_pattern = r"|".join(
@@ -41,8 +41,11 @@ class DeviceStream:
         await self._io_connection.connect()
         # Trying to detect right prompt by 2 attempts
         await self.send_commands("\n")
-        buf = await self.send_commands("\n")
-        self._prompt_pattern = self._prompt_set_closure(buf)
+        buf = await self.send_commands("\n", strip_prompt=False)
+        self._prompt_pattern = self._set_prompt_func(buf)
+        self._logger.debug(
+            "Host %s: Set prompt pattern to: %s", self.host, self._prompt_pattern
+        )
 
     async def send_commands(
         self,
@@ -102,7 +105,7 @@ class DeviceStream:
             for regexp in patterns:
                 if re.search(regexp, output, flags=re_flags):
                     self._logger.debug(
-                        "Host %s: find pattern [%r] in buffer: %s",
+                        "Host %s: find pattern [%r] in buffer: %r",
                         self.host,
                         regexp,
                         output,

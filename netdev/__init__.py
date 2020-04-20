@@ -1,10 +1,12 @@
-import pkg_resources
-import netdev.vendors
+"""
+Copyright (c) 2019 Sergey Yakovlev <selfuryon@gmail.com>.
+
+Vendors unit module
+"""
+
 from netdev.dispatcher import create, platforms
 from netdev.exceptions import CommitError, DisconnectError, TimeoutError
 from netdev.logger import logger
-
-__version__ = pkg_resources.get_distribution("netdev").version
 
 __all__ = (
     "create",
@@ -13,6 +15,4 @@ __all__ = (
     "DisconnectError",
     "TimeoutError",
     "CommitError",
-    "vendors",
-    "__version__",
 )
