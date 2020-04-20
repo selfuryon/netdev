@@ -19,7 +19,7 @@ class DeviceStream:
     """ Class which know how to work with the device in a stream mode """
 
     def __init__(
-            self, io_connection: IOConnection, delimeter_list: [str], set_prompt_func: Callable[[str], str] = None
+            self, io_connection: IOConnection, delimeter_list: [str], set_prompt_func: Callable[[str], str] = None, nopage_cmd: str = None
     ) -> None:
         if io_connection:
             self._io_connection = io_connection
@@ -31,6 +31,7 @@ class DeviceStream:
             raise ValueError("Need to set prompt setter closure")
         self._prompt_pattern = r"|".join(
             delimeter_list)  # First time promt pattern
+        self._nopage_cmd = nopage_cmd
 
     async def disconnect(self) -> None:
         """ Close connection """
@@ -43,6 +44,7 @@ class DeviceStream:
         await self.send_commands("\n")
         buf = await self.send_commands("\n", strip_prompt=False)
         self._prompt_pattern = self._set_prompt_func(buf)
+        await self.send_commands(self._nopage_cmd)
         self._logger.debug(
             "Host %s: Set prompt pattern to: %s", self.host, self._prompt_pattern
         )

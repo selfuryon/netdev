@@ -91,7 +91,7 @@ class LayerManager:
         self,
         device_stream: DeviceStream,
         layers_enum: IntEnum,
-        check_func: Callable[[DeviceStream], str],
+        check_func: Callable[[str], str],
     ):
         self._device_stream = device_stream
         self._check_func = check_func
@@ -106,11 +106,11 @@ class LayerManager:
 
     async def switch_to_layer(self, layer_id: IntEnum) -> str:
         """ Switch to layer """
-        current_layer = self._current_layer or self.current_layer()
+        current_layer = await self.current_layer()
 
         if layer_id == current_layer:
             self._logger.debug(
-                "LayerManager: Don't need to swith to different layer")
+                "LayerManager: Don't need to switch to different layer")
             return ""
 
         self._logger.debug(
@@ -132,10 +132,11 @@ class LayerManager:
 
         return output
 
-    def current_layer(self) -> IntEnum:
+    async def current_layer(self) -> IntEnum:
         """ Get current layer. If it's unknown we run the checker funtion to get that """
         if self._current_layer is None:
-            self._current_layer = self._check_func(self._device_stream)
+            buf = await self._device_stream.send_commands("\n", strip_prompt=False)
+            self._current_layer = await self._check_func(buf)
         return self._current_layer
 
     @property

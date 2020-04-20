@@ -59,7 +59,7 @@ def cisco_set_prompt_closure(delimeter_list: List[str]):
 def create_cisco_like_dmanager(conn: IOConnection, delimeter_list: List[str], terminal_modes: IntEnum):
     # Create Cisco Like Device Manager
     set_prompt_func = cisco_set_prompt_closure(delimeter_list)
-    dstream = DeviceStream(conn, delimeter_list, set_prompt_func)
+    dstream = DeviceStream(conn, delimeter_list, set_prompt_func, "term len 0")
     # Create Layers
     unprivilege_layer = Layer(terminal_modes(
         0).name, dstream, enter_func=None, exit_func=None, transactional=False, commit_func=None)

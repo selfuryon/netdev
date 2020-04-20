@@ -37,21 +37,21 @@ class DeviceManager:
         )
 
         fut_switch = self._layer_manager.switch_to_layer(layer)
-        fut_cmd = self._device_stream.send(cmd_list)
+        fut_cmd = self._device_stream.send_commands(cmd_list)
         try:
             operation_timeout = timeout or self._timeout
-            output = await asyncio.wait_for(fut_switch, operation_timeout)  # type: str
+            output = await asyncio.wait_for(fut_switch, operation_timeout)
             output += await asyncio.wait_for(fut_cmd, operation_timeout)
         except asyncio.TimeoutError:
             raise TimeoutError(self.host)
 
         return output
 
-    async def send_command(self, cmd_list: List[str], layer: IntEnum) -> str:
+    async def send_command(self, cmd_list: List[str], layer: IntEnum = 1) -> str:
         """ Go to specific layer and send the list of commands """
         return await self.send_commands(cmd_list, layer)
 
-    async def send_config_set(self, cmd_list: List[str], layer: IntEnum) -> str:
+    async def send_config_set(self, cmd_list: List[str], layer: IntEnum = 2) -> str:
         """ Go to specific layer and send the list of commands """
         return await self.send_commands(cmd_list, layer)
 

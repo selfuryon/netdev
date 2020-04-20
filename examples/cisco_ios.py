@@ -5,13 +5,9 @@ import sys
 
 import yaml
 
-sys.path.insert(0, '/home/yakovlev/development/own/python/netdev')
-print(sys.path)
-if True:
-    import netdev
+import netdev
 
-
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 netdev.logger.setLevel(logging.DEBUG)
 
 
@@ -25,8 +21,8 @@ async def task(param):
         out = await ios.send_config_set(commands)
         print(out)
         # Testing sending simple command with long output
-        out = await ios.send_command("show run")
-        print(out)
+        # out = await ios.send_command("show run")
+        # print(out)
         # Testing interactive dialog
         # out = await ios.send_command(
         #    "conf", pattern=r"\[terminal\]\?", strip_command=False
