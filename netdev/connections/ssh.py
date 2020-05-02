@@ -9,8 +9,7 @@ import logging
 
 import asyncssh
 
-from netdev.connections.constants import (MAX_BUFFER, TERM_LEN, TERM_TYPE,
-                                          TERM_WID)
+from netdev.connections.constants import MAX_BUFFER, TERM_LEN, TERM_TYPE, TERM_WID
 from netdev.connections.io_connection import IOConnection
 from netdev.exceptions import DisconnectError
 from netdev.logger import logger
@@ -82,8 +81,7 @@ class SSHConnection(IOConnection):
     async def read(self) -> str:
         """ Read buffer from the channel """
         output = await self._stdout.read(MAX_BUFFER)
-        self._logger.debug(
-            "Host %s: Recieved from channel: %r", self.host, output)
+        self._logger.debug("Host %s: Recieved from channel: %r", self.host, output)
         return output
 
     @property

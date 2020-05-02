@@ -19,7 +19,11 @@ class DeviceStream:
     """ Class which know how to work with the device in a stream mode """
 
     def __init__(
-            self, io_connection: IOConnection, delimeter_list: [str], set_prompt_func: Callable[[str], str] = None, nopage_cmd: str = None
+        self,
+        io_connection: IOConnection,
+        delimeter_list: [str],
+        set_prompt_func: Callable[[str], str] = None,
+        nopage_cmd: str = None,
     ) -> None:
         if io_connection:
             self._io_connection = io_connection
@@ -29,25 +33,46 @@ class DeviceStream:
             self._set_prompt_func = set_prompt_func
         else:
             raise ValueError("Need to set prompt setter closure")
-        self._prompt_pattern = r"|".join(
-            delimeter_list)  # First time promt pattern
+        # First time prompt pattern using delimeters
+        escaped_list = map(re.escape, delimeter_list)
+        self._prompt_pattern = r"|".join(escaped_list)
         self._nopage_cmd = nopage_cmd
 
     async def disconnect(self) -> None:
         """ Close connection """
         await self._io_connection.disconnect()
 
-    async def connect(self) -> None:
+    async def connect(self) -> str:
         """ Establish connection """
         await self._io_connection.connect()
-        # Trying to detect right prompt by 2 attempts
-        await self.send_commands("\n")
-        buf = await self.send_commands("\n", strip_prompt=False)
-        self._prompt_pattern = self._set_prompt_func(buf)
-        await self.send_commands(self._nopage_cmd)
+        buf = await self._find_prompt()
+        buf += await self._session_preparation()
+        return buf
+
+    async def _find_prompt(self) -> str:
+        """ Find prompt """
+        self._logger.info("Host %s: Try to find a prompt", self.host)
+        # Trying to determine prompt: we should get a output like "{prompt}#\n{prompt}#"
+        # So we can check penultimate and last positions for delimeters
+        p = self._prompt_pattern
+        self._prompt_pattern = rf"({p}).*$.*({p})$"
+        raw_prompt = await self.send_commands(
+            "\n",
+            strip_command=False,
+            strip_prompt=False,
+            re_flags=re.MULTILINE | re.DOTALL,
+        )
+        self._prompt_pattern = self._set_prompt_func(raw_prompt)
         self._logger.debug(
             "Host %s: Set prompt pattern to: %s", self.host, self._prompt_pattern
         )
+        return raw_prompt
+
+    async def _session_preparation(self) -> str:
+        """ Session preparation """
+        self._logger.info("Host %s: Session preparation", self.host)
+        buf = await self.send_commands(self._nopage_cmd)
+        return buf
 
     async def send_commands(
         self,
@@ -59,10 +84,6 @@ class DeviceStream:
         re_flags=0,
     ):
         """ Send list of commands to stream """
-        self._logger.debug(
-            "Host %s: Send to stream list of commands: %r", self.host, cmd_list
-        )
-
         pattern_list = []  # type: list[str]
         if not patterns:
             pattern_list = [self._prompt_pattern]
@@ -75,6 +96,10 @@ class DeviceStream:
 
         if isinstance(cmd_list, str):
             cmd_list = [cmd_list]
+
+        self._logger.debug(
+            "Host %s: Send to stream list of commands: %r", self.host, cmd_list
+        )
 
         output = ""
         for cmd in cmd_list:
@@ -97,11 +122,9 @@ class DeviceStream:
             raise ValueError("Pattern can't be None")
 
         output = ""
-        self._logger.debug(
-            "Host %s: Read until patterns: %r", self.host, patterns)
+        self._logger.debug("Host %s: Read until patterns: %r", self.host, patterns)
         while True:
             buf = await self._io_connection.read()
-            self._logger.debug("Host %s: Read from buffer: %r", self.host, buf)
             output += buf
 
             for regexp in patterns:

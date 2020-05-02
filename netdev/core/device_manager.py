@@ -32,8 +32,14 @@ class DeviceManager:
         self, cmd_list: List[str], layer: IntEnum, timeout: int = None
     ) -> str:
         """ Go to specific layer and send the list of commands """
+        layers = self._layer_manager.layers
+        if isinstance(0, layers) == False:
+            layer = layers(layer)
         self._logger.info(
-            "Host %s: Send in layer %s list of commands: %s", self.host, layer, cmd_list
+            "Host %s: Send in layer %s list of commands: %s",
+            self.host,
+            layer.name,
+            cmd_list,
         )
 
         fut_switch = self._layer_manager.switch_to_layer(layer)

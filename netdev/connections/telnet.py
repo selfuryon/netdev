@@ -64,8 +64,7 @@ class TelnetConnection(IOConnection):
     async def read(self) -> str:
         """ Read buffer from the channel """
         output = await self._stdout.read(MAX_BUFFER)
-        self._logger.debug(
-            "Host %s: Recieved from channel: %r", self.host, output)
+        self._logger.debug("Host %s: Recieved from channel: %r", self.host, output)
         return output.decode(errors="ignore")
 
     @property
