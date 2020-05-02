@@ -29,20 +29,20 @@ class DeviceManager:
         self._timeout = timeout
 
     async def send_commands(
-        self, cmd_list: List[str], layer: IntEnum, timeout: int = None
+        self, cmd_list: List[str], terminal_mode: IntEnum, timeout: int = None
     ) -> str:
-        """ Go to specific layer and send the list of commands """
-        layers = self._layer_manager.layers
-        if isinstance(0, layers) == False:
-            layer = layers(layer)
+        """ Go to specific terminal mode and send the list of commands """
+        terminal_modes = self._layer_manager.terminal_modes
+        if isinstance(terminal_mode, terminal_modes) == False:
+            terminal_mode = terminal_modes(terminal_mode)
         self._logger.info(
-            "Host %s: Send in layer %s list of commands: %s",
+            "Host %s: Send in %s terminal mode list of commands: %s",
             self.host,
-            layer.name,
+            terminal_mode.name,
             cmd_list,
         )
 
-        fut_switch = self._layer_manager.switch_to_layer(layer)
+        fut_switch = self._layer_manager.switch_to_layer(terminal_mode)
         fut_cmd = self._device_stream.send_commands(cmd_list)
         try:
             operation_timeout = timeout or self._timeout

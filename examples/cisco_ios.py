@@ -19,12 +19,12 @@ async def task(param):
         out = await ios.send_command("show ver")
         print(out)
         # Testing sending configuration set
-        #commands = ["line console 0", "exit"]
-        # out = await ios.send_config_set(commands)
-        # print(out)
+        commands = ["line console 0", "exit"]
+        out = await ios.send_config_set(commands)
+        print(out)
         # Testing sending simple command with long output
-        # out = await ios.send_command("show run")
-        # print(out)
+        out = await ios.send_command("show run")
+        print(out)
         # Testing interactive dialog
         # out = await ios.send_command(
         #    "conf", pattern=r"\[terminal\]\?", strip_command=False

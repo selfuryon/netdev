@@ -9,14 +9,8 @@ from enum import IntEnum
 from typing import List
 
 from netdev.connections import IOConnection
-from netdev.core import (
-    DeviceManager,
-    DeviceStream,
-    Layer,
-    LayerManager,
-    enter_closure,
-    exit_closure,
-)
+from netdev.core import (DeviceManager, DeviceStream, Layer, LayerManager,
+                         enter_closure, exit_closure)
 
 
 class CiscoTerminalModes(IntEnum):
@@ -71,7 +65,7 @@ def create_cisco_like_dmanager(
     dstream = DeviceStream(conn, delimeter_list, set_prompt_func, "term len 0")
     # Create Layers
     unprivilege_layer = Layer(
-        terminal_modes(0).name,
+        terminal_modes(0),
         dstream,
         enter_func=None,
         exit_func=None,
@@ -79,7 +73,7 @@ def create_cisco_like_dmanager(
         commit_func=None,
     )
     privilege_layer = Layer(
-        terminal_modes(1).name,
+        terminal_modes(1),
         dstream,
         enter_func=enter_closure("enable"),
         exit_func=exit_closure("exit"),
@@ -87,7 +81,7 @@ def create_cisco_like_dmanager(
         commit_func=None,
     )
     config_layer = Layer(
-        terminal_modes(2).name,
+        terminal_modes(2),
         dstream,
         enter_func=enter_closure("conf t"),
         exit_func=exit_closure("exit"),
@@ -98,9 +92,9 @@ def create_cisco_like_dmanager(
     layer_manager = LayerManager(
         dstream, terminal_modes, cisco_check_closure(r">", r"#", r")#")
     )
-    layer_manager.add_layer(terminal_modes(0), unprivilege_layer)
-    layer_manager.add_layer(terminal_modes(1), privilege_layer)
-    layer_manager.add_layer(terminal_modes(2), config_layer)
+    layer_manager.add_layer(unprivilege_layer)
+    layer_manager.add_layer(privilege_layer)
+    layer_manager.add_layer(config_layer)
     # Create Device Manager
     device_manager = DeviceManager(dstream, layer_manager)
     return device_manager

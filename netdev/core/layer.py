@@ -17,14 +17,14 @@ class Layer:
 
     def __init__(
         self,
-        layer: IntEnum,
+        terminal_mode: IntEnum,
         device_stream: DeviceStream,
         enter_func: Callable[[DeviceStream], str],
         exit_func: Callable[[DeviceStream], str],
         transactional: bool = False,
         commit_func: Callable[[DeviceStream], str] = None,
     ) -> None:
-        self._layer = layer
+        self._terminal_mode = terminal_mode
         self._device_stream = device_stream
         self._transactional = transactional
 
@@ -34,24 +34,25 @@ class Layer:
 
     async def enter(self) -> str:
         """ Enter to this layer """
-        self._logger.info("Layer %s: Enter to layer", self._layer.name)
+        self._logger.info("Layer %s: Enter to layer", self._terminal_mode.name)
 
         output = await self._enter_func(self._device_stream)  # type: str
         self._logger.debug(
-            "Layer %s: Output after entering to layer: %s", self._layer.name, output
+            "Layer %s: Output after entering to layer: %s", self._terminal_mode.name, output
         )
         return output
 
     async def exit(self) -> str:
         """Exit from this layer"""
-        self._logger.info("Layer %s: Exit from layer", self._layer.name)
+        self._logger.info("Layer %s: Exit from layer",
+                          self._terminal_mode.name)
 
         output = ""  # type: str
         if self._transactional:
             output = await self.commit()
         output += await self._exit_func(self._device_stream)
         self._logger.debug(
-            "Layer %s: Output after exiting from layer: %s", self._layer.name, output
+            "Layer %s: Output after exiting from layer: %s", self._terminal_mode.name, output
         )
         return output
 
@@ -59,17 +60,19 @@ class Layer:
         """ Commit changes for this layer if layer is transactional """
 
         if self._transactional:
-            self._logger.info("Layer %s: Commit the changes", self._layer.name)
+            self._logger.info("Layer %s: Commit the changes",
+                              self._terminal_mode.name)
 
             output = await self._commit_func(self._device_stream)  # type: str
             self._logger.debug(
                 "Layer %s: Output after commiting the changes: %s",
-                self._layer.name,
+                self._terminal_mode.name,
                 output,
             )
             return output
 
-        self._logger.info("Layer %s: Commiting is not supported", self._layer.name)
+        self._logger.info(
+            "Layer %s: Commiting is not supported", self._terminal_mode.name)
 
     @property
     def transactional(self):
@@ -77,9 +80,9 @@ class Layer:
         return self._transactional
 
     @property
-    def name(self) -> str:
+    def terminal_mode(self) -> str:
         """ Get the name of this layer """
-        return self._layer.name
+        return self._terminal_mode
 
     @property
     def _logger(self) -> logging.Logger:
@@ -92,58 +95,61 @@ class LayerManager:
     def __init__(
         self,
         device_stream: DeviceStream,
-        layers_enum: IntEnum,
+        terminal_modes: IntEnum,
         check_func: Callable[[str], str],
     ):
         self._device_stream = device_stream
         self._check_func = check_func
-        self._layers_enum = layers_enum
+        self._terminal_modes = terminal_modes
         self._layers = {}
-        self._current_layer = None
+        self._current_terminal_mode = None
 
-    def add_layer(self, layer_id: IntEnum, layer: Layer):
+    def add_layer(self, layer: Layer):
         """ Add new layer with order from less privilage to more privilage"""
-        self._layers[layer_id] = layer
+        self._layers[layer.terminal_mode.value] = layer
         return self
 
-    async def switch_to_layer(self, layer_id: IntEnum) -> str:
+    async def switch_to_layer(self, target_terminal_mode: IntEnum) -> str:
         """ Switch to layer """
-        current_layer = await self.current_layer()
+        current_terminal_mode = await self.current_terminal_mode()
 
-        if layer_id == current_layer:
-            self._logger.debug("LayerManager: Don't need to switch to different layer")
+        if current_terminal_mode == target_terminal_mode:
+            self._logger.info(
+                "LayerManager: Don't need to switch to different terminal mode")
             return ""
 
-        self._logger.debug(
-            "LayerManager: Switching from %s to %s layer", current_layer, layer_id
+        self._logger.info(
+            "LayerManager: Switching from %s to %s terminal mode", current_terminal_mode, target_terminal_mode
         )
 
         output = ""  # type:str
-        if layer_id > current_layer:
-            for num in range(current_layer, layer_id):
-                layer_id = self._layers_enum(num)
-                layer = self._layers[layer_id]
-                output = await layer.enter()
+        if current_terminal_mode < target_terminal_mode:
+            while current_terminal_mode != target_terminal_mode:
+                layer = self._layers[current_terminal_mode + 1]
+                current_terminal_mode = layer.terminal_mode
+                output += await layer.enter()
 
-        elif layer_id < current_layer:
-            for num in range(current_layer, layer_id):
-                layer_id = self._layers_enum(num)
-                layer = self._layers[layer_id]
-                output = await layer.exit()
+        elif current_terminal_mode > target_terminal_mode:
+            while current_terminal_mode != target_terminal_mode:
+                layer = self._layers[current_terminal_mode - 1]
+                current_terminal_mode = layer.terminal_mode
+                output += await layer.exit()
 
+        self._current_terminal_mode = current_terminal_mode
         return output
 
-    async def current_layer(self) -> IntEnum:
-        """ Get current layer. If it's unknown we run the checker funtion to get that """
-        if self._current_layer is None:
+    async def current_terminal_mode(self) -> IntEnum:
+        """ Get current terminal mode. If it's unknown we run the checker function to get that """
+        if self._current_terminal_mode is None:
             buf = await self._device_stream.send_commands("\n", strip_prompt=False)
-            self._current_layer = await self._check_func(buf)
-        self._logger.info("Current Layer is %s", self._current_layer)
-        return self._current_layer
+            self._current_terminal_mode = await self._check_func(buf)
+        self._logger.info("Current terminal mode is %s",
+                          self._current_terminal_mode)
+        return self._current_terminal_mode
 
     @property
-    def layers(self) -> IntEnum:
-        return self._layers_enum
+    def terminal_modes(self) -> IntEnum:
+        return self._terminal_modes
 
     @property
     def _logger(self) -> logging.Logger:
