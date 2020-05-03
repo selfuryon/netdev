@@ -6,19 +6,19 @@ This module provides different closures for working with cisco-like devices
 """
 import re
 from enum import IntEnum
-from typing import List
+from typing import Callable, List
 
 from netdev.connections import IOConnection
 from netdev.core import (DeviceManager, DeviceStream, Layer, LayerManager,
                          enter_closure, exit_closure)
 
 
-class CiscoTerminalModes(IntEnum):
+class CiscoModes(IntEnum):
     """ Configuration modes for Cisco-Like devices """
 
     UNPRIVILEGE_EXEC = 0
     PRIVILEGE_EXEC = 1
-    CONFIG_MODE = 2
+    CONFIG = 2
 
 
 def cisco_check_closure(unprivilege_pattern, privilege_pattern, config_pattern):
@@ -27,11 +27,11 @@ def cisco_check_closure(unprivilege_pattern, privilege_pattern, config_pattern):
     async def cisco_checker(prompt: str) -> IntEnum:
         result = None  # type: CiscoTerminalMode
         if config_pattern in prompt:
-            result = CiscoTerminalModes.CONFIG_MODE
+            result = CiscoModes.CONFIG
         elif privilege_pattern in prompt:
-            result = CiscoTerminalModes.PRIVILEGE_EXEC
+            result = CiscoModes.PRIVILEGE_EXEC
         elif unprivilege_pattern in prompt:
-            result = CiscoTerminalModes.UNPRIVILEGE_EXEC
+            result = CiscoModes.UNPRIVILEGE_EXEC
         else:
             raise ValueError("Can't find the terminal mode")
 
@@ -58,7 +58,10 @@ def cisco_set_prompt_closure(delimeter_list: List[str]):
 
 
 def create_cisco_like_dmanager(
-    conn: IOConnection, delimeter_list: List[str], terminal_modes: IntEnum
+    conn: IOConnection,
+    delimeter_list: List[str],
+    terminal_modes: IntEnum,
+    # check_func: Callable[[str], str],
 ):
     # Create Cisco Like Device Manager
     set_prompt_func = cisco_set_prompt_closure(delimeter_list)

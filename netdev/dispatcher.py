@@ -1,16 +1,12 @@
 """
 Factory function for creating netdev classes
 """
+from typing import Callable
+
 from netdev.connections import SSHConnection, TelnetConnection
-from netdev.core import (
-    DeviceManager,
-    DeviceStream,
-    Layer,
-    LayerManager,
-    enter_closure,
-    exit_closure,
-)
-from netdev.vendors import CiscoTerminalModes, create_cisco_like_dmanager
+from netdev.core import (DeviceManager, DeviceStream, Layer, LayerManager,
+                         enter_closure, exit_closure)
+from netdev.vendors import CiscoModes, create_cisco_like_dmanager
 
 
 def create_conn(conn_type, **kwargs):
@@ -28,9 +24,7 @@ def create_conn(conn_type, **kwargs):
 def create_cisco_ios(conn):
     # Create device manager
     delimeter_list = [r">", r"#"]
-    device_manager = create_cisco_like_dmanager(
-        conn, delimeter_list, CiscoTerminalModes
-    )
+    device_manager = create_cisco_like_dmanager(conn, delimeter_list, CiscoModes)
     return device_manager
 
 
