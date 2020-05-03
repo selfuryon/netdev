@@ -9,14 +9,8 @@ from enum import IntEnum
 from typing import Callable, List
 
 from netdev.connections import IOConnection
-from netdev.core import (
-    DeviceManager,
-    DeviceStream,
-    Layer,
-    LayerManager,
-    enter_closure,
-    exit_closure,
-)
+from netdev.core import (DeviceManager, DeviceStream, Layer, LayerManager,
+                         enter_closure, exit_closure)
 
 
 class CiscoCLIModes(IntEnum):
@@ -58,7 +52,10 @@ def cisco_set_prompt_closure(delimeter_list: List[str]):
         config_mode = r"(\(.*?\))?"
         buf = buf.strip().split("\n")[-1]
         pattern = rf"([\w\d\-\_]+)\s?{delimeters}"
-        prompt = re.match(pattern, buf).group(1)
+        prompt = re.match(pattern, buf)
+        if not prompt:
+            raise Exception("Cannot set the prompt")
+        prompt = prompt.group(1)
         prompt_pattern = prompt + config_mode + delimeters
         return prompt_pattern
 
