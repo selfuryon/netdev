@@ -28,25 +28,23 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8"
 PyYAML = "^5.3"
-asyncssh = "^2.1"
-sphinx = { version = "^2.4", optional = true}
+asyncssh = "^2.2"
+sphinx = { version = "^3.0", optional = true}
 sphinx_rtd_theme = { version = "^0.4", optional = true}
 
 [tool.poetry.dev-dependencies]
 PyYAML = "^5.3"
-asyncssh = "^2.1"
+asyncssh = "^2.2"
 black = {version = "^19.10b0",allow-prereleases = true}
-pylint = "^2.4"
-python-language-server = "^0.31"
+pylint = "^2.5"
 pyls-black = "^0.4"
 pyls-isort = "^0.1"
-autopep8 = "^1.5"
-rope = "^0.16.0"
-pytest = "^5.3"
+pytest = "^5.4"
 pytest-asyncio = "^0.11.0"
 pytest-cov = "^2.8.1"
-sphinx = "^2.4"
+sphinx = "^3.0"
 sphinx_rtd_theme = "^0.4"
+python-language-server = {extras = ["rope"], version = "^0.31.10"}
 
 [tool.poetry.extras]
 docs = ["sphinx", "sphinx_rtd_theme"]
