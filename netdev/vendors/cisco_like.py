@@ -22,9 +22,10 @@ class CiscoCLIModes(IntEnum):
 
 
 def cisco_check_closure(unprivilege_pattern, privilege_pattern, config_pattern):
-    """ Generates cisco_like checker """
+    """ Generate cisco_like checker for current cli mode """
 
     async def cisco_checker(prompt: str) -> IntEnum:
+        """ Check current cli mode """
         result = None  # type: CiscoTerminalMode
         if config_pattern in prompt:
             result = CiscoCLIModes.CONFIG
@@ -33,7 +34,7 @@ def cisco_check_closure(unprivilege_pattern, privilege_pattern, config_pattern):
         elif unprivilege_pattern in prompt:
             result = CiscoCLIModes.UNPRIVILEGE_EXEC
         else:
-            raise ValueError("Can't find the terminal mode")
+            raise ValueError("Can't find the cli mode")
 
         return result
 
@@ -41,9 +42,10 @@ def cisco_check_closure(unprivilege_pattern, privilege_pattern, config_pattern):
 
 
 def cisco_set_prompt_closure(delimeter_list: List[str]):
-    """ Generates cisco-like set_prompt function """
+    """ Generate cisco-like set_prompt function """
 
     def cisco_set_prompt(buf: str) -> str:
+        """ Prompt setter for cisco like devices """
         escaped_list = map(re.escape, delimeter_list)
         delimeters = r"|".join(escaped_list)
         delimeters = rf"[{delimeters}]"
