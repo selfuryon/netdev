@@ -1,5 +1,5 @@
 """
-Copyright (c) 2019 Sergey Yakovlev <selfuryon@gmail.com>.
+Copyright (c) 2020 Sergey Yakovlev <selfuryon@gmail.com>.
 
 This module provides basic closures for DeviceManager and LayerManager
 
@@ -9,7 +9,7 @@ from netdev.core.device_stream import DeviceStream
 
 
 def enter_closure(enter_cmd: str):
-    """ Generates cisco-like enter function """
+    """ Generates enter function """
 
     async def enter(device_stream: DeviceStream) -> str:
         output = await device_stream.send_commands(enter_cmd)
@@ -19,7 +19,7 @@ def enter_closure(enter_cmd: str):
 
 
 def exit_closure(exit_cmd: str):
-    """ Generates cisco-like exit function """
+    """ Generates exit function """
 
     async def exit(device_stream: DeviceStream) -> str:
         output = await device_stream.send_commands(exit_cmd)

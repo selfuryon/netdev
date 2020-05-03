@@ -1,7 +1,9 @@
 """
-Copyright (c) 2019 Sergey Yakovlev <selfuryon@gmail.com>.
+Copyright (c) 2020 Sergey Yakovlev <selfuryon@gmail.com>.
 
 This module provides several classes for work with layers.
+Each Layer represent the CLI mode and methods for enter and exit to this CLI mode
+LayerManager is special class which know how to switch between layers (CLI modes)
 
 """
 import logging
@@ -13,7 +15,7 @@ from netdev.logger import logger
 
 
 class Layer:
-    """Layer class for working with different cli modes"""
+    """Layer class for working with particular cli mode"""
 
     def __init__(
         self,
@@ -34,46 +36,63 @@ class Layer:
 
     async def enter(self) -> str:
         """ Enter to this cli mode"""
-        self._logger.info("Layer %s: Enter to this cli mode", self._cli_mode.name)
+        self._logger.info(
+            "Host %s: %s cli mode: Enter to this cli mode",
+            self.host,
+            self._cli_mode.name,
+        )
 
         output = await self._enter_func(self._device_stream)  # type: str
         self._logger.debug(
-            "Layer %s: Output after entering to this cli mode: %s",
+            "Host %s: %s cli mode: Output after entering to this cli mode: %s",
+            self.host,
             self._cli_mode.name,
             output,
         )
         return output
 
     async def exit(self) -> str:
-        """Exit from this cli mode"""
-        self._logger.info("Layer %s: Exit from cli mode", self._cli_mode.name)
+        """ Exit from this cli mode """
+        self._logger.info(
+            "Host %s: %s cli mode: Exit from this cli mode",
+            self.host,
+            self._cli_mode.name,
+        )
 
         output = ""  # type: str
         if self._transactional:
             output = await self.commit()
         output += await self._exit_func(self._device_stream)
         self._logger.debug(
-            "Layer %s: Output after exiting from layer: %s",
+            "Host %s: %s cli mode: Output after exiting from this cli mode: %s",
+            self.host,
             self._cli_mode.name,
             output,
         )
         return output
 
     async def commit(self) -> str:
-        """ Commit changes for this layer if layer is transactional """
+        """ Commit changes for this cli mode if layer is transactional """
 
         if self._transactional:
-            self._logger.info("Layer %s: Commit the changes", self._cli_mode.name)
+            self._logger.info(
+                "Host %s: %s cli mode: Commit changes", self.host, self._cli_mode.name
+            )
 
             output = await self._commit_func(self._device_stream)  # type: str
             self._logger.debug(
-                "Layer %s: Output after commiting the changes: %s",
+                "Host %s: %s cli mode: Output after commiting changes: %s",
+                self.host,
                 self._cli_mode.name,
                 output,
             )
             return output
 
-        self._logger.info("Layer %s: Commiting is not supported", self._cli_mode.name)
+        self._logger.info(
+            "Host %s: %s cli mode: Commiting is not supported",
+            self.host,
+            self._cli_mode.name,
+        )
 
     @property
     def transactional(self):
@@ -82,8 +101,13 @@ class Layer:
 
     @property
     def cli_mode(self) -> str:
-        """ Get the terminal cli_mode for this layer """
+        """ Get the cli mode for this layer """
         return self._cli_mode
+
+    @property
+    def host(self) -> str:
+        """ Get the cli mode for this layer """
+        return self._device_stream.host
 
     @property
     def _logger(self) -> logging.Logger:
@@ -91,13 +115,13 @@ class Layer:
 
 
 class LayerManager:
-    """ Layer Manager which manages terminal cli_modes of network device """
+    """ Layer Manager manages cli modes of network device """
 
     def __init__(
         self,
         device_stream: DeviceStream,
         cli_modes: IntEnum,
-        check_func: Callable[[str], str],
+        check_func: Callable[[str], str] = None,
     ):
         self._device_stream = device_stream
         self._check_func = check_func
@@ -106,24 +130,25 @@ class LayerManager:
         self._current_cli_mode = None
 
     def add_layer(self, layer: Layer):
-        """ Add new layer with order from less privilage to more privilage"""
+        """ Add new layer for managing """
         self._layers[layer.cli_mode.value] = layer
         return self
 
     async def switch_to_layer(self, target_cli_mode: IntEnum) -> str:
-        """ Switch to layer """
+        """ Switch to target cli mode """
         current_cli_mode = await self.current_cli_mode()
 
         if current_cli_mode == target_cli_mode:
             self._logger.info(
-                "LayerManager: Don't need to switch to different terminal cli_mode"
+                "Host %s: Don't need to switch to different cli mode", self.host
             )
             return ""
 
         self._logger.info(
-            "LayerManager: Switching from %s to %s terminal cli_mode",
-            current_cli_mode,
-            target_cli_mode,
+            "Host %s: Switching from %s to %s cli mode",
+            self.host,
+            current_cli_mode.name,
+            target_cli_mode.name,
         )
 
         output = ""  # type:str
@@ -143,16 +168,22 @@ class LayerManager:
         return output
 
     async def current_cli_mode(self) -> IntEnum:
-        """ Get current terminal cli_mode. If it's unknown we run the checker function to get that """
+        """ Get current cli mode. If it's unknown we run the checker function to get that """
         if self._current_cli_mode is None:
             buf = await self._device_stream.send_commands("\n", strip_prompt=False)
             self._current_cli_mode = await self._check_func(buf)
-        self._logger.info("Current cli_mode is %s", self._current_cli_mode)
+        self._logger.info(
+            "Host %s: Current cli mode is %s", self.host, self._current_cli_mode.name
+        )
         return self._current_cli_mode
 
     @property
     def cli_modes(self) -> IntEnum:
         return self._cli_modes
+
+    @property
+    def host(self) -> IntEnum:
+        return self._device_stream.host
 
     @property
     def _logger(self) -> logging.Logger:

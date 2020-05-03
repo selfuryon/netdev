@@ -1,5 +1,5 @@
 """
-Copyright (c) 2019 Sergey Yakovlev <selfuryon@gmail.com>.
+Copyright (c) 2020 Sergey Yakovlev <selfuryon@gmail.com>.
 
 The module contains Telnet Connection class.
 This class connects to devices using asyncio protocol.
@@ -18,7 +18,7 @@ class TelnetConnection(IOConnection):
 
     def __init__(
         self,
-        host: str = "",
+        host: str,
         port: int = 23,
         username: str = "",
         password: str = "",

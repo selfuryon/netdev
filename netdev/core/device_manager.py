@@ -1,7 +1,8 @@
 """
-Copyright (c) 2019 Sergey Yakovlev <selfuryon@gmail.com>.
+Copyright (c) 2020 Sergey Yakovlev <selfuryon@gmail.com>.
 
-This module provides Device Manager Class
+This module provides Device Manager Class.
+This class know how to work with device: know the right cli modes and how to writes to them.
 
 """
 import asyncio
@@ -16,7 +17,7 @@ from netdev.logger import logger
 
 
 class DeviceManager:
-    """ Device Manager Class """
+    """ Device Manager for particular network device """
 
     def __init__(
         self,
@@ -29,37 +30,53 @@ class DeviceManager:
         self._timeout = timeout
 
     async def send_commands(
-        self, cmd_list: List[str], cli_mode: IntEnum, timeout: int = None
+        self,
+        cmd_list: List[str],
+        target_cli_mode: IntEnum,
+        return_cli_mode: IntEnum = None,
+        timeout: int = None,
     ) -> str:
-        """ Go to specific terminal cli_mode and send the list of commands """
+        """ 
+        Go to specific cli mode and send the list of commands. 
+        After that go to return_cli_mode if it isn't None 
+        """
         cli_modes = self._layer_manager.cli_modes
-        if isinstance(cli_mode, cli_modes) == False:
-            cli_mode = cli_modes(cli_mode)
+        if isinstance(target_cli_mode, cli_modes) == False:
+            target_cli_mode = cli_modes(target_cli_mode)
+        if return_cli_mode:
+            if isinstance(return_cli_mode, cli_modes) == False:
+                return_cli_mode = cli_modes(return_cli_mode)
         self._logger.info(
-            "Host %s: Send in %s terminal cli_mode list of commands: %s",
+            "Host %s: Send in %s cli mode list of commands: %s",
             self.host,
-            cli_mode.name,
+            target_cli_mode.name,
             cmd_list,
         )
 
-        fut_switch = self._layer_manager.switch_to_layer(cli_mode)
+        fut_return = None
+        if return_cli_mode:
+            fut_return = self._layer_manager.switch_to_layer(return_cli_mode)
+
+        fut_target = self._layer_manager.switch_to_layer(target_cli_mode)
         fut_cmd = self._device_stream.send_commands(cmd_list)
         try:
             operation_timeout = timeout or self._timeout
-            output = await asyncio.wait_for(fut_switch, operation_timeout)
+            output = await asyncio.wait_for(fut_target, operation_timeout)
             output += await asyncio.wait_for(fut_cmd, operation_timeout)
+            if fut_return:
+                output += await asyncio.wait_for(fut_return, operation_timeout)
         except asyncio.TimeoutError:
             raise TimeoutError(self.host)
 
         return output
 
     async def send_command(self, cmd_list: List[str], cli_mode: IntEnum = 1) -> str:
-        """ Go to specific layer and send the list of commands """
+        """ Go to specific cli mode and send the list of commands """
         return await self.send_commands(cmd_list, cli_mode)
 
     async def send_config_set(self, cmd_list: List[str], cli_mode: IntEnum = 2) -> str:
-        """ Go to specific layer and send the list of commands """
-        return await self.send_commands(cmd_list, cli_mode)
+        """ Go to specific cli mode and send the list of commands """
+        return await self.send_commands(cmd_list, cli_mode, return_cli_mode=1)
 
     async def connect(self) -> None:
         """ Establish connection """
