@@ -13,7 +13,7 @@ from netdev.core import (DeviceManager, DeviceStream, Layer, LayerManager,
                          enter_closure, exit_closure)
 
 
-class CiscoModes(IntEnum):
+class CiscoCLIModes(IntEnum):
     """ Configuration modes for Cisco-Like devices """
 
     UNPRIVILEGE_EXEC = 0
@@ -27,11 +27,11 @@ def cisco_check_closure(unprivilege_pattern, privilege_pattern, config_pattern):
     async def cisco_checker(prompt: str) -> IntEnum:
         result = None  # type: CiscoTerminalMode
         if config_pattern in prompt:
-            result = CiscoModes.CONFIG
+            result = CiscoCLIModes.CONFIG
         elif privilege_pattern in prompt:
-            result = CiscoModes.PRIVILEGE_EXEC
+            result = CiscoCLIModes.PRIVILEGE_EXEC
         elif unprivilege_pattern in prompt:
-            result = CiscoModes.UNPRIVILEGE_EXEC
+            result = CiscoCLIModes.UNPRIVILEGE_EXEC
         else:
             raise ValueError("Can't find the terminal mode")
 

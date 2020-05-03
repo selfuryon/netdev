@@ -29,20 +29,20 @@ class DeviceManager:
         self._timeout = timeout
 
     async def send_commands(
-        self, cmd_list: List[str], terminal_mode: IntEnum, timeout: int = None
+        self, cmd_list: List[str], cli_mode: IntEnum, timeout: int = None
     ) -> str:
-        """ Go to specific terminal mode and send the list of commands """
-        terminal_modes = self._layer_manager.terminal_modes
-        if isinstance(terminal_mode, terminal_modes) == False:
-            terminal_mode = terminal_modes(terminal_mode)
+        """ Go to specific terminal cli_mode and send the list of commands """
+        cli_modes = self._layer_manager.cli_modes
+        if isinstance(cli_mode, cli_modes) == False:
+            cli_mode = cli_modes(cli_mode)
         self._logger.info(
-            "Host %s: Send in %s terminal mode list of commands: %s",
+            "Host %s: Send in %s terminal cli_mode list of commands: %s",
             self.host,
-            terminal_mode.name,
+            cli_mode.name,
             cmd_list,
         )
 
-        fut_switch = self._layer_manager.switch_to_layer(terminal_mode)
+        fut_switch = self._layer_manager.switch_to_layer(cli_mode)
         fut_cmd = self._device_stream.send_commands(cmd_list)
         try:
             operation_timeout = timeout or self._timeout
@@ -53,13 +53,13 @@ class DeviceManager:
 
         return output
 
-    async def send_command(self, cmd_list: List[str], layer: IntEnum = 1) -> str:
+    async def send_command(self, cmd_list: List[str], cli_mode: IntEnum = 1) -> str:
         """ Go to specific layer and send the list of commands """
-        return await self.send_commands(cmd_list, layer)
+        return await self.send_commands(cmd_list, cli_mode)
 
-    async def send_config_set(self, cmd_list: List[str], layer: IntEnum = 2) -> str:
+    async def send_config_set(self, cmd_list: List[str], cli_mode: IntEnum = 2) -> str:
         """ Go to specific layer and send the list of commands """
-        return await self.send_commands(cmd_list, layer)
+        return await self.send_commands(cmd_list, cli_mode)
 
     async def connect(self) -> None:
         """ Establish connection """
