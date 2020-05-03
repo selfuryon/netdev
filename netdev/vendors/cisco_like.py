@@ -9,8 +9,14 @@ from enum import IntEnum
 from typing import Callable, List
 
 from netdev.connections import IOConnection
-from netdev.core import (DeviceManager, DeviceStream, Layer, LayerManager,
-                         enter_closure, exit_closure)
+from netdev.core import (
+    DeviceManager,
+    DeviceStream,
+    Layer,
+    LayerManager,
+    enter_closure,
+    exit_closure,
+)
 
 
 class CiscoCLIModes(IntEnum):
@@ -59,26 +65,28 @@ def cisco_set_prompt_closure(delimeter_list: List[str]):
     return cisco_set_prompt
 
 
-def create_cisco_like_dmanager(
+def cisco_device_manager(
     conn: IOConnection,
+    cli_modes: IntEnum,
     delimeter_list: List[str],
-    terminal_modes: IntEnum,
-    # check_func: Callable[[str], str],
+    check_pattern_list: List[str],
+    nopage_cmd: str,
 ):
     # Create Cisco Like Device Manager
     set_prompt_func = cisco_set_prompt_closure(delimeter_list)
-    dstream = DeviceStream(conn, delimeter_list, set_prompt_func, "term len 0")
+    dstream = DeviceStream(conn, delimeter_list, set_prompt_func, nopage_cmd)
+
     # Create Layers
     unprivilege_layer = Layer(
-        terminal_modes(0),
+        cli_modes(0),
         dstream,
-        enter_func=None,
-        exit_func=None,
+        enter_func=enter_closure("enable"),
+        exit_func=exit_closure("exit"),
         transactional=False,
         commit_func=None,
     )
     privilege_layer = Layer(
-        terminal_modes(1),
+        cli_modes(1),
         dstream,
         enter_func=enter_closure("enable"),
         exit_func=exit_closure("exit"),
@@ -86,7 +94,7 @@ def create_cisco_like_dmanager(
         commit_func=None,
     )
     config_layer = Layer(
-        terminal_modes(2),
+        cli_modes(2),
         dstream,
         enter_func=enter_closure("conf t"),
         exit_func=exit_closure("exit"),
@@ -95,7 +103,7 @@ def create_cisco_like_dmanager(
     )
     # Create Layer Manager
     layer_manager = LayerManager(
-        dstream, terminal_modes, cisco_check_closure(r">", r"#", r")#")
+        dstream, cli_modes, cisco_check_closure(*check_pattern_list)
     )
     layer_manager.add_layer(unprivilege_layer)
     layer_manager.add_layer(privilege_layer)

@@ -3,6 +3,6 @@ Copyright (c) 2019 Sergey Yakovlev <selfuryon@gmail.com>.
 
 Vendors unit module
 """
-from netdev.vendors.cisco_like import CiscoCLIModes, create_cisco_like_dmanager
+from netdev.vendors.cisco_like import CiscoCLIModes, cisco_device_manager
 
-__all__ = ("create_cisco_like_dmanager", "CiscoCLIModes")
+__all__ = ("cisco_device_manager", "CiscoCLIModes")

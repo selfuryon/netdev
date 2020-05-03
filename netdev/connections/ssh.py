@@ -9,8 +9,7 @@ import logging
 
 import asyncssh
 
-from netdev.connections.constants import (MAX_BUFFER, TERM_LEN, TERM_TYPE,
-                                          TERM_WID)
+from netdev.connections.constants import MAX_BUFFER, TERM_LEN, TERM_TYPE, TERM_WID
 from netdev.connections.io_connection import IOConnection
 from netdev.exceptions import DisconnectError
 from netdev.logger import logger
