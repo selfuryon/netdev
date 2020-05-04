@@ -33,3 +33,15 @@ class CommitError(Exception):
         self.reason = reason
         self.msg = "Host {} Commit Error: {}".format(ip_address, reason)
         super().__init__(self.msg)
+
+
+class LayerSwitchError(Exception):
+    """Switch to Layer error with ip addresses"""
+
+    def __init__(self, ip_address, reason, source_cli_mode, target_cli_mode):
+        self.ip_address = ip_address
+        self.reason = reason
+        self.msg = "Host {} Switch Error [{} -> {}]: {}".format(
+            ip_address, source_cli_mode, target_cli_mode, reason
+        )
+        super().__init__(self.msg)
