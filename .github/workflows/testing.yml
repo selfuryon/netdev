@@ -15,7 +15,7 @@ jobs:
     - name: Cache poetry
       uses: actions/cache@v1
       with:
-        path: ~/.config/pypoetry
+        path: ~/.cache/pypoetry/
         # Look to see if there is a cache hit for the corresponding requirements file
         key: ${{ runner.os }}-poetry-${{ hashFiles('pyproject.toml') }}
         restore-keys: |
