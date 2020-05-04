@@ -10,7 +10,7 @@ from typing import Callable, List
 
 from netdev.connections import IOConnection
 from netdev.core import (DeviceManager, DeviceStream, Layer, LayerManager,
-                         enter_closure, exit_closure)
+                         enter_closure, enter_password_closure, exit_closure)
 
 
 class CiscoCLIModes(IntEnum):
@@ -68,6 +68,7 @@ def cisco_device_manager(
     delimeter_list: List[str],
     check_pattern_list: List[str],
     nopage_cmd: str,
+    secret: str = "",
 ):
     # Create Cisco Like Device Manager
     set_prompt_func = cisco_set_prompt_closure(delimeter_list)
@@ -77,15 +78,15 @@ def cisco_device_manager(
     unprivilege_layer = Layer(
         cli_modes(0),
         dstream,
-        enter_func=enter_closure("enable"),
-        exit_func=exit_closure("exit"),
+        enter_func=None,
+        exit_func=None,
         transactional=False,
         commit_func=None,
     )
     privilege_layer = Layer(
         cli_modes(1),
         dstream,
-        enter_func=enter_closure("enable"),
+        enter_func=enter_password_closure("enable", secret),
         exit_func=exit_closure("exit"),
         transactional=False,
         commit_func=None,
