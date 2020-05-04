@@ -11,6 +11,7 @@ from enum import IntEnum
 from typing import Callable
 
 from netdev.core.device_stream import DeviceStream
+from netdev.exceptions import SwitchError
 from netdev.logger import logger
 
 
@@ -155,23 +156,37 @@ class LayerManager:
         if current_cli_mode < target_cli_mode:
             while current_cli_mode != target_cli_mode:
                 layer = self._layers[current_cli_mode + 1]
-                current_cli_mode = layer.cli_mode
                 output += await layer.enter()
+                current_cli_mode = layer.cli_mode
+                real_cli_mode = await self.check_cli_mode()
+                if current_cli_mode != real_cli_mode:
+                    raise SwitchError(self.host, f"Cannot enter to {current_cli_mode}")
 
         elif current_cli_mode > target_cli_mode:
             while current_cli_mode != target_cli_mode:
                 layer = self._layers[current_cli_mode - 1]
-                current_cli_mode = layer.cli_mode
                 output += await layer.exit()
+                current_cli_mode = layer.cli_mode
+                real_cli_mode = await self.check_cli_mode()
+                if current_cli_mode != real_cli_mode:
+                    raise SwitchError(self.host, f"Cannot exit from {current_cli_mode}")
 
         self._current_cli_mode = current_cli_mode
         return output
 
+    async def check_cli_mode(self) -> IntEnum:
+        """ Check current cli mode """
+        self._logger.info("Host %s: Recognizing the current cli mode", self.host)
+        buf = await self._device_stream.send_commands("\n", strip_prompt=False)
+        current_cli_mode = await self._check_func(buf)
+        self._logger.info(
+            "Host %s: Recognized cli mode is %s", self.host, current_cli_mode.name
+        )
+        return current_cli_mode
+
     async def current_cli_mode(self) -> IntEnum:
-        """ Get current cli mode. If it's unknown we run the checker function to get that """
-        if self._current_cli_mode is None:
-            buf = await self._device_stream.send_commands("\n", strip_prompt=False)
-            self._current_cli_mode = await self._check_func(buf)
+        """ Get current cli mode """
+        self._current_cli_mode = self._current_cli_mode or await self.check_cli_mode()
         self._logger.info(
             "Host %s: Current cli mode is %s", self.host, self._current_cli_mode.name
         )
