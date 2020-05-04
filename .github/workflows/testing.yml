@@ -4,7 +4,7 @@ name: Testing workflow
 on: [push]
 
 jobs:
-  unittest:
+  unittests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -23,11 +23,9 @@ jobs:
           ${{ runner.os }}-
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip poetry
-        poetry config --list
+        python -m pip install --upgrade poetry
         poetry install
-    - name: Test with pytest
+    - name: Unittests
       run: |
-        pip install pytest
-        pytest tests/ --cov=netdev
+        poetry run pytest tests/unit/ --cov=netdev
 
