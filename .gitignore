@@ -9,6 +9,7 @@ dist/
 *.egg-info/
 poetry.lock
 .venv/
+.coverage
 .pylintrc
 
 # Unit tests
