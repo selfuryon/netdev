@@ -4,8 +4,14 @@ Factory function for creating netdev classes
 from typing import Callable
 
 from netdev.connections import SSHConnection, TelnetConnection
-from netdev.core import (DeviceManager, DeviceStream, Layer, LayerManager,
-                         enter_closure, exit_closure)
+from netdev.core import (
+    DeviceManager,
+    DeviceStream,
+    Layer,
+    LayerManager,
+    enter_closure,
+    exit_closure,
+)
 from netdev.vendors import CiscoCLIModes, cisco_device_manager
 
 

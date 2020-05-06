@@ -9,8 +9,15 @@ from enum import IntEnum
 from typing import Callable, List
 
 from netdev.connections import IOConnection
-from netdev.core import (DeviceManager, DeviceStream, Layer, LayerManager,
-                         enter_closure, enter_password_closure, exit_closure)
+from netdev.core import (
+    DeviceManager,
+    DeviceStream,
+    Layer,
+    LayerManager,
+    enter_closure,
+    enter_password_closure,
+    exit_closure,
+)
 
 
 class CiscoCLIModes(IntEnum):
