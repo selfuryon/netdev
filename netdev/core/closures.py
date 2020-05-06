@@ -14,9 +14,7 @@ def enter_closure(enter_cmd: str):
     """ Generates enter function """
 
     async def enter(device_stream: DeviceStream) -> str:
-        output = await device_stream.send_commands(
-            enter_cmd, strip_command=False, strip_prompt=False
-        )
+        output = await device_stream.send_commands(enter_cmd, strip_command=False, strip_prompt=False)
         return output
 
     return enter
@@ -27,11 +25,7 @@ def enter_password_closure(enter_cmd: str, password: str, pattern: str = r"passw
 
     async def enter(device_stream: DeviceStream) -> str:
         output = await device_stream.send_commands(
-            enter_cmd,
-            strip_command=False,
-            strip_prompt=False,
-            patterns=[pattern],
-            re_flags=re.IGNORECASE,
+            enter_cmd, strip_command=False, strip_prompt=False, patterns=[pattern], re_flags=re.IGNORECASE,
         )
         if re.search(pattern, output, flags=re.IGNORECASE):
             output += await device_stream.send_commands(password)
@@ -44,9 +38,7 @@ def exit_closure(exit_cmd: str):
     """ Generates exit function """
 
     async def exit(device_stream: DeviceStream) -> str:
-        output = await device_stream.send_commands(
-            exit_cmd, strip_command=False, strip_prompt=False
-        )
+        output = await device_stream.send_commands(exit_cmd, strip_command=False, strip_prompt=False)
         return output
 
     return exit

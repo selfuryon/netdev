@@ -59,15 +59,10 @@ class DeviceStream:
         p = self._prompt_pattern
         self._prompt_pattern = rf"({p}).*$.*({p})$"
         raw_prompt = await self.send_commands(
-            "\n",
-            strip_command=False,
-            strip_prompt=False,
-            re_flags=re.MULTILINE | re.DOTALL,
+            "\n", strip_command=False, strip_prompt=False, re_flags=re.MULTILINE | re.DOTALL,
         )
         self._prompt_pattern = self._set_prompt_func(raw_prompt)
-        self._logger.debug(
-            "Host %s: Set prompt pattern to: %s", self.host, self._prompt_pattern
-        )
+        self._logger.debug("Host %s: Set prompt pattern to: %s", self.host, self._prompt_pattern)
         return raw_prompt
 
     async def _session_preparation(self) -> str:
@@ -100,9 +95,7 @@ class DeviceStream:
         if isinstance(cmd_list, str):
             cmd_list = [cmd_list]
 
-        self._logger.debug(
-            "Host %s: Send to stream the list of commands: %r", self.host, cmd_list
-        )
+        self._logger.debug("Host %s: Send to stream the list of commands: %r", self.host, cmd_list)
 
         output = ""
         for cmd in cmd_list:
@@ -125,9 +118,7 @@ class DeviceStream:
             raise ValueError("Pattern list can't be None")
 
         output = ""
-        self._logger.debug(
-            "Host %s: Read until pattern list: %r", self.host, pattern_list
-        )
+        self._logger.debug("Host %s: Read until pattern list: %r", self.host, pattern_list)
         while True:
             buf = await self._io_connection.read()
             output += buf
@@ -135,10 +126,7 @@ class DeviceStream:
             for pattern in pattern_list:
                 if re.search(pattern, output, flags=re_flags):
                     self._logger.debug(
-                        "Host %s: find pattern [%r] in buffer: %r",
-                        self.host,
-                        pattern,
-                        output,
+                        "Host %s: find pattern [%r] in buffer: %r", self.host, pattern, output,
                     )
                     output = self._normalize_linefeeds(output)
                     return output

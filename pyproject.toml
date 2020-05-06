@@ -50,7 +50,7 @@ python-language-server = {extras = ["rope"], version = "^0.31.10"}
 docs = ["sphinx", "sphinx_rtd_theme"]
 
 [tool.black]
-line-length = 88
+line-length = 110
 target-version = ['py38']
 include = '\.pyi?$'
 exclude = '''

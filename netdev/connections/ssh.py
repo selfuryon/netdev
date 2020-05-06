@@ -19,12 +19,7 @@ class SSHConnection(IOConnection):
     """ SSH Connection Class """
 
     def __init__(
-        self,
-        host: str,
-        port: int = 22,
-        *,
-        tunnel: asyncssh.SSHClientConnection = None,
-        **kwargs,
+        self, host: str, port: int = 22, *, tunnel: asyncssh.SSHClientConnection = None, **kwargs,
     ) -> None:
         if host:
             self._host = host
@@ -42,9 +37,7 @@ class SSHConnection(IOConnection):
 
     async def connect(self) -> None:
         """ Etablish the SSH connection """
-        self._logger.info(
-            "Host %s: Establishing SSH connection on port %s", self._host, self._port
-        )
+        self._logger.info("Host %s: Establishing SSH connection on port %s", self._host, self._port)
         try:
             self._conn = await asyncssh.connect(
                 self._host, self._port, tunnel=self._tunnel, **self._conn_dict,

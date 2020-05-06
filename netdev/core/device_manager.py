@@ -20,63 +20,60 @@ class DeviceManager:
     """ Device Manager for particular network device """
 
     def __init__(
-        self,
-        device_stream: DeviceStream,
-        layer_manager: LayerManager,
-        timeout: int = 15,
+        self, device_stream: DeviceStream, layer_manager: LayerManager, timeout: int = 15,
     ):
         self._device_stream = device_stream
         self._layer_manager = layer_manager
         self._timeout = timeout
 
     async def send_commands(
-        self,
-        cmd_list: List[str],
-        target_cli_mode: IntEnum,
-        return_cli_mode: IntEnum = None,
-        timeout: int = None,
+        self, cmd_list: List[str], target_cli_mode: IntEnum, timeout: int = None, **kwargs,
     ) -> str:
-        """ 
-        Go to specific cli mode and send the list of commands. 
-        After that go to return_cli_mode if it isn't None 
-        """
+        """ Go to specific cli mode and send the list of commands """
+        operation_timeout = timeout or self._timeout
         cli_modes = self._layer_manager.cli_modes
+
         if isinstance(target_cli_mode, cli_modes) == False:
             target_cli_mode = cli_modes(target_cli_mode)
-        if return_cli_mode:
-            if isinstance(return_cli_mode, cli_modes) == False:
-                return_cli_mode = cli_modes(return_cli_mode)
         self._logger.info(
-            "Host %s: Send in %s cli mode list of commands: %s",
-            self.host,
-            target_cli_mode.name,
-            cmd_list,
+            "Host %s: Send in %s cli mode list of commands: %s", self.host, target_cli_mode.name, cmd_list,
         )
 
-        fut_return = None
-        if return_cli_mode:
-            fut_return = self._layer_manager.switch_to_layer(return_cli_mode)
-
-        fut_target = self._layer_manager.switch_to_layer(target_cli_mode)
-        fut_cmd = self._device_stream.send_commands(cmd_list)
+        fut_cmd = self._device_stream.send_commands(cmd_list, **kwargs)
         try:
-            operation_timeout = timeout or self._timeout
-            output = await asyncio.wait_for(fut_target, operation_timeout)
+            output = await self.switch_to_layer(target_cli_mode, operation_timeout)
             output += await asyncio.wait_for(fut_cmd, operation_timeout)
-            if fut_return:
-                output += await asyncio.wait_for(fut_return, operation_timeout)
         except asyncio.TimeoutError:
             raise TimeoutError(self.host)
 
         return output
 
-    async def send_command(self, cmd_list: List[str], cli_mode: IntEnum = 1) -> str:
-        """ Go to specific cli mode and send the list of commands """
-        return await self.send_commands(cmd_list, cli_mode)
+    async def send_command(self, cmd_list: List[str]) -> str:
+        """ Go to privilege exec mode and send the list of commands """
+        output = await self.send_commands(cmd_list, 1)
+        return output
 
-    async def send_config_set(self, cmd_list: List[str], cli_mode: IntEnum = 2) -> str:
-        """ Go to specific cli mode and send the list of commands """
-        return await self.send_commands(cmd_list, cli_mode, return_cli_mode=1)
+    async def send_config_set(self, cmd_list: List[str]) -> str:
+        """ Go to config mode and send the list of commands """
+        output = await self.send_commands(cmd_list, 2, strip_command=False, strip_prompt=False)
+        output += await self.switch_to_layer(1)
+        return output
+
+    async def switch_to_layer(self, target_cli_mode: IntEnum, timeout: int = None) -> str:
+        """ Go to specific cli mode """
+        operation_timeout = timeout or self._timeout
+        cli_modes = self._layer_manager.cli_modes
+
+        if isinstance(target_cli_mode, cli_modes) == False:
+            target_cli_mode = cli_modes(target_cli_mode)
+
+        fut_target = self._layer_manager.switch_to_layer(target_cli_mode)
+        try:
+            output = await asyncio.wait_for(fut_target, operation_timeout)
+        except asyncio.TimeoutError:
+            raise TimeoutError(self.host)
+
+        return output
 
     async def connect(self) -> None:
         """ Establish connection """

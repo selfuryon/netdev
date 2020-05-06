@@ -83,12 +83,7 @@ def cisco_device_manager(
 
     # Create Layers
     unprivilege_layer = Layer(
-        cli_modes(0),
-        dstream,
-        enter_func=None,
-        exit_func=None,
-        transactional=False,
-        commit_func=None,
+        cli_modes(0), dstream, enter_func=None, exit_func=None, transactional=False, commit_func=None,
     )
     privilege_layer = Layer(
         cli_modes(1),
@@ -107,9 +102,7 @@ def cisco_device_manager(
         commit_func=None,
     )
     # Create Layer Manager
-    layer_manager = LayerManager(
-        dstream, cli_modes, cisco_check_closure(*check_pattern_list)
-    )
+    layer_manager = LayerManager(dstream, cli_modes, cisco_check_closure(*check_pattern_list))
     layer_manager.add_layer(unprivilege_layer)
     layer_manager.add_layer(privilege_layer)
     layer_manager.add_layer(config_layer)

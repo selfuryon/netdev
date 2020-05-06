@@ -40,9 +40,7 @@ class TelnetConnection(IOConnection):
 
     async def connect(self) -> None:
         """ Establish the Telnet Connection """
-        self._logger.info(
-            "Host %s: Establishing Telnet Connection on port %s", self._host, self._port
-        )
+        self._logger.info("Host %s: Establishing Telnet Connection on port %s", self._host, self._port)
         try:
             self._stdout, self._stdin = await asyncio.open_connection(
                 self._host, self._port, **self._conn_dict
