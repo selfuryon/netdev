@@ -42,6 +42,7 @@ class BaseDevice(object):
         mac_algs=(),
         compression_algs=(),
         signature_algs=(),
+        server_host_key_algs=None
     ):
         """
         Initialize base class for asynchronous working with network devices
@@ -52,7 +53,7 @@ class BaseDevice(object):
         :param port: ssh port for connection. Default is 22
         :param device_type: network device type
         :param timeout: timeout in second for getting information from channel
-        :param loop: asyncio loop object
+        :param loop: asyncio loop object. Not used since asyncssh Release 2.0.0, left here for compatibility.
         :param known_hosts: file with known hosts. Default is None (no policy). With () it will use default file
         :param local_addr: local address for binding source of tcp connection
         :param client_keys: path for client keys. Default in None. With () it will use default file in OS
@@ -121,6 +122,7 @@ class BaseDevice(object):
         :type mac_algs: list[str]
         :type compression_algs: list[str]
         :type signature_algs: list[str]
+        :type server_host_key_algs: list[str]
         """
         if host:
             self._host = host
@@ -129,10 +131,6 @@ class BaseDevice(object):
         self._port = int(port)
         self._device_type = device_type
         self._timeout = timeout
-        if loop is None:
-            self._loop = asyncio.get_event_loop()
-        else:
-            self._loop = loop
 
         """Convert needed connect params to a dictionary for simplicity"""
         self._connect_params_dict = {
@@ -146,7 +144,6 @@ class BaseDevice(object):
             "passphrase": passphrase,
             "tunnel": tunnel,
             "agent_forwarding": agent_forwarding,
-            "loop": loop,
             "family": family,
             "agent_path": agent_path,
             "client_version": client_version,
@@ -156,6 +153,14 @@ class BaseDevice(object):
             "compression_algs": compression_algs,
             "signature_algs": signature_algs,
         }
+
+        """
+        A list of server host key algorithms to use instead of the default of 
+        those present in known_hosts when performing the SSH handshake. This should only be set,
+        when the user sets it.
+        """
+        if server_host_key_algs is not None:
+            self._connect_params_dict['server_host_key_algs'] = server_host_key_algs
 
         if pattern is not None:
             self._pattern = pattern
