@@ -152,7 +152,6 @@ class BaseDevice(object):
             "passphrase": passphrase,
             "tunnel": tunnel,
             "agent_forwarding": agent_forwarding,
-            "loop": loop,
             "family": family,
             "agent_path": agent_path,
             "client_version": client_version,
