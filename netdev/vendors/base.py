@@ -165,7 +165,7 @@ class BaseDevice(object):
         if pattern is not None:
             self._pattern = pattern
             
-         """
+        """
         A list of server host key algorithms to use instead of the default of 
         those present in known_hosts when performing the SSH handshake. This should only be set,
         when the user sets it.
