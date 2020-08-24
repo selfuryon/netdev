@@ -4,15 +4,10 @@ Factory function for creating netdev classes
 from typing import Callable
 
 from netdev.connections import SSHConnection, TelnetConnection
-from netdev.core import (
-    DeviceManager,
-    DeviceStream,
-    Layer,
-    LayerManager,
-    enter_closure,
-    exit_closure,
-)
-from netdev.vendors import CiscoCLIModes, cisco_device_manager
+from netdev.core import (DeviceManager, DeviceStream, Layer, LayerManager,
+                         enter_closure, exit_closure)
+from netdev.vendors import (CiscoCLIModes, cisco_device_manager,
+                            ciscoxr_device_manager)
 
 
 def create_conn(conn_type, **kwargs):
@@ -38,9 +33,21 @@ def cisco_ios(conn, secret):
     return device_manager
 
 
+def cisco_iosxr(conn, secret):
+    # Create device manager for Cisco IOS
+    delimeter_list = [r">", r"#"]
+    check_pattern_list = [r">", r"#", r")#"]
+    nopage_cmd = "term len 0"
+    device_manager = ciscoxr_device_manager(
+        conn, CiscoCLIModes, delimeter_list, check_pattern_list, nopage_cmd, secret
+    )
+    return device_manager
+
+
 # The keys of this dictionary are the supported device_types
 CLASS_MAPPER = {
     "cisco_ios": cisco_ios,
+    "cisco_iosxr": cisco_iosxr,
 }
 
 
