@@ -42,6 +42,7 @@ class BaseDevice(object):
         mac_algs=(),
         compression_algs=(),
         signature_algs=(),
+        server_host_key_algs=None,
     ):
         """
         Initialize base class for asynchronous working with network devices
@@ -92,6 +93,10 @@ class BaseDevice(object):
             A list of public key signature algorithms to use during the SSH
             handshake, taken from `signature algorithms
             <https://asyncssh.readthedocs.io/en/latest/api.html#signaturealgs>`_
+        :param server_host_key_algs:
+            A list of server host key algorithms to allow during the SSH handshake,
+            taken from server host key algorithms.
+            https://asyncssh.readthedocs.io/en/latest/api.html#publickeyalgs
         
 
         :type host: str
@@ -121,6 +126,7 @@ class BaseDevice(object):
         :type mac_algs: list[str]
         :type compression_algs: list[str]
         :type signature_algs: list[str]
+        :type server_host_key_algs: list[str]
         """
         if host:
             self._host = host
@@ -146,7 +152,6 @@ class BaseDevice(object):
             "passphrase": passphrase,
             "tunnel": tunnel,
             "agent_forwarding": agent_forwarding,
-            "loop": loop,
             "family": family,
             "agent_path": agent_path,
             "client_version": client_version,
@@ -159,6 +164,14 @@ class BaseDevice(object):
 
         if pattern is not None:
             self._pattern = pattern
+            
+         """
+        A list of server host key algorithms to use instead of the default of 
+        those present in known_hosts when performing the SSH handshake. This should only be set,
+        when the user sets it.
+        """
+        if server_host_key_algs is not None:
+            self._connect_params_dict['server_host_key_algs'] = server_host_key_algs
 
         # Filling internal vars
         self._stdin = self._stdout = self._stderr = self._conn = None
