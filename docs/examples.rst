@@ -60,6 +60,10 @@ IOS XR example
 --------------
 .. literalinclude:: ../examples/cisco_iosxr.py
 
+IOS SG3XX example
+--------------
+.. literalinclude:: ../examples/cisco_sg3xx.py
+
 Fujitsu example
 ---------------
 .. literalinclude:: ../examples/fujitsu_switch.py

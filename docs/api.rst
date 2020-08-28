@@ -88,6 +88,13 @@ CiscoNXOS
    :members:
    :inherited-members:
 
+CiscoSG3XX
+~~~~~~~~~
+
+.. autoclass:: CiscoSG3XX
+   :members:
+   :inherited-members:
+
 FujitsuSwitch
 ~~~~~~~~~~~~~
 

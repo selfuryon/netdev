@@ -493,6 +493,7 @@ class BaseDevice(object):
         ESC[24;27H   Position cursor
         ESC[?25h     Show the cursor
         ESC[E        Next line (HP does ESC-E)
+        ESC[K        Erase line. Clear from cursor to end of screen
         ESC[2K       Erase line
         ESC[1;24r    Enable scrolling from start to row end
         ESC7         Save cursor position
@@ -518,6 +519,7 @@ class BaseDevice(object):
         code_position_cursor = chr(27) + r"\[\d+;\d+H"
         code_show_cursor = chr(27) + r"\[\?25h"
         code_next_line = chr(27) + r"E"
+        code_erase_line_from_cursor = chr(27) + r"\[K"
         code_erase_line = chr(27) + r"\[2K"
         code_enable_scroll = chr(27) + r"\[\d+;\d+r"
 
@@ -530,6 +532,7 @@ class BaseDevice(object):
             code_position_cursor,
             code_show_cursor,
             code_erase_line,
+            code_erase_line_from_cursor,
             code_enable_scroll,
         ]
 
