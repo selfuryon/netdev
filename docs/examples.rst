@@ -95,3 +95,7 @@ Juniper JunOS example
 Terminal example
 ----------------
 .. literalinclude:: ../examples/terminal.py
+
+Alcatel AOS example
+----------------
+.. literalinclude:: ../examples/alcatel_aos.py

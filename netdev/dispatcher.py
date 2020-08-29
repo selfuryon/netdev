@@ -1,6 +1,7 @@
 """
 Factory function for creating netdev classes
 """
+from netdev.vendors import AlcatelAOS
 from netdev.vendors import AristaEOS
 from netdev.vendors import ArubaAOS6, ArubaAOS8
 from netdev.vendors import CiscoASA, CiscoIOS, CiscoIOSXR, CiscoNXOS, CiscoSG3XX
@@ -15,6 +16,7 @@ from netdev.vendors import HW1000
 # @formatter:off
 # The keys of this dictionary are the supported device_types
 CLASS_MAPPER = {
+    "alcatel_aos": AlcatelAOS,
     "arista_eos": AristaEOS,
     "aruba_aos_6": ArubaAOS6,
     "aruba_aos_8": ArubaAOS8,

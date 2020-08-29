@@ -29,6 +29,7 @@ Supports:
 * Aruba AOS 6.X
 * Aruba AOS 8.X
 * Terminal
+* Alcatel AOS
 
 Examples:
 ---------

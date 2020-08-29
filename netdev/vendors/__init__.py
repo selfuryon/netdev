@@ -1,3 +1,4 @@
+from netdev.vendors.alcatel import AlcatelAOS
 from netdev.vendors.arista import AristaEOS
 from netdev.vendors.aruba import ArubaAOS8, ArubaAOS6
 from netdev.vendors.base import BaseDevice
@@ -41,4 +42,5 @@ __all__ = (
     "mikrotik",
     "UbiquityEdgeSwitch",
     "HW1000",
+    "AlcatelAOS",
 )

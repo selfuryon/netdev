@@ -150,3 +150,10 @@ Terminal
 .. autoclass:: Terminal
    :members:
    :inherited-members:
+
+AlcatelAOS
+~~~~~~~~
+
+.. autoclass:: AlcatelAOS
+   :members:
+   :inherited-members:
