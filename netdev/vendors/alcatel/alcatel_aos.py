@@ -18,17 +18,11 @@ class AlcatelAOS(BaseDevice):
             fut = self._stdout.read(self._MAX_BUFFER)
             try:
                 output += await asyncio.wait_for(fut, self._timeout)
-                #print("123:")
-                #print(output)
-                #print("*" * 80)
             except asyncio.TimeoutError:
                 raise TimeoutError(self._host)
             if re.search("\n" + pattern, output, flags=re_flags) or re.search(
                 "\n" + base_prompt_pattern, output, flags=re_flags
             ):
-            
-            #if re.search("\nrprd-opcinet091 - ADMIN ==> ", output, flags=re_flags):
-            
                 logger.debug(
                     "Host {}: Reading pattern '{}' or '{}' was found: {}".format(
                         self._host, pattern, base_prompt_pattern, repr(output)
