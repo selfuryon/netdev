@@ -13,13 +13,14 @@ Requires:
 * pyYAML
   
  
-Supports: 
+Supports:
 ---------
 * Cisco IOS 
 * Cisco IOS XE
 * Cisco IOS XR
 * Cisco ASA
-* Cisco NX-OS 
+* Cisco NX-OS
+* Cisco SG3XX
 * HP Comware (like V1910 too)
 * Fujitsu Blade Switches
 * Mikrotik RouterOS
@@ -28,6 +29,7 @@ Supports:
 * Aruba AOS 6.X
 * Aruba AOS 8.X
 * Terminal
+* Alcatel AOS
 
 Examples:
 ---------

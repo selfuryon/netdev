@@ -1,7 +1,8 @@
+from netdev.vendors.alcatel import AlcatelAOS
 from netdev.vendors.arista import AristaEOS
 from netdev.vendors.aruba import ArubaAOS8, ArubaAOS6
 from netdev.vendors.base import BaseDevice
-from netdev.vendors.cisco import CiscoNXOS, CiscoIOSXR, CiscoASA, CiscoIOS
+from netdev.vendors.cisco import CiscoNXOS, CiscoIOSXR, CiscoASA, CiscoIOS, CiscoSG3XX
 from netdev.vendors.comware_like import ComwareLikeDevice
 from netdev.vendors.fujitsu import FujitsuSwitch
 from netdev.vendors.hp import HPComware, HPComwareLimited
@@ -18,6 +19,7 @@ __all__ = (
     "CiscoIOS",
     "CiscoIOSXR",
     "CiscoNXOS",
+    "CiscoSG3XX",
     "HPComware",
     "HPComwareLimited",
     "FujitsuSwitch",
@@ -40,4 +42,5 @@ __all__ = (
     "mikrotik",
     "UbiquityEdgeSwitch",
     "HW1000",
+    "AlcatelAOS",
 )

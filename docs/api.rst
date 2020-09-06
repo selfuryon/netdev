@@ -88,6 +88,13 @@ CiscoNXOS
    :members:
    :inherited-members:
 
+CiscoSG3XX
+~~~~~~~~~
+
+.. autoclass:: CiscoSG3XX
+   :members:
+   :inherited-members:
+
 FujitsuSwitch
 ~~~~~~~~~~~~~
 
@@ -141,5 +148,12 @@ Terminal
 ~~~~~~~~
 
 .. autoclass:: Terminal
+   :members:
+   :inherited-members:
+
+AlcatelAOS
+~~~~~~~~
+
+.. autoclass:: AlcatelAOS
    :members:
    :inherited-members:
