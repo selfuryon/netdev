@@ -12,6 +12,7 @@ from netdev.vendors import MikrotikRouterOS
 from netdev.vendors import Terminal
 from netdev.vendors import UbiquityEdgeSwitch
 from netdev.vendors import HW1000
+from netdev.vendors import Huawei
 
 # @formatter:off
 # The keys of this dictionary are the supported device_types
@@ -34,6 +35,7 @@ CLASS_MAPPER = {
     "ubiquity_edge": UbiquityEdgeSwitch,
     "terminal": Terminal,
     "hw1000": HW1000,
+    "huawei": Huawei,
 }
 
 # @formatter:on
