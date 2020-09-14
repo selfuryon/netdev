@@ -75,5 +75,3 @@ class TestHuawei(unittest.TestCase):
                         await huawei.send_command('display cur | i sysname')
 
         self.loop.run_until_complete(task())
-
-unittest.main()
