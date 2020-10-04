@@ -26,27 +26,20 @@ class TelnetConnection(IOConnection):
         family: int = 0,
         flags: int = 0,
     ) -> None:
-        if host:
-            self._host = host
-        else:
+        if not host:
             raise ValueError("Host must be set")
-        self._port = port or 23
-        self._username = username
-        self._password = password
-        self._loop = asyncio.get_event_loop()
-        self._conn_dict = {"family": family, "flags": flags}
-        self._stdout = None
-        self._stdin = None
+        self.host = host
+        self.port = port 
+        self.args = {"username": username, "password": password, "family": family, "flags": flags}
 
     async def connect(self) -> None:
         """ Establish the Telnet Connection """
-        self._logger.info("Host %s: Establishing Telnet Connection on port %s", self._host, self._port)
+        self._logger.info(
+            "Host %s: Establishing Telnet Connection on port %s", self.host, self.port)
         try:
-            self._stdout, self._stdin = await asyncio.open_connection(
-                self._host, self._port, **self._conn_dict
-            )
+            self._stdout, self._stdin = await asyncio.open_connection(self.host, self.port, **self.args)
         except Exception as error:
-            raise DisconnectError(self._host, None, str(error))
+            raise DisconnectError(self.host, None, str(error))
 
     async def disconnect(self) -> None:
         """ Gracefully close the Telnet Connection """
@@ -62,14 +55,10 @@ class TelnetConnection(IOConnection):
     async def read(self) -> str:
         """ Read buffer from the channel """
         output = await self._stdout.read(MAX_BUFFER)
-        self._logger.debug("Host %s: Recieved from channel: %r", self.host, output)
+        self._logger.debug(
+            "Host %s: Recieved from channel: %r", self.host, output)
         return output.decode(errors="ignore")
 
     @property
     def _logger(self) -> logging.Logger:
         return logger.getChild("TelnetConnection")
-
-    @property
-    def host(self) -> str:
-        """ Return the host address """
-        return self._host

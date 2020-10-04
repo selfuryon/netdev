@@ -8,8 +8,8 @@ import asyncio
 import logging
 
 import asyncssh
-
-from netdev.connections.constants import MAX_BUFFER, TERM_LEN, TERM_TYPE, TERM_WID
+from netdev.connections.constants import (MAX_BUFFER, TERM_LEN, TERM_TYPE,
+                                          TERM_WID)
 from netdev.connections.io_connection import IOConnection
 from netdev.exceptions import DisconnectError
 from netdev.logger import logger
@@ -18,32 +18,22 @@ from netdev.logger import logger
 class SSHConnection(IOConnection):
     """ SSH Connection Class """
 
-    def __init__(
-        self, host: str, port: int = 22, *, tunnel: asyncssh.SSHClientConnection = None, **kwargs,
-    ) -> None:
-        if host:
-            self._host = host
-        else:
+    def __init__(self, host: str, port: int = 22, **kwargs) -> None:
+        if not host:
             raise ValueError("Host must be set")
 
-        self._port = port or 22
-        self._loop = asyncio.get_event_loop()
-        self._tunnel = tunnel
-        self._conn_dict = kwargs
-        self._conn = None
-        self._stdin = None
-        self._stdout = None
-        self._stderr = None
+        self.host = host
+        self.port = port
+        self.args = kwargs
 
     async def connect(self) -> None:
         """ Etablish the SSH connection """
-        self._logger.info("Host %s: Establishing SSH connection on port %s", self._host, self._port)
+        self._logger.info(
+            "Host %s: Establishing SSH connection on port %s", self.host, self.port)
         try:
-            self._conn = await asyncssh.connect(
-                self._host, self._port, tunnel=self._tunnel, **self._conn_dict,
-            )
+            self._conn = await asyncssh.connect(self.host, self.port, **self.args)
         except asyncssh.DisconnectError as error:
-            raise DisconnectError(self._host, error.code, error.reason)
+            raise DisconnectError(self.host, error.code, error.reason)
 
         await self._start_session()
 
@@ -74,14 +64,10 @@ class SSHConnection(IOConnection):
     async def read(self) -> str:
         """ Read buffer from the channel """
         output = await self._stdout.read(MAX_BUFFER)
-        self._logger.debug("Host %s: Recieved from channel: %r", self.host, output)
+        self._logger.debug(
+            "Host %s: Recieved from channel: %r", self.host, output)
         return output
 
     @property
     def _logger(self) -> logging.Logger:
         return logger.getChild("SSHConnection")
-
-    @property
-    def host(self) -> str:
-        """ Return the host address """
-        return self._host
