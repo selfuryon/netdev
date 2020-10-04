@@ -13,6 +13,7 @@ from netdev.vendors.mikrotik import MikrotikRouterOS
 from netdev.vendors.terminal import Terminal
 from netdev.vendors.ubiquiti import UbiquityEdgeSwitch
 from netdev.vendors.infotecs import HW1000
+from netdev.vendors.huawei import Huawei
 
 __all__ = (
     "CiscoASA",
@@ -43,4 +44,5 @@ __all__ = (
     "UbiquityEdgeSwitch",
     "HW1000",
     "AlcatelAOS",
+    "Huawei",
 )
