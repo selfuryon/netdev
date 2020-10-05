@@ -25,14 +25,10 @@ class DeviceStream:
         set_prompt_func: Callable[[str], str] = None,
         nopage_cmd: str = None,
     ) -> None:
-        if io_connection:
-            self._io_connection = io_connection
-        else:
+        if not io_connection:
             raise ValueError("IO Connection must be set")
-        if set_prompt_func:
-            self._set_prompt_func = set_prompt_func
-        else:
-            raise ValueError("Need to set prompt setter function")
+        self._io_connection = io_connection
+        self._set_prompt_func = set_prompt_func
         escaped_list = map(re.escape, delimeter_list)
         self._prompt_pattern = r"|".join(escaped_list)
         self._nopage_cmd = nopage_cmd
@@ -62,12 +58,14 @@ class DeviceStream:
             "\n", strip_command=False, strip_prompt=False, re_flags=re.MULTILINE | re.DOTALL,
         )
         self._prompt_pattern = self._set_prompt_func(raw_prompt)
-        self._logger.debug("Host %s: Set prompt pattern to: %s", self.host, self._prompt_pattern)
+        self._logger.debug("Host %s: Set prompt pattern to: %s",
+                           self.host, self._prompt_pattern)
         return raw_prompt
 
     async def _session_preparation(self) -> str:
         """ Session preparation (usually setting no page for output)"""
-        self._logger.info("Host %s: Setting no page for output", self.host)
+        self._logger.info(
+            "Host %s: Setting no page for output: %s", self.host, self._nopage_cmd)
         buf = await self.send_commands(self._nopage_cmd)
         return buf
 
@@ -95,7 +93,8 @@ class DeviceStream:
         if isinstance(cmd_list, str):
             cmd_list = [cmd_list]
 
-        self._logger.debug("Host %s: Send to stream the list of commands: %r", self.host, cmd_list)
+        self._logger.debug(
+            "Host %s: Send to stream the list of commands: %r", self.host, cmd_list)
 
         output = ""
         for cmd in cmd_list:
@@ -118,7 +117,8 @@ class DeviceStream:
             raise ValueError("Pattern list can't be None")
 
         output = ""
-        self._logger.debug("Host %s: Read until pattern list: %r", self.host, pattern_list)
+        self._logger.debug(
+            "Host %s: Read until pattern list: %r", self.host, pattern_list)
         while True:
             buf = await self._io_connection.read()
             output += buf
