@@ -2,6 +2,7 @@ from netdev.vendors.comware_like import ComwareLikeDevice
 import re
 import asyncio
 import asyncssh
+from netdev.exceptions import TimeoutError, DisconnectError
 from netdev.logger import logger
 
 class Huawei(ComwareLikeDevice):
