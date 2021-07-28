@@ -62,7 +62,7 @@ class Huawei(ComwareLikeDevice):
         delimiter_right = r"|".join(delimiter_right)
         delimiter_left = map(re.escape, type(self)._delimiter_left_list)
         delimiter_left = r"|".join(delimiter_left)
-        base_prompt = re.escape(self._base_prompt[:12])
+        base_prompt = re.escape(self._base_prompt)
         pattern = type(self)._pattern
         self._base_pattern = pattern.format(
             delimiter_left=delimiter_left,
