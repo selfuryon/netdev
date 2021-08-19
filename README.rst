@@ -1,3 +1,8 @@
+THIS PROJECT IS UNMAINTAINED
+****************************
+I'm not interested in this project anymore, sorry. 
+I don't work as an network engineer anymore so I haven't any special goals to improve and maintain it.
+
 Netdev
 ******
 
