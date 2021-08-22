@@ -14,6 +14,7 @@ from netdev.vendors.terminal import Terminal
 from netdev.vendors.ubiquiti import UbiquityEdgeSwitch
 from netdev.vendors.infotecs import HW1000
 from netdev.vendors.huawei import Huawei
+from netdev.vendors.ruijie import RuijieOS
 
 __all__ = (
     "CiscoASA",
@@ -45,4 +46,5 @@ __all__ = (
     "HW1000",
     "AlcatelAOS",
     "Huawei",
+    "RuijieOS",
 )

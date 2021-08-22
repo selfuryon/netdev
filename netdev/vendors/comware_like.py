@@ -23,7 +23,7 @@ class ComwareLikeDevice(BaseDevice):
     _delimiter_list = [">", "]"]
     """All this characters will stop reading from buffer. It mean the end of device prompt"""
 
-    _delimiter_left_list = ["<", "["]
+    _delimiter_left_list = ["<", "[", "*", "~"]
     """Begging prompt characters. Prompt must contain it"""
 
     _pattern = r"[{delimiter_left}]{prompt}[\-\w]*[{delimiter_right}]"

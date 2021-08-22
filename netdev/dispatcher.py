@@ -13,6 +13,7 @@ from netdev.vendors import Terminal
 from netdev.vendors import UbiquityEdgeSwitch
 from netdev.vendors import HW1000
 from netdev.vendors import Huawei
+from netdev.vendors import RuijieOS
 
 # @formatter:off
 # The keys of this dictionary are the supported device_types
@@ -36,6 +37,7 @@ CLASS_MAPPER = {
     "terminal": Terminal,
     "hw1000": HW1000,
     "huawei": Huawei,
+    "ruijie_os": RuijieOS,
 }
 
 # @formatter:on
